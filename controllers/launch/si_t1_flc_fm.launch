@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="robotName" default="y6"/>
+	<!-- SLOW -->
+	<!-- arg name="kp" default="0.300"/>
+	<arg name="ki" default="0.100"/>
+	<arg name="kd" default="0.001"/> -->
+	<!-- FAST -->
+	<arg name="kp" default="1.2"/>
+	<arg name="ki" default="0.001"/>
+	<arg name="kd" default="0.4"/>
+
+	<node name="si_t1_flc_fm" pkg="controllers" type="si_t1_flc_fm" output="screen" args="$(arg kp) $(arg ki) $(arg kd)"/>
+</launch>

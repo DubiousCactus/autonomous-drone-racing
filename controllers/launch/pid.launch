@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="robotName" default="bebop"/>
+	<!-- REAL-TIME -->
+	<arg name="kp" default="4.300"/>
+	<arg name="ki" default="0.001"/>
+	<arg name="kd" default="2.400"/>
+	<arg name="ko" default="1.000"/>
+	<!-- SIMULATION -->	
+	<!-- arg name="kp" default="2.0"/>
+	<arg name="ki" default="0.1"/>
+	<arg name="kd" default="0.6"/>
+	<arg name="ko" default="1.0"/ -->
+
+	<node name="pid" pkg="controllers" type="pid" output="screen" args="$(arg kp) $(arg ki) $(arg kd) $(arg ko)"/>
+</launch>
