@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+	<model name="gate">
+		<static>true</static>
+		<link name="gate">
+			<visual name="visual">
+				<pose>0 0 0 0 0 0</pose> 
+			  <geometry>
+				<mesh>
+				  <uri>model://custom_gate/meshes/gate.dae</uri>
+				</mesh>
+			  </geometry>
+			</visual>
+		</link>
+	</model>
+</sdf>
