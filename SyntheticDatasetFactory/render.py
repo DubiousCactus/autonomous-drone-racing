@@ -2,6 +2,7 @@
 
 import numpy as np
 import moderngl
+import random
 
 from pyrr import Matrix44, Quaternion, Vector3
 from moderngl.ext.obj import Obj
@@ -26,7 +27,7 @@ from PIL import Image
 # Parameters
 width = 640
 height = 480
-world_boundaries = {'x': 10, 'y': 20, 'z': 0} # Real world boundaries in meters
+world_boundaries = {'x': 8, 'y': 10, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
 
 # Data files
 mesh = Obj.open('data/gate_1mx1m_150cm.obj')
@@ -60,8 +61,19 @@ ctx = moderngl.create_standalone_context()
 prog = ctx.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
 
 # Model translation, rotation, scaling
-translation = Vector3([0.0, 0.0, 0.0])
-rotation = Quaternion.from_y_rotation(np.pi / 2.0)
+random.seed()
+''' Randomly move the gate around, while keeping it inside the boundaries '''
+translation = Vector3([
+    random.uniform(-boundaries['x'], boundaries['x']),
+    random.uniform(-boundaries['y'], boundaries['y']),
+    random.uniform(-boundaries['z'], boundaries['z'])
+])
+print("Randomized translation: {}".format(translation))
+
+''' Randomly rotate the gate horizontally, around the Y-axis '''
+rotation = Quaternion.from_y_rotation(random.random() * np.pi)
+print("Randomized rotation: {}".format(rotation))
+
 scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
 model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
 
