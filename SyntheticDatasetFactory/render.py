@@ -11,15 +11,15 @@ from PIL import Image
 '''
     ----- TODO -----
 
-- Random positioning of the gate
-- Boundaries definition for the gate
-- Camera calibration (use the correct parameters)
-- Project on transparent background
-- Overlay with background image
-- Histogram equalization of both images (hue, saturation, luminence ?...)
-- Motion blur (shader ?)
-- Anti alisasing (shader ?)
-- Ship it!
+[ ] Random positioning of the gate
+[ ] Boundaries definition for the gate
+[ ] Camera calibration (use the correct parameters)
+[x] Project on transparent background
+[ ] Overlay with background image
+[ ] Histogram equalization of both images (hue, saturation, luminence ?...)
+[ ] Motion blur (shader ?)
+[ ] Anti alisasing (shader ?)
+[ ] Ship it!
 
 '''
 
@@ -48,25 +48,30 @@ model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(
 
 # Perspective projection
 projection = Matrix44.perspective_projection(
-    45.0, # field of view in y direction in degrees
+    45.0, # field of view in y direction in degrees (vertical FoV)
     width/height, # aspect ratio of the view
     0.01, # distance from the viewer to the near clipping plane (only positive)
     1000.0 # distance from the viewer to the far clipping plane (only positive)
 )
 
 # Camera view matrix
+'''
+ x: horizontal axis
+ y: vertical axis
+ z: depth axis
+'''
 view = Matrix44.look_at(
-    (0, 15, 20), # eye: position of the camera in world coordinates
-    (0.0, 0.0, 0.0), # target: position in world coordinates that the camera is looking at
-    (0.0, 0.0, 1.0), # up: up vector of the camera
+    (0, 5, 20), # eye: position of the camera in world coordinates
+    (0.0, 5.0, 0.0), # target: position in world coordinates that the camera is looking at
+    (0.0, 1.0, 0.0), # up: up vector of the camera
 )
 
 # Model View Projection matrix
 mvp = projection * view * model
 
 # Shader program
-prog['Light'].value = (-140.0, -300.0, 350.0)
-prog['Color'].value = (1.0, 1.0, 1.0, 0.25)
+prog['Light'].value = (-140.0, -300.0, 350.0) # TODO
+prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
 prog['Mvp'].write(mvp.astype('f4').tobytes())
 
 # Texturing
@@ -75,7 +80,7 @@ texture.build_mipmaps()
 
 # Vertex Buffer and Vertex Array
 vbo = ctx.buffer(vertex_data)
-vao = ctx.simple_vertex_array(prog, vbo,* ['in_vert', 'in_text', 'in_norm'])
+vao = ctx.simple_vertex_array(prog, vbo, *['in_vert', 'in_text', 'in_norm'])
 
 # Framebuffers
 fbo = ctx.framebuffer(
@@ -85,13 +90,17 @@ fbo = ctx.framebuffer(
 
 # Rendering
 fbo.use()
-ctx.enable(moderngl.DEPTH_TEST)
-ctx.clear(0.9, 0.9, 0.9)
+ctx.enable(moderngl.BLEND)
+ctx.clear(0.0, 0.0, 0.0)
 texture.use()
 vao.render()
 
 # Loading the image using Pillow
-data = fbo.read(components=3, alignment=1)
-img = Image.frombytes('RGB', fbo.size, data, 'raw', 'RGB', 0, -1)
+data = fbo.read(components=4, alignment=1)
+img = Image.frombytes('RGBA', fbo.size, data, 'raw', 'RGBA', 0, -1)
+
+# TODO: blend the image over the background
+# output = Image.blend(img, background, 0.0)
+
 img.save('output.png')
 img.show()
