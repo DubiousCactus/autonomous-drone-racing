@@ -20,7 +20,7 @@ from PIL import Image
 [?] Compute the distance to the gate
 [ ] Camera calibration (use the correct parameters)
 [x] Project on transparent background
-[ ] Overlay with background image
+[x] Overlay with background image
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
 [ ] Motion blur (shader ?)
 [ ] Anti alisasing (shader ?)
@@ -30,7 +30,7 @@ from PIL import Image
 
 # Parameters
 width = 640
-height = 480
+height = 425
 world_boundaries = {'x': 8, 'y': 10, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
 gate_center = Vector3([0.0, 0.0, 2.1]) # Figure this out in Blender
 
@@ -139,6 +139,12 @@ data = fbo.read(components=4, alignment=1)
 img = Image.frombytes('RGBA', fbo.size, data, 'raw', 'RGBA', 0, -1)
 
 # TODO: blend the image over the background
-# output = Image.blend(img, background, 0.0)
+background = Image.open('data/warehouse.jpg')
+background.thumbnail((width, height), Image.ANTIALIAS)
+background = background.convert('RGBA')
+# output = Image.blend(img, background, 0.5)
+output = Image.alpha_composite(background, img)
+
 
 img.show()
+output.show()
