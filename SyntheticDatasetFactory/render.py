@@ -12,9 +12,10 @@ from PIL import Image
 '''
     ----- TODO -----
 
+[ ] WHY IS IT SO UGLY???!
 [x] Random positioning of the gate
 [x] Boundaries definition for the gate (relative to the mesh's size)
-[ ] Compute the center of the gate
+[x] Compute the center of the gate
 [ ] Compute the presence of the gate in the image frame
 [?] Compute the distance to the gate
 [ ] Camera calibration (use the correct parameters)
@@ -31,6 +32,7 @@ from PIL import Image
 width = 640
 height = 480
 world_boundaries = {'x': 8, 'y': 10, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
+gate_center = Vector3([0.0, 0.0, 2.1]) # Figure this out in Blender
 
 # Data files
 mesh = Obj.open('data/gate_1mx1m_150cm.obj')
@@ -79,6 +81,9 @@ print("Randomized rotation: {}".format(rotation))
 
 scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
 model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
+gate_center = model * gate_center
+
+print("Gate center: {}".format(gate_center))
 
 # Perspective projection
 projection = Matrix44.perspective_projection(
@@ -136,5 +141,4 @@ img = Image.frombytes('RGBA', fbo.size, data, 'raw', 'RGBA', 0, -1)
 # TODO: blend the image over the background
 # output = Image.blend(img, background, 0.0)
 
-img.save('output.png')
 img.show()
