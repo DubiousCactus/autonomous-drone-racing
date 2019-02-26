@@ -12,8 +12,11 @@ from PIL import Image
 '''
     ----- TODO -----
 
-[ ] Random positioning of the gate
-[ ] Boundaries definition for the gate (relative to the mesh's size)
+[x] Random positioning of the gate
+[x] Boundaries definition for the gate (relative to the mesh's size)
+[ ] Compute the center of the gate
+[ ] Compute the presence of the gate in the image frame
+[?] Compute the distance to the gate
 [ ] Camera calibration (use the correct parameters)
 [x] Project on transparent background
 [ ] Overlay with background image
