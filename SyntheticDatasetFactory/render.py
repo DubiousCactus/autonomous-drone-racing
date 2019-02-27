@@ -12,6 +12,8 @@ from PIL import Image
 '''
     ----- TODO -----
 
+[ ] Match the perspective via camera height estimation (with camera
+calibration)
 [ ] WHY IS IT SO UGLY???!
 [x] Random positioning of the gate
 [x] Boundaries definition for the gate (relative to the mesh's size)
