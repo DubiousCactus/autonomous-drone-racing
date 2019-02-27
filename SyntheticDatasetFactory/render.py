@@ -5,7 +5,7 @@ import moderngl
 import random
 
 from pyrr import Matrix44, Quaternion, Vector3
-from moderngl.ext.obj import Obj
+from ModernGL.ext.obj import Obj
 from PIL import Image
 
 
@@ -23,6 +23,8 @@ calibration)
 [ ] Camera calibration (use the correct parameters)
 [x] Project on transparent background
 [x] Overlay with background image
+[ ] Model the camera distortion
+[ ] Apply the distortion to the OpenGL projection
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
 [ ] Motion blur (shader ?)
 [ ] Anti alisasing (shader ?)
@@ -32,7 +34,7 @@ calibration)
 
 # Parameters
 width = 640
-height = 425
+height = 432
 world_boundaries = {'x': 8, 'y': 10, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
 gate_center = Vector3([0.0, 0.0, 2.1]) # Figure this out in Blender
 
@@ -88,6 +90,10 @@ gate_center = model * gate_center
 print("Gate center: {}".format(gate_center))
 
 # Perspective projection
+'''
+    TODO: Get intrinsics from camera calibration using OpenCV
+    (convert_hz_intrinsic_to_opengl_projection)
+'''
 projection = Matrix44.perspective_projection(
     45.0, # field of view in y direction in degrees (vertical FoV)
     width/height, # aspect ratio of the view
@@ -95,6 +101,17 @@ projection = Matrix44.perspective_projection(
     1000.0 # distance from the viewer to the far clipping plane (only positive)
 )
 
+'''
+    - Compute 2 vanishing points to find the horizon
+    - Compute the height of the camera
+
+    IF NOT POSSIBLE (because how do you automate this? Canny edge detection +
+    Hough transform?):
+        - Record the height of the drone at each frame and annotate that on the
+        dataset
+        - Record the roll, pitch, yaw to apply to the target of the camera
+        (look_at)
+'''
 # Camera view matrix
 '''
  x: horizontal axis
@@ -103,7 +120,7 @@ projection = Matrix44.perspective_projection(
 '''
 view = Matrix44.look_at(
     (0, 5, 20), # eye: position of the camera in world coordinates
-    (0.0, 5.0, 0.0), # target: position in world coordinates that the camera is looking at
+    (0.0, 5.0, 20.0), # target: position in world coordinates that the camera is looking at
     (0.0, 1.0, 0.0), # up: up vector of the camera
 )
 
@@ -140,13 +157,24 @@ vao.render()
 data = fbo.read(components=4, alignment=1)
 img = Image.frombytes('RGBA', fbo.size, data, 'raw', 'RGBA', 0, -1)
 
-# TODO: blend the image over the background
-background = Image.open('data/warehouse.jpg')
+'''
+    Apply distortion and rotation using the camera parameters computed above
+'''
+# TODO
+
+
+'''
+    Overlay the generated image on top of the background
+'''
+background = Image.open('data/warehouse.png')
 background.thumbnail((width, height), Image.ANTIALIAS)
 background = background.convert('RGBA')
 # output = Image.blend(img, background, 0.5)
-output = Image.alpha_composite(background, img)
+if img.size == background.size:
+    output = Image.alpha_composite(background, img)
+    img.show()
+    output.show()
+else:
+    print("[!] Images sizes don't match!")
 
 
-img.show()
-output.show()
