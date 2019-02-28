@@ -41,7 +41,7 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [ ] Apply the distortion to the OpenGL projection
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
 [ ] Motion blur (shader ?)
-[ ] Anti alisasing
+[x] Anti alisasing
 [ ] Ship it!
 
 '''
@@ -67,11 +67,8 @@ class DatasetFactory:
         print("[*] Generating dataset...")
         for i in tqdm(range(self.count)):
             projection = self.projector.generate()
-            projection.show()
-            continue
             background = self.background_dataset.get()
             output = self.combine(projection, background.image())
-            output.show()
             self.generated_dataset.put(
                 AnnotatedImage(
                     output,
@@ -85,7 +82,7 @@ class DatasetFactory:
             )
 
         print("[*] Saving to {}".format(self.generated_dataset.path))
-        # self.generated_dataset.save()
+        self.generated_dataset.save()
 
     def combine(self, projection: Image, background: Image):
         background = background.convert('RGBA')

@@ -71,17 +71,17 @@ class SceneGenerator:
             random.uniform(-self.boundaries['y'], self.boundaries['y']),
             0
         ])
-        print("Randomized translation: {}".format(translation))
+        # print("Randomized translation: {}".format(translation))
 
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
         rotation = Quaternion.from_z_rotation(random.random() * np.pi)
-        print("Randomized rotation: {}".format(rotation))
+        # print("Randomized rotation: {}".format(rotation))
 
         scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
         model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
         gate_center = model * self.gate_center
 
-        print("Gate center: {}".format(gate_center))
+        # print("Gate center: {}".format(gate_center))
 
         # Perspective projection
         '''
@@ -113,8 +113,8 @@ class SceneGenerator:
          z: vertical axis
         '''
         view = Matrix44.look_at(
-            (0, -5, 2), # eye: position of the camera in world coordinates
-            (0.0, 0.0, 2), # target: position in world coordinates that the camera is looking at
+            (0, -10, 2), # eye: position of the camera in world coordinates
+            (0.0, 0.0, 3.8), # target: position in world coordinates that the camera is looking at
             (0.0, 0.0, 1.0), # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
         )
 
@@ -127,10 +127,9 @@ class SceneGenerator:
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
 
-        self.grid_prog['Light'].value = (0.0, 10.0, 0.0) # TODO
-        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
+        self.grid_prog['Light'].value = (0.0, 10.0, 0.0)
+        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25)
         self.grid_prog['Mvp'].write(no_translation_mvp.astype('f4').tobytes())
-
 
         # Texturing
         texture_image = Image.open('data/shiny-white-metal-texture.jpg')
@@ -153,25 +152,31 @@ class SceneGenerator:
         vao_grid = self.context.simple_vertex_array(self.grid_prog, vbo_grid, 'in_vert')
 
         # Framebuffers
-        fbo = self.context.framebuffer(
-            self.context.renderbuffer((self.width, self.height)),
-            self.context.depth_renderbuffer((self.width, self.height)),
-        )
-        # fbo = self.context.simple_framebuffer((self.width, self.height),
-                                              # components=4, samples=4)
+        # Use 8 samples for MSAA anti-aliasing
+        fbo1 = self.context.simple_framebuffer((self.width, self.height),
+                                               components=4, samples=8)
+        # fbo1 = self.context.framebuffer(
+            # self.context.renderbuffer((self.width, self.height)),
+            # self.context.depth_renderbuffer((self.width, self.height)),
+            # samples=4
+        # )
+
+
+        # Downsample to the final framebuffer
+        fbo2 = self.context.framebuffer(self.context.renderbuffer((self.width,
+                                                                   self.height)))
 
         # Rendering
-        fbo.use()
+        fbo1.use()
         self.context.enable(moderngl.DEPTH_TEST)
         self.context.clear(1.0, 1.0, 1.0)
-        # self.context.enable(moderngl.BLEND)
-        # self.context.clear(0.0, 0.0, 0.0)
         texture.use()
         vao.render()
         vao_grid.render(moderngl.LINES, 65 * 4)
+        self.context.copy_framebuffer(fbo2, fbo1)
 
         # Loading the image using Pillow
-        img = Image.frombytes('RGBA', fbo.size, fbo.read(components=4,
+        img = Image.frombytes('RGBA', fbo2.size, fbo2.read(components=4,
                                                          alignment=1), 'raw', 'RGBA', 0, -1)
 
         '''
