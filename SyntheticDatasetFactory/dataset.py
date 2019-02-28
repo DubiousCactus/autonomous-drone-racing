@@ -10,13 +10,14 @@
 Dataset class, holding background images along with their annotations
 """
 
-import os
 import random
+import os
 
-from pyrr import Vector3
-from queue import Queue
-from tqdm import tqdm
 from PIL import Image
+from tqdm import tqdm
+from queue import Queue
+from pyrr import Vector3
+from threading import Thread
 
 
 class BackgroundAnnotations:
@@ -79,7 +80,7 @@ class Dataset:
 
         return annotations
 
-    def load(self, annotations_path=None):
+    def load(self, annotations_path=None, count):
         print("[*] Loading and randomizing base dataset...")
         files = os.listdir(self.path)
         random.shuffle(files)
@@ -98,16 +99,27 @@ class Dataset:
     def get(self):
         return self.data.get()
 
+    def task_done(self):
+        self.data.task_done()
+
     def put(self, image: AnnotatedImage):
         self.data.put(image)
 
-    def save(self):
-        for annotatedImage in tqdm(iter(self.data.get, object())):
+    def _save_one(self):
+        while not self.data.empty():
+            annotatedImage = self.data.get()
             annotatedImage.image.save(
                 os.path.join(self.path + str(annotatedImage.id) + '.png')
             )
-            if self.data.empty():
-                break
+            self.data.task_done()
+
+    def save(self):
+        for i in range(4):
+            t = Thread(target=self._save_one)
+            t.daemon = True
+            t.start()
+
+        self.data.join()
 
     def get_image_size(self):
         print("[*] Using {}x{} resolution".format(self.width, self.height))

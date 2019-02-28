@@ -45,7 +45,7 @@ class SceneGenerator:
             - max(self.mesh.vert, key = lambda v_pair: v_pair[2])[2]
         )
 
-        print("Mesh width: {}\nMesh height: {}".format(mesh_width, mesh_height))
+        # print("Mesh width: {}\nMesh height: {}".format(mesh_width, mesh_height))
 
         return  {
             'x': mesh_width * world_boundaries['x'],
@@ -83,7 +83,8 @@ class SceneGenerator:
 
         # print("Gate center: {}".format(gate_center))
 
-        # Perspective projection
+        is_visible = True # TODO
+
         '''
             TODO: Get intrinsics from camera calibration using OpenCV
             (convert_hz_intrinsic_to_opengl_projection)
@@ -184,4 +185,4 @@ class SceneGenerator:
         '''
         # TODO
 
-        return img
+        return (img, gate_center, rotation, is_visible)
