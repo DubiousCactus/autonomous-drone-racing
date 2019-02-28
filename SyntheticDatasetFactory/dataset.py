@@ -84,14 +84,24 @@ class Dataset:
         print("[*] Loading and randomizing base dataset...")
         files = os.listdir(self.path)
         random.shuffle(files)
+
+        while count >= len(files):
+            choice = random.choice(files)
+            full_path = os.path.join(self.path, choice)
+            if os.path.isfile(full_path) and full_path != annotations_path:
+                files += [choice]
+
         annotations = self.parse_annotations(annotations_path)
         for file in files:
             full_path = os.path.join(self.path, file)
             if os.path.isfile(full_path) and full_path != annotations_path:
                 self.data.put(BackgroundImage(full_path, annotations['0001.jpg']))
+                self.data.task_done()
                 if not self.width and not self.height:
                     with Image.open(full_path) as img:
                         self.width, self.height = img.size
+
+        self.data.join()
 
     '''
     Returns the next BackgroundImage in the Queue

@@ -51,7 +51,7 @@ class DatasetFactory:
     def __init__(self, args):
         self.mesh_path = args.mesh
         self.nb_threads = args.threads
-        self.count = args.nb_images # TODO: If count > dataset.size, duplicate!
+        self.count = args.nb_images
         self.blur_amount = args.blur_amount
         self.background_dataset = Dataset(args.dataset)
         self.background_dataset.load(self.count, args.annotations)
@@ -84,7 +84,7 @@ class DatasetFactory:
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
                                                                rotation, visible))
         )
-        self.background_dataset.task_done()
+        # self.background_dataset.task_done()
 
     def combine(self, projection: Image, background: Image):
         background = background.convert('RGBA')
