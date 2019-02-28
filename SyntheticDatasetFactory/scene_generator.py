@@ -81,7 +81,7 @@ class SceneGenerator:
         model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
         gate_center = model * self.gate_center
 
-        # print("Gate center: {}".format(gate_center))
+        print("Gate center: {}".format(gate_center))
 
         is_visible = True # TODO
 
@@ -122,6 +122,7 @@ class SceneGenerator:
         # Model View Projection matrix
         mvp = projection * view * model
         no_translation_mvp = projection * view * Matrix44.identity() 
+        print("Gate center in pixels: {}".format(mvp * gate_center))
 
         # Shader program
         self.prog['Light'].value = (0.0, 10.0, 0.0) # TODO

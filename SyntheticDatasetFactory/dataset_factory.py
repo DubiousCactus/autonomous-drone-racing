@@ -31,9 +31,9 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [x] Boundaries definition for the gate (relative to the mesh's size)
 [x] Compute the center of the gate
 [ ] Compute the presence of the gate in the image frame
+[ ] Convert world coordinates to image coordinates <---
 [?] Compute the distance to the gate
 [x] Perspective projection for visualization
-[ ] Convert world coordinates to image coordinates
 [ ] Camera calibration (use the correct parameters)
 [x] Project on transparent background
 [x] Overlay with background image
