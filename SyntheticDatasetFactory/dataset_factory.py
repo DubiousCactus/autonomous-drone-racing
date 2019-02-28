@@ -57,7 +57,7 @@ class DatasetFactory:
         self.background_dataset.load(args.annotations)
         self.generated_dataset = Dataset(args.destination)
         self.width, self.height = self.background_dataset.get_image_size()
-        world_boundaries = {'x': 5, 'y': 0, 'z': 5} # Real world boundaries in meters (relative to the mesh's scale)
+        world_boundaries = {'x': 3, 'y': 3, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
         gate_center = Vector3([0.0, 0.0, 2.1]) # Figure this out in Blender
         self.projector = SceneGenerator(self.mesh_path, self.width, self.height,
                                         world_boundaries, gate_center)

@@ -60,6 +60,7 @@ class SceneGenerator:
         self.context = moderngl.create_standalone_context()
         # Shaders
         self.prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
+        self.grid_prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
 
 
 
@@ -67,8 +68,8 @@ class SceneGenerator:
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
         translation = Vector3([
             random.uniform(-self.boundaries['x'], self.boundaries['x']),
-            0,
-            random.uniform(-self.boundaries['z'], self.boundaries['z'])
+            random.uniform(-self.boundaries['y'], self.boundaries['y']),
+            0
         ])
         print("Randomized translation: {}".format(translation))
 
@@ -77,8 +78,7 @@ class SceneGenerator:
         print("Randomized rotation: {}".format(rotation))
 
         scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
-        # model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
-        model = Matrix44.identity()
+        model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
         gate_center = model * self.gate_center
 
         print("Gate center: {}".format(gate_center))
@@ -109,22 +109,28 @@ class SceneGenerator:
         # Camera view matrix
         '''
          x: horizontal axis
-         y: vertical axis
-         z: depth axis
+         y: depth axis
+         z: vertical axis
         '''
         view = Matrix44.look_at(
-            (3, 3, 3), # eye: position of the camera in world coordinates
-            (0.0, 0.0, 0.0), # target: position in world coordinates that the camera is looking at
-            (0.0, 0.0, 1.0), # up: up vector of the camera
+            (0, -5, 2), # eye: position of the camera in world coordinates
+            (0.0, 0.0, 2), # target: position in world coordinates that the camera is looking at
+            (0.0, 0.0, 1.0), # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
         )
 
         # Model View Projection matrix
         mvp = projection * view * model
+        no_translation_mvp = projection * view * Matrix44.identity() 
 
         # Shader program
         self.prog['Light'].value = (0.0, 10.0, 0.0) # TODO
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
+
+        self.grid_prog['Light'].value = (0.0, 10.0, 0.0) # TODO
+        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
+        self.grid_prog['Mvp'].write(no_translation_mvp.astype('f4').tobytes())
+
 
         # Texturing
         texture_image = Image.open('data/shiny-white-metal-texture.jpg')
@@ -144,7 +150,7 @@ class SceneGenerator:
         vbo = self.context.buffer(self.mesh.pack())
         vao = self.context.simple_vertex_array(self.prog, vbo, *['in_vert', 'in_text', 'in_norm'])
         vbo_grid = self.context.buffer(grid.astype('f4').tobytes())
-        vao_grid = self.context.simple_vertex_array(self.prog, vbo_grid, 'in_vert')
+        vao_grid = self.context.simple_vertex_array(self.grid_prog, vbo_grid, 'in_vert')
 
         # Framebuffers
         fbo = self.context.framebuffer(
