@@ -50,10 +50,11 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 class DatasetFactory:
     def __init__(self, args):
         self.mesh_path = args.mesh
+        self.nb_threads = args.threads
         self.count = args.nb_images # TODO: If count > dataset.size, duplicate!
         self.blur_amount = args.blur_amount
         self.background_dataset = Dataset(args.dataset)
-        self.background_dataset.load(args.annotations, self.count)
+        self.background_dataset.load(self.count, args.annotations)
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
@@ -62,13 +63,15 @@ class DatasetFactory:
 
     def run(self):
         print("[*] Generating dataset...")
-        p = mp.Pool(4)
+        p = mp.Pool(self.nb_threads)
         p.map(self.generate, range(self.count))
         p.close()
         p.join()
 
+        print("[*] Scaling to {}x{} resolution".format(self.target_width,
+                                                       self.target_height))
         print("[*] Saving to {}".format(self.generated_dataset.path))
-        self.generated_dataset.save()
+        self.generated_dataset.save(self.nb_threads)
 
     def generate(self, index):
         projector = SceneGenerator(self.mesh_path, self.base_width,
@@ -114,6 +117,8 @@ if __name__ == "__main__":
                         added')
     parser.add_argument('--res', dest='resolution', default='640x480',
                         type=str, help='the desired resolution')
+    parser.add_argument('-t', dest='threads', default=4, type=int,
+                        help='the number of threads to use')
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.run()

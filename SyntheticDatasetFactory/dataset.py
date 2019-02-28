@@ -80,12 +80,12 @@ class Dataset:
 
         return annotations
 
-    def load(self, annotations_path=None, count):
+    def load(self, count, annotations_path=None):
         print("[*] Loading and randomizing base dataset...")
         files = os.listdir(self.path)
         random.shuffle(files)
         annotations = self.parse_annotations(annotations_path)
-        for file in tqdm(files):
+        for file in files:
             full_path = os.path.join(self.path, file)
             if os.path.isfile(full_path) and full_path != annotations_path:
                 self.data.put(BackgroundImage(full_path, annotations['0001.jpg']))
@@ -113,8 +113,8 @@ class Dataset:
             )
             self.data.task_done()
 
-    def save(self):
-        for i in range(4):
+    def save(self, nb_threads):
+        for i in range(nb_threads):
             t = Thread(target=self._save_one)
             t.daemon = True
             t.start()
