@@ -67,7 +67,7 @@ class SceneGenerator:
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
         translation = Vector3([
             random.uniform(-self.boundaries['x'], self.boundaries['x']),
-            random.uniform(-self.boundaries['y'], self.boundaries['y']),
+            0,
             random.uniform(-self.boundaries['z'], self.boundaries['z'])
         ])
         print("Randomized translation: {}".format(translation))
@@ -112,8 +112,8 @@ class SceneGenerator:
          z: depth axis
         '''
         view = Matrix44.look_at(
-            (0, 5, 20), # eye: position of the camera in world coordinates
-            (0.0, 5.0, 0.0), # target: position in world coordinates that the camera is looking at
+            (0, 2.5, 10), # eye: position of the camera in world coordinates
+            (0.0, 2.5, 0.0), # target: position in world coordinates that the camera is looking at
             (0.0, 1.0, 0.0), # up: up vector of the camera
         )
 
@@ -121,7 +121,7 @@ class SceneGenerator:
         mvp = projection * view * model
 
         # Shader program
-        self.prog['Light'].value = (-40.0, -30.0, 80.0) # TODO
+        self.prog['Light'].value = (0.0, 10.0, 0.0) # TODO
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
 
@@ -142,8 +142,10 @@ class SceneGenerator:
 
         # Rendering
         fbo.use()
-        self.context.enable(moderngl.BLEND)
-        self.context.clear(0.0, 0.0, 0.0)
+        self.context.enable(moderngl.DEPTH_TEST)
+        self.context.clear(0.9, 0.9, 0.9)
+        # self.context.enable(moderngl.BLEND)
+        # self.context.clear(0.0, 0.0, 0.0)
         texture.use()
         vao.render()
 
