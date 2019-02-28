@@ -13,32 +13,59 @@ Dataset class, holding background images along with their annotations
 import os
 import random
 
+from pyrr import Vector3
 from queue import Queue
 from tqdm import tqdm
 from PIL import Image
 
 
+class BackgroundAnnotations:
+    def __init__(self, height: float, roll: float, pitch: float, yaw: float):
+        self.height = height
+        self.roll = roll
+        self.pitch = pitch
+        self.yaw = yaw
+
+
+'''
+Holds a background image along with its annotations
+'''
 class BackgroundImage:
-    def __init__(self, image, annotations):
-        self.file = image
-        self.camera_height = annotations['height'] # In centimeters
-        self.roll = annotations['roll']
-        self.pitch = annotations['pitch']
-        self.yaw = annotations['yaw']
+    def __init__(self, image_path: str, annotations: BackgroundAnnotations):
+        self.file = image_path
+        self.annotations = annotations
 
     def image(self):
         return Image.open(self.file)
 
 
+class SyntheticAnnotations:
+    def __init__(self, center: Vector3, orientation: Vector3, on_screen: bool):
+        self.center = center
+        self.orientation = orientation
+        self.on_screen = on_screen
+
+
+'''
+Holds a generated image along with its annotations
+'''
+class AnnotatedImage:
+    def __init__(self, image: Image, id, annotations: SyntheticAnnotations):
+        self.image = image
+        self.id = id
+        self.annotations = annotations
+
+
 class Dataset:
-    def __init__(self, path):
+    def __init__(self, path: str):
         if not os.path.isdir(path):
             raise Exception("Dataset directory not found")
         self.path = path
         self.width = None
         self.height = None
+        self.data = Queue()
 
-    def parse_annotations(self, path):
+    def parse_annotations(self, path: str):
         if not os.path.isfile(path):
             raise Exception("Annotations file not found")
         # Example:
@@ -57,7 +84,6 @@ class Dataset:
         files = os.listdir(self.path)
         random.shuffle(files)
         annotations = self.parse_annotations(annotations_path)
-        self.data = Queue()
         for file in tqdm(files):
             full_path = os.path.join(self.path, file)
             if os.path.isfile(full_path) and full_path != annotations_path:
@@ -71,6 +97,17 @@ class Dataset:
     '''
     def get(self):
         return self.data.get()
+
+    def put(self, image: AnnotatedImage):
+        self.data.put(image)
+
+    def save(self):
+        for annotatedImage in tqdm(iter(self.data.get, object())):
+            annotatedImage.image.save(
+                os.path.join(self.path + str(annotatedImage.id) + '.png')
+            )
+            if self.data.empty():
+                break
 
     def get_image_size(self):
         print("[*] Using {}x{} resolution".format(self.width, self.height))

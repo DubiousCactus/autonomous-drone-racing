@@ -19,8 +19,8 @@ import os
 from tqdm import tqdm
 from PIL import Image
 from pyrr import Vector3
-from dataset import Dataset
 from scene_generator import SceneGenerator
+from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 
 
 '''
@@ -32,6 +32,7 @@ from scene_generator import SceneGenerator
 [x] Compute the center of the gate
 [ ] Compute the presence of the gate in the image frame
 [?] Compute the distance to the gate
+[x] Perspective projection for visualization
 [ ] Convert world coordinates to image coordinates
 [ ] Camera calibration (use the correct parameters)
 [x] Project on transparent background
@@ -40,7 +41,7 @@ from scene_generator import SceneGenerator
 [ ] Apply the distortion to the OpenGL projection
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
 [ ] Motion blur (shader ?)
-[ ] Anti alisasing (shader ?)
+[ ] Anti alisasing
 [ ] Ship it!
 
 '''
@@ -66,11 +67,27 @@ class DatasetFactory:
         print("[*] Generating dataset...")
         for i in tqdm(range(self.count)):
             projection = self.projector.generate()
+            projection.show()
+            continue
             background = self.background_dataset.get()
             output = self.combine(projection, background.image())
             output.show()
+            self.generated_dataset.put(
+                AnnotatedImage(
+                    output,
+                    i,
+                    SyntheticAnnotations(
+                        Vector3([0.0, 0.0, 0.0]), # Gate center
+                        Vector3([0.0, 0.0, 0.0]), # Gate orientation
+                        True # Is visible
+                    )
+                )
+            )
 
-    def combine(self, projection, background):
+        print("[*] Saving to {}".format(self.generated_dataset.path))
+        # self.generated_dataset.save()
+
+    def combine(self, projection: Image, background: Image):
         background = background.convert('RGBA')
         projection.thumbnail((self.width, self.height), Image.ANTIALIAS)
         output = Image.alpha_composite(background, projection)
@@ -84,13 +101,16 @@ if __name__ == "__main__":
         description='Generate a hybrid synthetic dataset of projections of a \
         given 3D model, in random positions and orientations, onto randomly \
         selected background images from a given dataset.')
-    parser.add_argument('mesh', help='the 3D mesh to project')
+    parser.add_argument('mesh', help='the 3D mesh to project', type=str)
     parser.add_argument('dataset', help='the path to the background images \
-                        dataset, with height, roll, pitch and yaw annotations')
-    parser.add_argument('annotations', help='the path to the CSV annotations file')
+                        dataset, with height, roll, pitch and yaw annotations',
+                       type=str)
+    parser.add_argument('annotations', help='the path to the CSV annotations\
+                        file', type=str)
     parser.add_argument('destination', metavar='dest', help='the path\
-                        to the destination folder for the generated dataset')
-    parser.add_argument('--count', dest='nb_images', default=10, type=int,
+                        to the destination folder for the generated dataset',
+                        type=str)
+    parser.add_argument('--count', dest='nb_images', default=5, type=int,
                         help='the number of images to be generated')
     parser.add_argument('--blur-amount', dest='blur_amount', default=0.3,
                         type=float, help='the percentage of motion blur to be \
