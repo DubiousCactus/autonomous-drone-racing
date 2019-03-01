@@ -136,6 +136,9 @@ class SceneGenerator:
         image_frame_gate_center =\
             ((np.array(normalized_device_coordinate_space_gate_center.xy) + 1.0) /
              2.0) * np.array([self.width, self.height]) + viewOffset
+
+        # TODO: Translate from bottom-left to top-left
+        # TODO: Scale to target width/height !
         # NB: Bottom-left relative !
         print("Gate center in pixels: {}".format(image_frame_gate_center))
 
