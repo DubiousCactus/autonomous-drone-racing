@@ -18,7 +18,7 @@ import moderngl
 import random
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from moderngl.ext.obj import Obj
+from ModernGL.ext.obj import Obj
 from PIL import Image
 
 
@@ -137,7 +137,9 @@ class SceneGenerator:
             ((np.array(normalized_device_coordinate_space_gate_center.xy) + 1.0) /
              2.0) * np.array([self.width, self.height]) + viewOffset
 
-        # TODO: Translate from bottom-left to top-left
+        # Translate from bottom-left to top-left
+        image_frame_gate_center[1] = self.height - image_frame_gate_center[0]
+
         # TODO: Scale to target width/height !
         # NB: Bottom-left relative !
         print("Gate center in pixels: {}".format(image_frame_gate_center))
