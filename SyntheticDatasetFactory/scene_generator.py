@@ -86,7 +86,7 @@ class SceneGenerator:
         projection = Matrix44.perspective_projection(
             60.0, # field of view in y direction in degrees (vertical FoV)
             self.width/self.height, # aspect ratio of the view
-            0.1, # distance from the viewer to the near clipping plane (only positive)
+            0.00001, # distance from the viewer to the near clipping plane (only positive)
             1000.0 # distance from the viewer to the far clipping plane (only positive)
         )
 

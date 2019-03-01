@@ -30,7 +30,7 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [x] Random positioning of the gate
 [x] Boundaries definition for the gate (relative to the mesh's size)
 [x] Compute the center of the gate
-[ ] Compute the presence of the gate in the image frame
+[x] Compute the presence of the gate in the image frame
 [x] Convert world coordinates to image coordinates
 [?] Compute the distance to the gate
 [x] Perspective projection for visualization
@@ -58,7 +58,7 @@ class DatasetFactory:
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
-        self.world_boundaries = {'x': 3, 'y': 3, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
+        self.world_boundaries = {'x': 8, 'y': 8, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
         self.gate_center = Vector3([0.0, 0.0, 2.1]) # Figure this out in Blender
 
     def run(self):
@@ -81,11 +81,14 @@ class DatasetFactory:
         background = self.background_dataset.get()
         output = self.combine(projection, background.image())
         gate_center = self.scale_coordinates(gate_center, output.size)
+        gate_visible = (gate_center[0] >=0 and gate_center[0] <=
+                        output.size[0]) and (gate_center[1] >= 0 and
+                                             gate_center[1] <= output.size[1])
+        print("[*] Gate is visible: {}".format(gate_visible))
         self.draw_gate_center(output, gate_center)
-        output.show()
         self.generated_dataset.put(
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
-                                                               rotation, visible))
+                                                               rotation, gate_visible))
         )
 
     # Scale to target width/height
