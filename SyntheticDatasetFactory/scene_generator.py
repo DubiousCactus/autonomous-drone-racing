@@ -31,7 +31,7 @@ class SceneGenerator:
         self.gate_center = gate_center
         self.boundaries = self.compute_boundaries(world_boundaries)
         self.setup_opengl()
-        random.seed(29)
+        random.seed()
 
     def compute_boundaries(self, world_boundaries):
         # Set the orthographic coordinates for the boundaries, based on the size of the
@@ -78,10 +78,6 @@ class SceneGenerator:
         scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
         model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
         gate_center = model * self.gate_center
-
-        print("Gate center: {}".format(gate_center))
-
-        is_visible = True # TODO
 
         '''
             TODO: Get intrinsics from camera calibration using OpenCV
@@ -139,8 +135,6 @@ class SceneGenerator:
 
         # Translate from bottom-left to top-left
         image_frame_gate_center[1] = self.height - image_frame_gate_center[1]
-
-        print("Gate center in pixels: {}".format(image_frame_gate_center))
 
         # Shader program
         self.prog['Light'].value = (0.0, 10.0, 0.0) # TODO
@@ -201,4 +195,4 @@ class SceneGenerator:
         '''
         # TODO
 
-        return (img, image_frame_gate_center, rotation, is_visible)
+        return (img, image_frame_gate_center, rotation)

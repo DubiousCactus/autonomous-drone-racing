@@ -31,7 +31,7 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [x] Boundaries definition for the gate (relative to the mesh's size)
 [x] Compute the center of the gate
 [ ] Compute the presence of the gate in the image frame
-[ ] Convert world coordinates to image coordinates <-
+[x] Convert world coordinates to image coordinates
 [?] Compute the distance to the gate
 [x] Perspective projection for visualization
 [ ] Camera calibration (use the correct parameters)
@@ -77,10 +77,10 @@ class DatasetFactory:
         projector = SceneGenerator(self.mesh_path, self.base_width,
                                         self.base_height,
                                         self.world_boundaries, self.gate_center)
-        projection, gate_center, rotation, visible = projector.generate()
-        gate_center = self.scale_coordinates(gate_center)
+        projection, gate_center, rotation = projector.generate()
         background = self.background_dataset.get()
         output = self.combine(projection, background.image())
+        gate_center = self.scale_coordinates(gate_center, output.size)
         self.draw_gate_center(output, gate_center)
         output.show()
         self.generated_dataset.put(
@@ -89,13 +89,14 @@ class DatasetFactory:
         )
 
     # Scale to target width/height
-    def scale_coordinates(self, coordinates):
-        coordinates[0] = (coordinates[0] * self.target_width) / self.base_width
-        coordinates[1] = (coordinates[1] * self.target_height) / self.base_height
+    def scale_coordinates(self, coordinates, target_coordinates):
+        coordinates[0] = (coordinates[0] * target_coordinates[0]) / self.base_width
+        coordinates[1] = (coordinates[1] * target_coordinates[1]) / self.base_height
         print("[*] Scaled gate center coordinates: {}".format(coordinates))
 
         return coordinates
 
+    # NB: Thumbnail() only scales down!!
     def combine(self, projection: Image, background: Image):
         background = background.convert('RGBA')
         projection.thumbnail((self.base_width, self.base_height), Image.ANTIALIAS)
@@ -104,13 +105,14 @@ class DatasetFactory:
 
         return output
 
-    def draw_gate_center(self, img, coordinates):
+    def draw_gate_center(self, img, coordinates, color=(0, 255, 0, 255)):
         gate_draw = ImageDraw.Draw(img)
         gate_draw.line((coordinates[0] - 10, coordinates[1], coordinates[0] + 10,
-                   coordinates[1]), fill=(0, 255, 0, 255))
+                   coordinates[1]), fill=color)
         gate_draw.line((coordinates[0], coordinates[1] - 10, coordinates[0],
-                   coordinates[1] + 10), fill=(0, 255, 0, 255))
-        del gate_draw
+                   coordinates[1] + 10), fill=color)
+
+
 
 
 if __name__ == "__main__":
