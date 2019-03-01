@@ -17,7 +17,7 @@ import numpy as np
 import moderngl
 import random
 
-from pyrr import Matrix44, Quaternion, Vector3
+from pyrr import Matrix44, Quaternion, Vector3, Vector4
 from moderngl.ext.obj import Obj
 from PIL import Image
 
@@ -61,8 +61,6 @@ class SceneGenerator:
         # Shaders
         self.prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
         self.grid_prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
-
-
 
     def generate(self):
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
@@ -121,8 +119,25 @@ class SceneGenerator:
 
         # Model View Projection matrix
         mvp = projection * view * model
-        no_translation_mvp = projection * view * Matrix44.identity() 
-        print("Gate center in pixels: {}".format(mvp * gate_center))
+        # Don't transform the perspective grid
+        no_translation_mvp = projection * view * Matrix44.identity()
+
+        # Converting the gate center's world coordinates to image coordinates
+        clip_space_gate_center = projection \
+            * (view * Vector4.from_vector3(gate_center, w=1.0))
+
+        if clip_space_gate_center.w != 0:
+            normalized_device_coordinate_space_gate_center\
+                = Vector3(clip_space_gate_center.xyz) / clip_space_gate_center.w
+        else: # Clipped
+            normalized_device_coordinate_space_gate_center = clip_space_gate_center.xyz
+
+        viewOffset = 0 # TODO: verify that
+        image_frame_gate_center =\
+            ((np.array(normalized_device_coordinate_space_gate_center.xy) + 1.0) /
+             2.0) * np.array([self.width, self.height]) + viewOffset
+        # NB: Bottom-left relative !
+        print("Gate center in pixels: {}".format(image_frame_gate_center))
 
         # Shader program
         self.prog['Light'].value = (0.0, 10.0, 0.0) # TODO
@@ -154,14 +169,13 @@ class SceneGenerator:
         vao_grid = self.context.simple_vertex_array(self.grid_prog, vbo_grid, 'in_vert')
 
         # Framebuffers
-        # Use 8 samples for MSAA anti-aliasing
-        fbo1 = self.context.simple_framebuffer((self.width, self.height),
-                                               components=4, samples=8)
-        # fbo1 = self.context.framebuffer(
-            # self.context.renderbuffer((self.width, self.height)),
-            # self.context.depth_renderbuffer((self.width, self.height)),
-            # samples=4
-        # )
+        # Use 4 samples for MSAA anti-aliasing
+        fbo1 = self.context.framebuffer(
+            self.context.renderbuffer((self.width, self.height), samples=4),
+            depth_attachment=self.context.depth_renderbuffer(
+                (self.width, self.height), samples=4
+            )
+        )
 
 
         # Downsample to the final framebuffer
