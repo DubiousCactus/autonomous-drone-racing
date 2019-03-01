@@ -17,8 +17,8 @@ import multiprocessing.dummy as mp
 import argparse
 import os
 
-from PIL import Image
 from pyrr import Vector3
+from PIL import Image, ImageDraw
 from scene_generator import SceneGenerator
 from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 
@@ -31,7 +31,7 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [x] Boundaries definition for the gate (relative to the mesh's size)
 [x] Compute the center of the gate
 [ ] Compute the presence of the gate in the image frame
-[ ] Convert world coordinates to image coordinates <---
+[ ] Convert world coordinates to image coordinates <-
 [?] Compute the distance to the gate
 [x] Perspective projection for visualization
 [ ] Camera calibration (use the correct parameters)
@@ -78,13 +78,23 @@ class DatasetFactory:
                                         self.base_height,
                                         self.world_boundaries, self.gate_center)
         projection, gate_center, rotation, visible = projector.generate()
+        gate_center = self.scale_coordinates(gate_center)
         background = self.background_dataset.get()
         output = self.combine(projection, background.image())
+        self.draw_gate_center(output, gate_center)
+        output.show()
         self.generated_dataset.put(
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
                                                                rotation, visible))
         )
-        # self.background_dataset.task_done()
+
+    # Scale to target width/height
+    def scale_coordinates(self, coordinates):
+        coordinates[0] = (coordinates[0] * self.target_width) / self.base_width
+        coordinates[1] = (coordinates[1] * self.target_height) / self.base_height
+        print("[*] Scaled gate center coordinates: {}".format(coordinates))
+
+        return coordinates
 
     def combine(self, projection: Image, background: Image):
         background = background.convert('RGBA')
@@ -94,6 +104,13 @@ class DatasetFactory:
 
         return output
 
+    def draw_gate_center(self, img, coordinates):
+        gate_draw = ImageDraw.Draw(img)
+        gate_draw.line((coordinates[0] - 10, coordinates[1], coordinates[0] + 10,
+                   coordinates[1]), fill=(0, 255, 0, 255))
+        gate_draw.line((coordinates[0], coordinates[1] - 10, coordinates[0],
+                   coordinates[1] + 10), fill=(0, 255, 0, 255))
+        del gate_draw
 
 
 if __name__ == "__main__":

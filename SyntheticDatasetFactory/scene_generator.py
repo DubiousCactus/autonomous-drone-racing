@@ -18,7 +18,7 @@ import moderngl
 import random
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from ModernGL.ext.obj import Obj
+from moderngl.ext.obj import Obj
 from PIL import Image
 
 
@@ -31,7 +31,7 @@ class SceneGenerator:
         self.gate_center = gate_center
         self.boundaries = self.compute_boundaries(world_boundaries)
         self.setup_opengl()
-        random.seed()
+        random.seed(29)
 
     def compute_boundaries(self, world_boundaries):
         # Set the orthographic coordinates for the boundaries, based on the size of the
@@ -138,10 +138,8 @@ class SceneGenerator:
              2.0) * np.array([self.width, self.height]) + viewOffset
 
         # Translate from bottom-left to top-left
-        image_frame_gate_center[1] = self.height - image_frame_gate_center[0]
+        image_frame_gate_center[1] = self.height - image_frame_gate_center[1]
 
-        # TODO: Scale to target width/height !
-        # NB: Bottom-left relative !
         print("Gate center in pixels: {}".format(image_frame_gate_center))
 
         # Shader program
@@ -160,7 +158,6 @@ class SceneGenerator:
 
         # Project the perspective as a grid
         grid = []
-
         for i in range(65):
             grid.append([i - 32, -32.0, 0.0, i - 32, 32.0, 0.0])
             grid.append([-32.0, i - 32, 0.0, 32.0, i - 32, 0.0])
@@ -181,7 +178,6 @@ class SceneGenerator:
                 (self.width, self.height), samples=4
             )
         )
-
 
         # Downsample to the final framebuffer
         fbo2 = self.context.framebuffer(self.context.renderbuffer((self.width,
@@ -205,4 +201,4 @@ class SceneGenerator:
         '''
         # TODO
 
-        return (img, gate_center, rotation, is_visible)
+        return (img, image_frame_gate_center, rotation, is_visible)
