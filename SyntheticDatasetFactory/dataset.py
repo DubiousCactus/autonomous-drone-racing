@@ -74,6 +74,7 @@ class Dataset:
                 items = line.split(',')
                 annotations[items[0].strip()] = BackgroundAnnotations(
                     Vector3([float(x) for x in items[1:4]]),
+                    # TODO: Is it the right method ??
                     Quaternion.from_axis([float(x) for x in items[4::]])
                 )
 

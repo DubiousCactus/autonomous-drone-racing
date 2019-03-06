@@ -21,11 +21,12 @@ from sensor_msgs.msg import CompressedImage, Image
 class FramePoseExtractor():
     def __init__(self):
         self.output_path = rospy.get_param('~output', 'extracted_output/')
-        self.img_name_fmt = "frame%d_%d.jpg"
+        self.img_name_fmt = "%4d_%12d.jpg"
         self.do_dynamic_scaling = rospy.get_param('~do_dynamic_scaling', False)
         self.raw = rospy.get_param('~raw', False)
         self.pose_topic = rospy.get_param('~poses', None)
         self.img_topic = rospy.get_param('~images', None)
+        self.first_second = None
 
         if self.pose_topic is None:
             rospy.logwarn("""FramePoseExtractor: rosparam '~poses' has not been specified!
@@ -76,25 +77,32 @@ Typical command-line usage:
 
     def _save_compressed_images(self, *img_messages):
         for i, img_msg in enumerate(img_messages):
-            fname = self.img_name_fmt % (img_msg.header.stamp.secs, img_msg.header.stamp.nsecs)
+            if not self.first_second:
+                self.first_second = img_msg.header.stamp.secs
+            fname = self.img_name_fmt % (img_msg.header.stamp.secs -
+                                         self.first_second, img_msg.header.stamp.nsecs)
             with open(os.path.join(self.output_path, fname), 'w') as img_file:
                 img_file.write(img_msg.data)
 
     def _save_raw_images(self, *img_messages):
         bridge = cv_bridge.CvBridge()
         for i, img_msg in enumerate(img_messages):
+            if not self.first_second:
+                self.first_second = img_msg.header.stamp.secs
             img = bridge.imgmsg_to_cv2(img_msg, desired_encoding="8UC3")
             channels = img.shape[2] if img.ndim == 3 else 1
             encoding_in = bridge.dtype_with_channels_to_cvtype2(img.dtype, channels)
             img = cv_bridge.cvtColorForDisplay(
                 img, encoding_in="rgb8", encoding_out='',
                 do_dynamic_scaling=self.do_dynamic_scaling)
-            fname = self.img_name_fmt % (img_msg.header.stamp.secs, img_msg.header.stamp.nsecs)
+            fname = self.img_name_fmt % (img_msg.header.stamp.secs -
+                                         self.first_second, img_msg.header.stamp.nsecs)
             cv2.imwrite(fname, img)
 
     def _save_poses(self, *pose_msgs):
+        # TODO: Fix time shift
         for i, pose_msg in enumerate(pose_msgs):
-            image_name = "frame{}_{}.jpg".format(pose_msg.header.stamp.secs,
+            image_name = "{}_{}.jpg".format(pose_msg.header.stamp.secs,
                                               pose_msg.header.stamp.nsecs)
             translation = pose_msg.transform.translation
             rotation = pose_msg.transform.rotation
