@@ -48,7 +48,7 @@ Typical command-line usage:
             ), 'w'
         )
         # Header
-        self.csv.write("frame,translation_x,translation_y,translation_z,rotarotation_x,rotation_y,rotation_z,rotation_w\n")
+        self.csv.write("frame,translation_x,translation_y,translation_z,rotation_x,rotation_y,rotation_z,rotation_w\n")
         poses_sub = [message_filters.Subscriber(self.pose_topic, TransformStamped)]
         if self.raw:
             imgs_sub = [message_filters.Subscriber(self.img_topic, Image)]

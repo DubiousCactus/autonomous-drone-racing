@@ -16,16 +16,14 @@ import os
 from PIL import Image
 from tqdm import tqdm
 from queue import Queue
-from pyrr import Vector3
+from pyrr import Vector3, Quaternion
 from threading import Thread
 
 
 class BackgroundAnnotations:
-    def __init__(self, height: float, roll: float, pitch: float, yaw: float):
-        self.height = height
-        self.roll = roll
-        self.pitch = pitch
-        self.yaw = yaw
+    def __init__(self, translation: Vector3, orientation: Quaternion):
+        self.translation = translation
+        self.orientation = orientation
 
 
 '''
@@ -69,14 +67,15 @@ class Dataset:
     def parse_annotations(self, path: str):
         if not os.path.isfile(path):
             raise Exception("Annotations file not found")
-        # Example:
-        annotations = {
-            '0001.jpg':
-                {'height': 100, 'roll': 0, 'pitch': 0, 'yaw': 0}
-        }
+        annotations = dict()
         with open(path) as file:
-            # TODO
-            pass
+            file.readline() # Discard the header
+            for line in file:
+                items = line.split(',')
+                annotations[items[0].strip()] = BackgroundAnnotations(
+                    Vector3([float(x) for x in items[1:4]]),
+                    Quaternion.from_axis([float(x) for x in items[4::]])
+                )
 
         return annotations
 
@@ -91,17 +90,23 @@ class Dataset:
             if os.path.isfile(full_path) and full_path != annotations_path:
                 files += [choice]
 
+        not_found = 0
         annotations = self.parse_annotations(annotations_path)
         for file in files:
             full_path = os.path.join(self.path, file)
             if os.path.isfile(full_path) and full_path != annotations_path:
-                self.data.put(BackgroundImage(full_path, annotations['0001.jpg']))
+                if file not in annotations:
+                    not_found += 1
+                    print("Cannot find {} !".format(file))
+                    continue
+                self.data.put(BackgroundImage(full_path, annotations[file]))
                 self.data.task_done()
                 if not self.width and not self.height:
                     with Image.open(full_path) as img:
                         self.width, self.height = img.size
 
         self.data.join()
+        print("[!] {} annotations could not be found!".format(not_found))
 
     '''
     Returns the next BackgroundImage in the Queue
