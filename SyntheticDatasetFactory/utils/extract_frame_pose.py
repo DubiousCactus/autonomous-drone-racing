@@ -21,7 +21,6 @@ from sensor_msgs.msg import CompressedImage, Image
 class FramePoseExtractor():
     def __init__(self):
         self.output_path = rospy.get_param('~output', 'extracted_output/')
-        self.img_name_fmt = "%4d_%12d.jpg"
         self.do_dynamic_scaling = rospy.get_param('~do_dynamic_scaling', False)
         self.raw = rospy.get_param('~raw', False)
         self.pose_topic = rospy.get_param('~poses', None)
@@ -79,8 +78,9 @@ Typical command-line usage:
         for i, img_msg in enumerate(img_messages):
             if not self.first_second:
                 self.first_second = img_msg.header.stamp.secs
-            fname = self.img_name_fmt % (img_msg.header.stamp.secs -
-                                         self.first_second, img_msg.header.stamp.nsecs)
+                seconds = img_msg.header.stamp.secs - self.first_second
+                nanoseconds = img_msg.header.stamp.nsecs
+                fname = f'{seconds:04}_{nanoseconds:010}.jpg'
             with open(os.path.join(self.output_path, fname), 'w') as img_file:
                 img_file.write(img_msg.data)
 
@@ -95,8 +95,9 @@ Typical command-line usage:
             img = cv_bridge.cvtColorForDisplay(
                 img, encoding_in="rgb8", encoding_out='',
                 do_dynamic_scaling=self.do_dynamic_scaling)
-            fname = self.img_name_fmt % (img_msg.header.stamp.secs -
-                                         self.first_second, img_msg.header.stamp.nsecs)
+            seconds = img_msg.header.stamp.secs - self.first_second
+            nanoseconds = img_msg.header.stamp.nsecs
+            fname = f'{seconds:04}_{nanoseconds:010}.jpg'
             cv2.imwrite(fname, img)
 
     def _save_poses(self, *pose_msgs):
