@@ -3,3 +3,5 @@ background_dataset/
 output_dataset/
 output.png
 __pycache__/
+bg_dataset/
+*/annotations.csv
