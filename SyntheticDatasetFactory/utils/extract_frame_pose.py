@@ -22,6 +22,7 @@ from sensor_msgs.msg import CompressedImage, Image
 class FramePoseExtractor():
     def __init__(self):
         self.output_path = rospy.get_param('~output', 'extracted_output/')
+        self.csv_path = rospy.get_param('~filename', 'annotations.csv')
         self.do_dynamic_scaling = rospy.get_param('~do_dynamic_scaling', False)
         self.raw = rospy.get_param('~raw', False)
         self.pose_topic = rospy.get_param('~poses', None)
@@ -46,8 +47,7 @@ Typical command-line usage:
         if not os.path.isdir(self.output_path):
             os.mkdir(self.output_path)
         self.csv = open(os.path.join(self.output_path,
-                                     rospy.get_param('~filename',
-                                                     'annotations.csv')), 'w')
+                                     self.csv_path, 'w')
         # Header
         self.csv.write("frame,translation_x,translation_y,translation_z,rotation_x,rotation_y,rotation_z,rotation_w\n")
         poses_sub = [message_filters.Subscriber(self.pose_topic, TransformStamped)]
@@ -126,6 +126,7 @@ Typical command-line usage:
     correct image-pose matches to a CSV file.
     '''
     def _write_csv(self):
+        print("[*] Synchronizing timestamps...")
         for img_name, img_timestamp in self.images.iteritems():
             for name, t_r in self.annotations.items():
                 if t_r['stamp'] < img_timestamp:
@@ -140,7 +141,9 @@ Typical command-line usage:
                     ))
                     del self.annotations[name]
                     break
-        print("[*] Done.")
+        print("[*] Done. Annotations written to: {}".format(os.path.join(self.output_path,
+                                     self.csv_path)))
+        self.csv.close()
         sys.exit(0)
 
 
