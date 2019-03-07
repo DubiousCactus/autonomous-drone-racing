@@ -14,6 +14,7 @@ import rospy
 import cv_bridge
 import message_filters
 
+from collections import OrderedDict
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import CompressedImage, Image
 
@@ -26,6 +27,8 @@ class FramePoseExtractor():
         self.pose_topic = rospy.get_param('~poses', None)
         self.img_topic = rospy.get_param('~images', None)
         self.first_second = None
+        self.annotations = OrderedDict()
+        self.images = OrderedDict()
 
         if self.pose_topic is None:
             rospy.logwarn("""FramePoseExtractor: rosparam '~poses' has not been specified!
@@ -42,11 +45,9 @@ Typical command-line usage:
     def extract(self):
         if not os.path.isdir(self.output_path):
             os.mkdir(self.output_path)
-        self.csv = open(
-            os.path.join(
-                self.output_path, rospy.get_param('~filename', 'annotations.csv')
-            ), 'w'
-        )
+        self.csv = open(os.path.join(self.output_path,
+                                     rospy.get_param('~filename',
+                                                     'annotations.csv')), 'w')
         # Header
         self.csv.write("frame,translation_x,translation_y,translation_z,rotation_x,rotation_y,rotation_z,rotation_w\n")
         poses_sub = [message_filters.Subscriber(self.pose_topic, TransformStamped)]
@@ -73,14 +74,17 @@ Typical command-line usage:
         else:
             imgs_sync.registerCallback(self._save_compressed_images)
         print("[*] Extracting...")
+        raw_input("[*] Press Enter when the stream is complete...")
+        self._write_csv()
 
     def _save_compressed_images(self, *img_messages):
         for i, img_msg in enumerate(img_messages):
             if not self.first_second:
                 self.first_second = img_msg.header.stamp.secs
-                seconds = img_msg.header.stamp.secs - self.first_second
-                nanoseconds = img_msg.header.stamp.nsecs
-                fname = f'{seconds:04}_{nanoseconds:010}.jpg'
+            seconds = img_msg.header.stamp.secs - self.first_second
+            nanoseconds = img_msg.header.stamp.nsecs
+            fname = "%04d_%09d.jpg" % (seconds, nanoseconds)
+            self.images[fname] = (1000000000 * seconds) + nanoseconds
             with open(os.path.join(self.output_path, fname), 'w') as img_file:
                 img_file.write(img_msg.data)
 
@@ -97,20 +101,47 @@ Typical command-line usage:
                 do_dynamic_scaling=self.do_dynamic_scaling)
             seconds = img_msg.header.stamp.secs - self.first_second
             nanoseconds = img_msg.header.stamp.nsecs
-            fname = f'{seconds:04}_{nanoseconds:010}.jpg'
+            fname = "%04d_%09d.jpg" % (seconds, nanoseconds)
+            self.images[fname] = (1000000000 * seconds) + nanoseconds
             cv2.imwrite(fname, img)
 
     def _save_poses(self, *pose_msgs):
-        # TODO: Fix time shift
         for i, pose_msg in enumerate(pose_msgs):
-            image_name = "{}_{}.jpg".format(pose_msg.header.stamp.secs,
-                                              pose_msg.header.stamp.nsecs)
+            if not self.first_second:
+                self.first_second = pose_msg.header.stamp.secs
+            timestamp = (1000000000 * (pose_msg.header.stamp.secs - self.first_second)) + pose_msg.header.stamp.nsecs
+            image_name = "%04d_%09d.jpg" % (pose_msg.header.stamp.secs -
+                                            self.first_second,
+                                            pose_msg.header.stamp.nsecs)
             translation = pose_msg.transform.translation
             rotation = pose_msg.transform.rotation
-            self.csv.write("{},{},{},{},{},{},{},{}\n".format(
-                image_name, translation.x, translation.y, translation.z,
-                rotation.x, rotation.y, rotation.z, rotation.w
-            ))
+            self.annotations[image_name] = {
+                'stamp': timestamp,
+                'translation': translation,
+                'rotation': rotation
+            }
+
+    '''
+    Synchronizes the image timestamps with the pose timestamps, and writes the
+    correct image-pose matches to a CSV file.
+    '''
+    def _write_csv(self):
+        for img_name, img_timestamp in self.images.iteritems():
+            for name, t_r in self.annotations.items():
+                if t_r['stamp'] < img_timestamp:
+                    del self.annotations[name]
+                    continue
+                else:
+                    translation = t_r['translation']
+                    rotation = t_r['rotation']
+                    self.csv.write("{},{},{},{},{},{},{},{}\n".format(
+                        img_name, translation.x, translation.y, translation.z,
+                        rotation.x, rotation.y, rotation.z, rotation.w
+                    ))
+                    del self.annotations[name]
+                    break
+        print("[*] Done.")
+        sys.exit(0)
 
 
 if __name__ == '__main__':
