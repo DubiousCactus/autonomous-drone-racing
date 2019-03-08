@@ -81,8 +81,8 @@ class DatasetFactory:
                                    self.gate_center, self.cam_param,
                                    background.annotations)
         projection, gate_center, rotation = projector.generate()
-        projection.show()
         output = self.combine(projection, background.image())
+        output.show()
         gate_center = self.scale_coordinates(gate_center, output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
                         output.size[0]) and (gate_center[1] >= 0 and

@@ -113,10 +113,17 @@ class SceneGenerator:
          y: depth axis
          z: vertical axis
         '''
+        print("Drone translation: {}".format(self.drone_pose.translation))
+        print("Drone orientation: {}".format(self.drone_pose.orientation))
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
             self.drone_pose.translation,
             # target: position in world coordinates that the camera is looking at
+#             (
+                # self.drone_pose.orientation.z * self.drone_pose.translation.x,
+                # self.drone_pose.orientation.y * self.drone_pose.translation.y,
+                # self.drone_pose.orientation.x * self.drone_pose.translation.z
+            # ),
             self.drone_pose.orientation * self.drone_pose.translation,
             # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
             (0.0, 0.0, 1.0),
