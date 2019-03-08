@@ -76,6 +76,7 @@ class SceneGenerator:
             random.uniform(-self.boundaries['y'], self.boundaries['y']),
             0
         ])
+
         # print("Randomized translation: {}".format(translation))
 
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
@@ -86,34 +87,23 @@ class SceneGenerator:
         model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
         gate_center = model * self.gate_center
 
-        '''
-            TODO: Get intrinsics from camera calibration using OpenCV
-            (convert_hz_intrinsic_to_opengl_projection)
-
-        projection = Matrix44.perspective_projection(
-            60.0, # field of view in y direction in degrees (vertical FoV)
-            self.width/self.height, # aspect ratio of the view
-            0.00001, # distance from the viewer to the near clipping plane (only positive)
-            1000.0 # distance from the viewer to the far clipping plane (only positive)
-        )
-        '''
-
         # TODO: Load from self.camera_parameters (YAML file)
         camera_intrinsics = [
             [634.691987, 0.000000, 321.099310],
             [0.000000, 638.440414, 257.032392],
             [0.000000, 0.000000, 1.000000]
         ]
-        x0, y0 = (0, 0) # Camera image origin
-        zfar, znear = 1000.0, 0.00001 # distances to the clipping plane
+        fx, fy = camera_intrinsics[0][0], camera_intrinsics[1][1]
+        cx, cy = camera_intrinsics[0][2], camera_intrinsics[1][2]
+        x0, y0 = 0, 0 # Camera image origin
+        zfar, znear = 100.0, 0.1 # distances to the clipping plane
+        # Works by following: https://blog.noctua-software.com/opencv-opengl-projection-matrix.html
+        # Doesn't work by following: http://kgeorge.github.io/2014/03/08/calculating-opengl-perspective-matrix-from-opencv-intrinsic-matrix
         projection = Matrix44([
-            [2*camera_intrinsics[0][0]/self.width,
-             -2*camera_intrinsics[0][1]/self.width,
-             (self.width - 2*camera_intrinsics[0][2] + 2*x0)/self.width, 0],
-            [0, -2*camera_intrinsics[1][1]/self.height,
-             (self.height - 2*camera_intrinsics[1][2] + 2*y0)/self.height, 0],
-            [0, 0, (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)],
-            [0, 0, -1, 0]
+            [fx/cx, 0, 0, 0],
+            [0, fy/cy, 0, 0],
+            [0, 0, (-zfar - znear)/(zfar - znear), -1],
+            [0, 0, (-2.0*zfar*znear)/(zfar - znear), 0] # TODO: EXPLAIN WHY IT WORKS WHEN I FLIP [2][2] AND [3][2]
         ])
 
         '''
@@ -133,15 +123,13 @@ class SceneGenerator:
             (0.0, 0.0, 3.8), # target: position in world coordinates that the camera is looking at
             (0.0, 0.0, 1.0), # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
         )
-
         # Model View Projection matrix
         mvp = projection * view * model
         # Don't transform the perspective grid
         no_translation_mvp = projection * view * Matrix44.identity()
 
         # Converting the gate center's world coordinates to image coordinates
-        clip_space_gate_center = projection \
-            * (view * Vector4.from_vector3(gate_center, w=1.0))
+        clip_space_gate_center = projection * (view * Vector4.from_vector3(gate_center, w=1.0))
 
         if clip_space_gate_center.w != 0:
             normalized_device_coordinate_space_gate_center\
@@ -201,7 +189,7 @@ class SceneGenerator:
         # Rendering
         fbo1.use()
         self.context.enable(moderngl.DEPTH_TEST)
-        self.context.clear(1.0, 1.0, 1.0)
+        self.context.clear(0.9, 0.9, 0.9)
         texture.use()
         vao.render()
         vao_grid.render(moderngl.LINES, 65 * 4)

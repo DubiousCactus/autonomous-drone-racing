@@ -79,6 +79,7 @@ class DatasetFactory:
                                    self.base_height, self.world_boundaries,
                                    self.gate_center, self.cam_param)
         projection, gate_center, rotation = projector.generate()
+        projection.show()
         background = self.background_dataset.get()
         output = self.combine(projection, background.image())
         gate_center = self.scale_coordinates(gate_center, output.size)
