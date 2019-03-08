@@ -87,11 +87,10 @@ class SceneGenerator:
         model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
         gate_center = model * self.gate_center
 
-        # TODO: Load from self.camera_parameters (YAML file)
         camera_intrinsics = [
-            [634.691987, 0.000000, 321.099310],
-            [0.000000, 638.440414, 257.032392],
-            [0.000000, 0.000000, 1.000000]
+            self.camera_parameters['camera_matrix']['data'][0:3],
+            self.camera_parameters['camera_matrix']['data'][3:6],
+            self.camera_parameters['camera_matrix']['data'][6::]
         ]
         fx, fy = camera_intrinsics[0][0], camera_intrinsics[1][1]
         cx, cy = camera_intrinsics[0][2], camera_intrinsics[1][2]
