@@ -75,12 +75,13 @@ class DatasetFactory:
         self.generated_dataset.save(self.nb_threads)
 
     def generate(self, index):
+        background = self.background_dataset.get()
         projector = SceneGenerator(self.mesh_path, self.base_width,
                                    self.base_height, self.world_boundaries,
-                                   self.gate_center, self.cam_param)
+                                   self.gate_center, self.cam_param,
+                                   background.annotations)
         projection, gate_center, rotation = projector.generate()
         projection.show()
-        background = self.background_dataset.get()
         output = self.combine(projection, background.image())
         gate_center = self.scale_coordinates(gate_center, output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=

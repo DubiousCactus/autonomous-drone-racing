@@ -25,12 +25,14 @@ from PIL import Image
 
 class SceneGenerator:
     def __init__(self, mesh_path: str, width: int, height: int,
-                 world_boundaries, gate_center: Vector3, camera_parameters):
+                 world_boundaries, gate_center: Vector3, camera_parameters,
+                 drone_pose):
         random.seed()
         self.mesh = Obj.open(mesh_path)
         self.width = width
         self.height = height
         self.gate_center = gate_center
+        self.drone_pose = drone_pose
         self.boundaries = self.compute_boundaries(world_boundaries)
         with open(camera_parameters, 'r') as cam_file:
             try:
@@ -105,12 +107,6 @@ class SceneGenerator:
             [0, 0, (-2.0*zfar*znear)/(zfar - znear), 0] # TODO: EXPLAIN WHY IT WORKS WHEN I FLIP [2][2] AND [3][2]
         ])
 
-        '''
-            - Record the height of the drone at each frame and annotate that on the
-            dataset
-            - Record the roll, pitch, yaw to apply to the target of the camera
-            (look_at)
-        '''
         # Camera view matrix
         '''
          x: horizontal axis
@@ -118,9 +114,12 @@ class SceneGenerator:
          z: vertical axis
         '''
         view = Matrix44.look_at(
-            (0, -10, 2), # eye: position of the camera in world coordinates
-            (0.0, 0.0, 3.8), # target: position in world coordinates that the camera is looking at
-            (0.0, 0.0, 1.0), # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
+            # eye: position of the camera in world coordinates
+            self.drone_pose.translation,
+            # target: position in world coordinates that the camera is looking at
+            self.drone_pose.orientation * self.drone_pose.translation,
+            # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
+            (0.0, 0.0, 1.0),
         )
         # Model View Projection matrix
         mvp = projection * view * model
