@@ -143,7 +143,8 @@ if __name__ == "__main__":
     parser.add_argument('-t', dest='threads', default=4, type=int,
                         help='the number of threads to use')
     parser.add_argument('--camera', dest='camera_parameters', type=str,
-                        help='the path to the camera parameters YAML file')
+                        help='the path to the camera parameters YAML file',
+                        required=True)
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.run()

@@ -112,7 +112,7 @@ class SceneGenerator:
              (self.width - 2*camera_intrinsics[0][2] + 2*x0)/self.width, 0],
             [0, -2*camera_intrinsics[1][1]/self.height,
              (self.height - 2*camera_intrinsics[1][2] + 2*y0)/self.height, 0],
-            [0, 0, (-zfar - znear)(zfar - znear), -2*zfar*znear/(zfar - znear)],
+            [0, 0, (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)],
             [0, 0, -1, 0]
         ])
 
