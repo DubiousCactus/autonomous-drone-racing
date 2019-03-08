@@ -16,6 +16,7 @@ Generates an image by projecting a 3D mesh over a 2D transparent background.
 import numpy as np
 import moderngl
 import random
+import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
 from moderngl.ext.obj import Obj
@@ -24,15 +25,21 @@ from PIL import Image
 
 class SceneGenerator:
     def __init__(self, mesh_path: str, width: int, height: int,
-                 world_boundaries, gate_center: Vector3):
+                 world_boundaries, gate_center: Vector3, camera_parameters):
+        random.seed()
         self.mesh = Obj.open(mesh_path)
         self.width = width
         self.height = height
         self.gate_center = gate_center
         self.boundaries = self.compute_boundaries(world_boundaries)
+        with open(camera_parameters, 'r') as cam_file:
+            try:
+                self.camera_parameters = yaml.safe_load(cam_file)
+            except yaml.YAMLError as exc:
+                print(exc)
         self.setup_opengl()
-        random.seed()
 
+    # TODO: Compute from the origin
     def compute_boundaries(self, world_boundaries):
         # Set the orthographic coordinates for the boundaries, based on the size of the
         # mesh
@@ -82,24 +89,38 @@ class SceneGenerator:
         '''
             TODO: Get intrinsics from camera calibration using OpenCV
             (convert_hz_intrinsic_to_opengl_projection)
-        '''
+
         projection = Matrix44.perspective_projection(
             60.0, # field of view in y direction in degrees (vertical FoV)
             self.width/self.height, # aspect ratio of the view
             0.00001, # distance from the viewer to the near clipping plane (only positive)
             1000.0 # distance from the viewer to the far clipping plane (only positive)
         )
+        '''
+
+        # TODO: Load from self.camera_parameters (YAML file)
+        camera_intrinsics = [
+            [634.691987, 0.000000, 321.099310],
+            [0.000000, 638.440414, 257.032392],
+            [0.000000, 0.000000, 1.000000]
+        ]
+        x0, y0 = (0, 0) # Camera image origin
+        zfar, znear = 1000.0, 0.00001 # distances to the clipping plane
+        projection = Matrix44([
+            [2*camera_intrinsics[0][0]/self.width,
+             -2*camera_intrinsics[0][1]/self.width,
+             (self.width - 2*camera_intrinsics[0][2] + 2*x0)/self.width, 0],
+            [0, -2*camera_intrinsics[1][1]/self.height,
+             (self.height - 2*camera_intrinsics[1][2] + 2*y0)/self.height, 0],
+            [0, 0, (-zfar - znear)(zfar - znear), -2*zfar*znear/(zfar - znear)],
+            [0, 0, -1, 0]
+        ])
 
         '''
-            - Compute 2 vanishing points to find the horizon
-            - Compute the height of the camera
-
-            IF NOT POSSIBLE (because how do you automate this? Canny edge detection +
-            Hough transform?):
-                - Record the height of the drone at each frame and annotate that on the
-                dataset
-                - Record the roll, pitch, yaw to apply to the target of the camera
-                (look_at)
+            - Record the height of the drone at each frame and annotate that on the
+            dataset
+            - Record the roll, pitch, yaw to apply to the target of the camera
+            (look_at)
         '''
         # Camera view matrix
         '''

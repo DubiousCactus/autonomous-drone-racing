@@ -34,7 +34,7 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [x] Convert world coordinates to image coordinates
 [?] Compute the distance to the gate
 [x] Perspective projection for visualization
-[ ] Camera calibration (use the correct parameters)
+[ ] Camera calibration (use the correct parameters) <-
 [x] Project on transparent background
 [x] Overlay with background image
 [ ] Model the camera distortion
@@ -53,6 +53,7 @@ class DatasetFactory:
         self.nb_threads = args.threads
         self.count = args.nb_images
         self.blur_amount = args.blur_amount
+        self.cam_param = args.camera_parameters
         self.background_dataset = Dataset(args.dataset)
         self.background_dataset.load(self.count, args.annotations)
         self.generated_dataset = Dataset(args.destination)
@@ -75,8 +76,8 @@ class DatasetFactory:
 
     def generate(self, index):
         projector = SceneGenerator(self.mesh_path, self.base_width,
-                                        self.base_height,
-                                        self.world_boundaries, self.gate_center)
+                                   self.base_height, self.world_boundaries,
+                                   self.gate_center, self.cam_param)
         projection, gate_center, rotation = projector.generate()
         background = self.background_dataset.get()
         output = self.combine(projection, background.image())
@@ -141,6 +142,8 @@ if __name__ == "__main__":
                         type=str, help='the desired resolution')
     parser.add_argument('-t', dest='threads', default=4, type=int,
                         help='the number of threads to use')
+    parser.add_argument('--camera', dest='camera_parameters', type=str,
+                        help='the path to the camera parameters YAML file')
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.run()
