@@ -19,7 +19,7 @@ import random
 import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from math import cos, sin
+from math import cos, sin, atan2
 from ModernGL.ext.obj import Obj
 from PIL import Image
 
@@ -116,9 +116,26 @@ class SceneGenerator:
         '''
         print("Drone translation: {}".format(self.drone_pose.translation))
         print("Drone orientation: {}".format(self.drone_pose.orientation))
-        print(self.drone_pose.orientation.angle)
-        rollRad = self.drone_pose.orientation.angle[0]
-        yawRad = self.drone_pose.orientation.angle[2]
+        rollRad = atan2( # X-axis rotation
+            2.0 * (self.drone_pose.orientation.w *
+                   self.drone_pose.orientation.x +
+                   self.drone_pose.orientation.y *
+                   self.drone_pose.orientation.z),
+            1.0 - 2.0 * (self.drone_pose.orientation.x *
+                         self.drone_pose.orientation.x +
+                         self.drone_pose.orientation.y *
+                         self.drone_pose.orientation.y)
+        )
+        yawRad = atan2(# Z-axis rotation
+            2.0 * (self.drone_pose.orientation.w *
+                   self.drone_pose.orientation.z +
+                   self.drone_pose.orientation.x *
+                   self.drone_pose.orientation.y),
+            1.0 - 2.0 * (self.drone_pose.orientation.y *
+                         self.drone_pose.orientation.y +
+                         self.drone_pose.orientation.z *
+                         self.drone_pose.orientation.z)
+        )
         ray = 1.0
         directionX = ray * (cos(rollRad) * sin(yawRad))
         directionY = ray * (cos(rollRad) * cos(yawRad))
@@ -137,7 +154,7 @@ class SceneGenerator:
                 self.drone_pose.translation.x + directionX,
                 self.drone_pose.translation.y + directionY,
                 self.drone_pose.translation.z + directionZ
-            )
+            ),
             # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
             (0.0, 0.0, 1.0),
         )
