@@ -20,6 +20,7 @@ import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
 from moderngl.ext.obj import Obj
+from math import cos, sin
 from PIL import Image
 
 
@@ -115,6 +116,13 @@ class SceneGenerator:
         '''
         print("Drone translation: {}".format(self.drone_pose.translation))
         print("Drone orientation: {}".format(self.drone_pose.orientation))
+        print(self.drone_pose.orientation.angle)
+        rollRad = self.drone_pose.orientation.angle[0]
+        yawRad = self.drone_pose.orientation.angle[2]
+        ray = 1.0
+        directionX = ray * (cos(rollRad) * sin(yawRad))
+        directionY = ray * (cos(rollRad) * cos(yawRad))
+        directionZ = ray * sin(rollRad)
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
             self.drone_pose.translation,
@@ -124,7 +132,12 @@ class SceneGenerator:
                 # self.drone_pose.orientation.y * self.drone_pose.translation.y,
                 # self.drone_pose.orientation.x * self.drone_pose.translation.z
             # ),
-            self.drone_pose.orientation * self.drone_pose.translation,
+            # self.drone_pose.orientation * self.drone_pose.translation,
+            (
+                self.drone_pose.translation.x + directionX,
+                self.drone_pose.translation.y + directionY,
+                self.drone_pose.translation.z + directionZ
+            )
             # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
             (0.0, 0.0, 1.0),
         )
