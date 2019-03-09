@@ -19,8 +19,8 @@ import random
 import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from moderngl.ext.obj import Obj
 from math import cos, sin
+from ModernGL.ext.obj import Obj
 from PIL import Image
 
 

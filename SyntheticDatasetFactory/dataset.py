@@ -107,6 +107,7 @@ class Dataset:
 
         self.data.join()
         print("[!] {} annotations could not be found!".format(not_found))
+        return self.data.qsize() != 0
 
     '''
     Returns the next BackgroundImage in the Queue
