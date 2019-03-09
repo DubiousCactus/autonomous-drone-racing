@@ -15,6 +15,7 @@ positions, onto randomly selected background images from the given dataset.
 
 import multiprocessing.dummy as mp
 import argparse
+import sys
 import os
 
 from pyrr import Vector3
@@ -55,7 +56,9 @@ class DatasetFactory:
         self.blur_amount = args.blur_amount
         self.cam_param = args.camera_parameters
         self.background_dataset = Dataset(args.dataset)
-        self.background_dataset.load(self.count, args.annotations)
+        if not self.background_dataset.load(self.count, args.annotations):
+            print("[!] Could not load dataset!")
+            sys.exit(1)
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
