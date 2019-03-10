@@ -47,9 +47,9 @@ Typical command-line usage:
         if not os.path.isdir(self.output_path):
             os.mkdir(self.output_path)
         self.csv = open(os.path.join(self.output_path,
-                                     self.csv_path, 'w')
+                                     self.csv_path), 'w')
         # Header
-        self.csv.write("frame,translation_x,translation_y,translation_z,rotation_x,rotation_y,rotation_z,rotation_w\n")
+        self.csv.write("frame,translation_x,translation_y,translation_z,rotation_x,rotation_y,rotation_z,rotation_w,timestamp\n")
         poses_sub = [message_filters.Subscriber(self.pose_topic, TransformStamped)]
         if self.raw:
             imgs_sub = [message_filters.Subscriber(self.img_topic, Image)]
@@ -117,6 +117,7 @@ Typical command-line usage:
             rotation = pose_msg.transform.rotation
             self.annotations[image_name] = {
                 'stamp': timestamp,
+                'stamp_readable': image_name.split('.')[0],
                 'translation': translation,
                 'rotation': rotation
             }
@@ -127,20 +128,49 @@ Typical command-line usage:
     '''
     def _write_csv(self):
         print("[*] Synchronizing timestamps...")
-        for img_name, img_timestamp in self.images.iteritems():
+        key, first_annotation = self.annotations.items()[0]
+        img_key, first_image_ts = self.images.items()[0]
+        synced = False
+
+        if first_annotation['stamp'] < first_image_ts:
+            for img_name, img_timestamp in self.images.iteritems():
+                for name, t_r in self.annotations.items():
+                    if not synced and int((t_r['stamp'] - img_timestamp)/1000000) > 10:
+                        del self.annotations[name]
+                    elif synced and int((t_r['stamp'] - img_timestamp)/1000000) > 10:
+                        break
+                    else:
+                        synced = True
+                        translation = t_r['translation']
+                        rotation = t_r['rotation']
+                        self.csv.write("{},{},{},{},{},{},{},{},{}\n".format(
+                            img_name, translation.x, translation.y, translation.z,
+                            rotation.x, rotation.y, rotation.z, rotation.w,
+                            t_r['stamp_readable']
+                        ))
+                        del self.annotations[name]
+                        break
+        else:
             for name, t_r in self.annotations.items():
-                if t_r['stamp'] < img_timestamp:
-                    del self.annotations[name]
-                    continue
-                else:
-                    translation = t_r['translation']
-                    rotation = t_r['rotation']
-                    self.csv.write("{},{},{},{},{},{},{},{}\n".format(
-                        img_name, translation.x, translation.y, translation.z,
-                        rotation.x, rotation.y, rotation.z, rotation.w
-                    ))
-                    del self.annotations[name]
-                    break
+                for img_name, img_timestamp in self.images.iteritems():
+                    diff_ms = int(abs(t_r['stamp'] - img_timestamp)/1000000)
+                    if not synced and diff_ms > 30:
+                        os.remove(os.path.join(self.output_path, img_name))
+                        del self.images[img_name]
+                    elif synced and diff_ms > 30:
+                        break
+                    else:
+                        synced = True
+                        translation = t_r['translation']
+                        rotation = t_r['rotation']
+                        self.csv.write("{},{},{},{},{},{},{},{},{}\n".format(
+                            img_name, translation.x, translation.y, translation.z,
+                            rotation.x, rotation.y, rotation.z, rotation.w,
+                            t_r['stamp_readable']
+                        ))
+                        del self.images[img_name]
+                        break
+
         print("[*] Done. Annotations written to: {}".format(os.path.join(self.output_path,
                                      self.csv_path)))
         self.csv.close()
