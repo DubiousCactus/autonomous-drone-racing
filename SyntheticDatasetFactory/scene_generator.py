@@ -121,11 +121,6 @@ class SceneGenerator:
             # up: up vector of the camera.
             (0.0, 0.0, 1.0),
         )
-        if self.verbose:
-            print("Drone pose: {}".format(self.drone_pose.translation))
-            print("Lookat target vector: {}".format(self.drone_pose.translation +
-                                                    (self.drone_pose.orientation *
-                                                     Vector3([5.0, 0.0, 0.0]))))
         # Model View Projection matrix
         mvp = projection * view * self.drone_pose.orientation * model
 
@@ -201,4 +196,10 @@ class SceneGenerator:
         '''
         # TODO
 
-        return (img, image_frame_gate_center, rotation)
+        annotations = {
+            'gate_center_img_frame': image_frame_gate_center,
+            'gate_rotation': rotation,
+            'drone_pose': self.drone_pose.translation
+        }
+
+        return (img, annotations)

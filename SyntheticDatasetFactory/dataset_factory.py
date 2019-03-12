@@ -84,18 +84,22 @@ class DatasetFactory:
                                    self.base_height, self.world_boundaries,
                                    self.gate_center, self.cam_param,
                                    background.annotations, self.verbose)
-        projection, gate_center, rotation = projector.generate()
+        projection, annotations = projector.generate()
         output = self.combine(projection, background.image())
-        gate_center = self.scale_coordinates(gate_center, output.size)
+        gate_center = self.scale_coordinates(
+            annotations['gate_center_img_frame'], output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
                         output.size[0]) and (gate_center[1] >= 0 and
                                              gate_center[1] <= output.size[1])
         if self.verbose:
             print("[*] Gate is visible: {}".format(gate_visible))
             self.draw_gate_center(output, gate_center)
+            self.draw_image_annotations(output, annotations)
+
         self.generated_dataset.put(
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
-                                                               rotation, gate_visible))
+                                                               annotations['gate_rotation'],
+                                                               gate_visible))
         )
 
     # Scale to target width/height
@@ -123,7 +127,12 @@ class DatasetFactory:
         gate_draw.line((coordinates[0], coordinates[1] - 10, coordinates[0],
                    coordinates[1] + 10), fill=color)
 
-
+    def draw_image_annotations(self, img, annotations, color=(0, 255, 0, 255)):
+        text = "gate_center_image_frame: {}\ngate_rotation: {}\ndrone_pose: {}".format(
+            annotations['gate_center_img_frame'], annotations['gate_rotation'],
+            annotations['drone_pose'])
+        text_draw = ImageDraw.Draw(img)
+        text_draw.text((0, 0), text, color)
 
 
 if __name__ == "__main__":
