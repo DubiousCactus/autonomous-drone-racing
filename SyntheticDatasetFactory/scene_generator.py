@@ -123,6 +123,7 @@ class SceneGenerator:
         )
         # Model View Projection matrix
         mvp = projection * view * self.drone_pose.orientation * model
+        vp = projection * view * self.drone_pose.orientation
 
         # Converting the gate center's world coordinates to image coordinates
         clip_space_gate_center = projection * (view * self.drone_pose.orientation *  Vector4.from_vector3(gate_center, w=1.0))
@@ -146,6 +147,10 @@ class SceneGenerator:
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
 
+        self.grid_prog['Light'].value = (0.0, 0.0, 6.0) # TODO
+        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
+        self.grid_prog['Mvp'].write(vp.astype('f4').tobytes())
+
         # Texturing
         texture_image = Image.open('data/shiny-white-metal-texture.jpg')
         texture = self.context.texture(texture_image.size, 3, texture_image.tobytes())
@@ -159,16 +164,11 @@ class SceneGenerator:
 
         grid = np.array(grid)
 
-        origin_marker = np.array([
-            [-0.5, -0.5, 0, -0.5, 0.5, 0],
-            [-0.5, -0.5, 0, -0.5, 0.5, 0]
-        ])
-
         # Vertex Buffer and Vertex Array
         vbo = self.context.buffer(self.mesh.pack())
         vao = self.context.simple_vertex_array(self.prog, vbo, *['in_vert', 'in_text', 'in_norm'])
         vbo_grid = self.context.buffer(grid.astype('f4').tobytes())
-        vao_grid = self.context.simple_vertex_array(self.prog, vbo_grid, 'in_vert')
+        vao_grid = self.context.simple_vertex_array(self.grid_prog, vbo_grid, 'in_vert')
 
         # Framebuffers
         # Use 4 samples for MSAA anti-aliasing
@@ -189,7 +189,10 @@ class SceneGenerator:
         self.context.clear(0.9, 0.9, 0.9)
         texture.use()
         vao.render()
-        vao_grid.render(moderngl.LINES, 65 * 4)
+
+        if self.verbose:
+            vao_grid.render(moderngl.LINES, 65 * 4)
+
         self.context.copy_framebuffer(fbo2, fbo1)
 
         # Loading the image using Pillow
