@@ -125,7 +125,7 @@ class SceneGenerator:
         mvp = projection * view * self.drone_pose.orientation * model
 
         # Converting the gate center's world coordinates to image coordinates
-        clip_space_gate_center = projection * (view * Vector4.from_vector3(gate_center, w=1.0))
+        clip_space_gate_center = projection * (view * self.drone_pose.orientation *  Vector4.from_vector3(gate_center, w=1.0))
 
         if clip_space_gate_center.w != 0:
             normalized_device_coordinate_space_gate_center\
