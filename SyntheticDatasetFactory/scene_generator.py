@@ -27,8 +27,9 @@ from PIL import Image
 class SceneGenerator:
     def __init__(self, mesh_path: str, width: int, height: int,
                  world_boundaries, gate_center: Vector3, camera_parameters,
-                 drone_pose):
+                 drone_pose, verbose=False):
         random.seed()
+        self.verbose = verbose
         self.mesh = Obj.open(mesh_path)
         self.width = width
         self.height = height
@@ -57,10 +58,16 @@ class SceneGenerator:
 
         # print("Mesh width: {}\nMesh height: {}".format(mesh_width, mesh_height))
 
+#         return  {
+            # 'x': mesh_width * world_boundaries['x'],
+            # 'y': mesh_width * world_boundaries['y'],
+            # 'z': mesh_height * world_boundaries['z']
+#         }
+
         return  {
-            'x': mesh_width * world_boundaries['x'],
-            'y': mesh_width * world_boundaries['y'],
-            'z': mesh_height * world_boundaries['z']
+            'x': world_boundaries['x'] / 2,
+            'y': world_boundaries['y'] / 2,
+            'z': world_boundaries['z'] / 2
         }
 
     def setup_opengl(self):
@@ -80,11 +87,8 @@ class SceneGenerator:
             0
         ])
 
-        # print("Randomized translation: {}".format(translation))
-
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
         rotation = Quaternion.from_z_rotation(random.random() * np.pi)
-        # print("Randomized rotation: {}".format(rotation))
 
         scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
         model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)

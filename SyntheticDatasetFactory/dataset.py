@@ -97,7 +97,6 @@ class Dataset:
             if os.path.isfile(full_path) and full_path != annotations_path:
                 if file not in annotations:
                     not_found += 1
-                    print("Cannot find {} !".format(file))
                     continue
                 self.data.put(BackgroundImage(full_path, annotations[file]))
                 self.data.task_done()
