@@ -63,7 +63,7 @@ class DatasetFactory:
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
-        self.world_boundaries = {'x': 13, 'y': 13, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
+        self.world_boundaries = {'x': 5, 'y': 5, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
         self.gate_center = Vector3([0.0, 0.0, 2.1]) # Figure this out in Blender
 
     def run(self):
@@ -92,7 +92,7 @@ class DatasetFactory:
                                              gate_center[1] <= output.size[1])
         if self.verbose:
             print("[*] Gate is visible: {}".format(gate_visible))
-        self.draw_gate_center(output, gate_center)
+            self.draw_gate_center(output, gate_center)
         self.generated_dataset.put(
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
                                                                rotation, gate_visible))

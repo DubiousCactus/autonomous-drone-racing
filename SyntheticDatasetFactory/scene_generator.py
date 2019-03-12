@@ -90,8 +90,7 @@ class SceneGenerator:
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
         rotation = Quaternion.from_z_rotation(random.random() * np.pi)
 
-        scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
-        model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
+        model = Matrix44.from_translation(translation) * rotation
         gate_center = model * self.gate_center
 
         camera_intrinsics = [
@@ -113,24 +112,22 @@ class SceneGenerator:
         ])
 
         # Camera view matrix
-        '''
-         x: horizontal axis
-         y: depth axis
-         z: vertical axis
-        '''
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
             self.drone_pose.translation,
             # target: position in world coordinates that the camera is looking at
             self.drone_pose.translation + (self.drone_pose.orientation *
                                            Vector3([5.0, 0.0, 0.0])),
-            # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
+            # up: up vector of the camera.
             (0.0, 0.0, 1.0),
         )
+        if self.verbose:
+            print("Drone pose: {}".format(self.drone_pose.translation))
+            print("Lookat target vector: {}".format(self.drone_pose.translation +
+                                                    (self.drone_pose.orientation *
+                                                     Vector3([5.0, 0.0, 0.0]))))
         # Model View Projection matrix
-        mvp = projection * view * model
-        # Don't transform the perspective grid
-        no_translation_mvp = projection * view * Matrix44.identity()
+        mvp = projection * view * self.drone_pose.orientation * model
 
         # Converting the gate center's world coordinates to image coordinates
         clip_space_gate_center = projection * (view * Vector4.from_vector3(gate_center, w=1.0))
@@ -154,10 +151,6 @@ class SceneGenerator:
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
 
-        self.grid_prog['Light'].value = (0.0, 10.0, 0.0)
-        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25)
-        self.grid_prog['Mvp'].write(no_translation_mvp.astype('f4').tobytes())
-
         # Texturing
         texture_image = Image.open('data/shiny-white-metal-texture.jpg')
         texture = self.context.texture(texture_image.size, 3, texture_image.tobytes())
@@ -175,14 +168,14 @@ class SceneGenerator:
         vbo = self.context.buffer(self.mesh.pack())
         vao = self.context.simple_vertex_array(self.prog, vbo, *['in_vert', 'in_text', 'in_norm'])
         vbo_grid = self.context.buffer(grid.astype('f4').tobytes())
-        vao_grid = self.context.simple_vertex_array(self.grid_prog, vbo_grid, 'in_vert')
+        vao_grid = self.context.simple_vertex_array(self.prog, vbo_grid, 'in_vert')
 
         # Framebuffers
         # Use 4 samples for MSAA anti-aliasing
         fbo1 = self.context.framebuffer(
-            self.context.renderbuffer((self.width, self.height), samples=4),
+            self.context.renderbuffer((self.width, self.height), samples=8),
             depth_attachment=self.context.depth_renderbuffer(
-                (self.width, self.height), samples=4
+                (self.width, self.height), samples=8
             )
         )
 
