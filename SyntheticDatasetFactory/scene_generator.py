@@ -20,7 +20,7 @@ import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
 from math import cos, sin, atan2
-from ModernGL.ext.obj import Obj
+from moderngl.ext.obj import Obj
 from PIL import Image
 
 
@@ -114,47 +114,12 @@ class SceneGenerator:
          y: depth axis
          z: vertical axis
         '''
-        print("Drone translation: {}".format(self.drone_pose.translation))
-        print("Drone orientation: {}".format(self.drone_pose.orientation))
-        rollRad = atan2( # X-axis rotation
-            2.0 * (self.drone_pose.orientation.w *
-                   self.drone_pose.orientation.x +
-                   self.drone_pose.orientation.y *
-                   self.drone_pose.orientation.z),
-            1.0 - 2.0 * (self.drone_pose.orientation.x *
-                         self.drone_pose.orientation.x +
-                         self.drone_pose.orientation.y *
-                         self.drone_pose.orientation.y)
-        )
-        yawRad = atan2(# Z-axis rotation
-            2.0 * (self.drone_pose.orientation.w *
-                   self.drone_pose.orientation.z +
-                   self.drone_pose.orientation.x *
-                   self.drone_pose.orientation.y),
-            1.0 - 2.0 * (self.drone_pose.orientation.y *
-                         self.drone_pose.orientation.y +
-                         self.drone_pose.orientation.z *
-                         self.drone_pose.orientation.z)
-        )
-        ray = 1.0
-        directionX = ray * (cos(rollRad) * sin(yawRad))
-        directionY = ray * (cos(rollRad) * cos(yawRad))
-        directionZ = ray * sin(rollRad)
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
             self.drone_pose.translation,
             # target: position in world coordinates that the camera is looking at
-#             (
-                # self.drone_pose.orientation.z * self.drone_pose.translation.x,
-                # self.drone_pose.orientation.y * self.drone_pose.translation.y,
-                # self.drone_pose.orientation.x * self.drone_pose.translation.z
-            # ),
-            # self.drone_pose.orientation * self.drone_pose.translation,
-            (
-                self.drone_pose.translation.x + directionX,
-                self.drone_pose.translation.y + directionY,
-                self.drone_pose.translation.z + directionZ
-            ),
+            self.drone_pose.translation + (self.drone_pose.orientation *
+                                           Vector3([5.0, 0.0, 0.0])),
             # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
             (0.0, 0.0, 1.0),
         )

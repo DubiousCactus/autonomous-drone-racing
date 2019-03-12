@@ -16,8 +16,8 @@ import os
 from PIL import Image
 from tqdm import tqdm
 from queue import Queue
-from pyrr import Vector3, Quaternion
 from threading import Thread
+from pyrr import Vector3, Quaternion
 
 
 class BackgroundAnnotations:
@@ -74,7 +74,7 @@ class Dataset:
                 items = line.split(',')
                 annotations[items[0].strip()] = BackgroundAnnotations(
                     Vector3([float(x) for x in items[1:4]]),
-                    Quaternion([float(x) for x in items[4::]])
+                    Quaternion([float(x) for x in items[4:8]])
                 )
 
         return annotations
