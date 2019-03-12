@@ -142,7 +142,7 @@ class SceneGenerator:
         image_frame_gate_center[1] = self.height - image_frame_gate_center[1]
 
         # Shader program
-        self.prog['Light'].value = (0.0, 10.0, 0.0) # TODO
+        self.prog['Light'].value = (0.0, 0.0, 6.0) # TODO
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
 
@@ -158,6 +158,11 @@ class SceneGenerator:
             grid.append([-32.0, i - 32, 0.0, 32.0, i - 32, 0.0])
 
         grid = np.array(grid)
+
+        origin_marker = np.array([
+            [-0.5, -0.5, 0, -0.5, 0.5, 0],
+            [-0.5, -0.5, 0, -0.5, 0.5, 0]
+        ])
 
         # Vertex Buffer and Vertex Array
         vbo = self.context.buffer(self.mesh.pack())
