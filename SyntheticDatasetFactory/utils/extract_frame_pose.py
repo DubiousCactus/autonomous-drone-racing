@@ -14,6 +14,7 @@ import rospy
 import cv_bridge
 import message_filters
 
+from tqdm import tqdm
 from collections import OrderedDict
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import CompressedImage, Image
@@ -59,14 +60,14 @@ Typical command-line usage:
         if rospy.get_param('~approximate_sync', False):
             print('[*] Using approximate sync')
             poses_sync = message_filters.ApproximateTimeSynchronizer(
-                poses_sub, queue_size=100, slop=.1)
+                poses_sub, queue_size=1000, slop=.1)
             imgs_sync = message_filters.ApproximateTimeSynchronizer(
-                imgs_sub, queue_size=100, slop=.1)
+                imgs_sub, queue_size=1000, slop=.1)
         else:
             poses_sync = message_filters.TimeSynchronizer(
-                poses_sub, queue_size=100)
+                poses_sub, queue_size=1000)
             imgs_sync = message_filters.TimeSynchronizer(
-                imgs_sub, queue_size=100)
+                imgs_sub, queue_size=1000)
 
         poses_sync.registerCallback(self._save_poses)
         if self.raw:
@@ -128,53 +129,46 @@ Typical command-line usage:
     '''
     def _write_csv(self):
         print("[*] Synchronizing timestamps...")
-        key, first_annotation = self.annotations.items()[0]
-        img_key, first_image_ts = self.images.items()[0]
-        synced = False
+        # Crop the images to avoid lag issues
+        del self.images[self.images.keys()[0]]
+        del self.images[self.images.keys()[-1]]
 
-        if first_annotation['stamp'] < first_image_ts:
-            for img_name, img_timestamp in self.images.iteritems():
-                for name, t_r in self.annotations.items():
-                    if not synced and int((t_r['stamp'] - img_timestamp)/1000000) > 10:
-                        del self.annotations[name]
-                    elif synced and int((t_r['stamp'] - img_timestamp)/1000000) > 10:
-                        break
+        for img_name, img_timestamp in tqdm(self.images.items()):
+            i = 0
+            candidate_found = False
+            for pose_name, pose in self.annotations.items():
+                if pose['stamp'] > img_timestamp:
+                    if i > 0:
+                        prev_pose = self.annotations[self.annotations.keys()[i-1]]
+                        if int((img_timestamp - prev_pose['stamp'])/1000000) <= 5:
+                            translation = prev_pose['translation']
+                            rotation = prev_pose['rotation']
+                            stamp_readable = prev_pose['stamp_readable']
+                        else:
+                            translation = pose['translation']
+                            rotation = pose['rotation']
+                            stamp_readable = pose['stamp_readable']
                     else:
-                        synced = True
-                        translation = t_r['translation']
-                        rotation = t_r['rotation']
-                        self.csv.write("{},{},{},{},{},{},{},{},{}\n".format(
-                            img_name, translation.x, translation.y, translation.z,
-                            rotation.x, rotation.y, rotation.z, rotation.w,
-                            t_r['stamp_readable']
-                        ))
-                        del self.annotations[name]
-                        break
-        else:
-            for name, t_r in self.annotations.items():
-                for img_name, img_timestamp in self.images.iteritems():
-                    diff_ms = int(abs(t_r['stamp'] - img_timestamp)/1000000)
-                    if not synced and diff_ms > 30:
-                        os.remove(os.path.join(self.output_path, img_name))
-                        del self.images[img_name]
-                    elif synced and diff_ms > 30:
-                        break
-                    else:
-                        synced = True
-                        translation = t_r['translation']
-                        rotation = t_r['rotation']
-                        self.csv.write("{},{},{},{},{},{},{},{},{}\n".format(
-                            img_name, translation.x, translation.y, translation.z,
-                            rotation.x, rotation.y, rotation.z, rotation.w,
-                            t_r['stamp_readable']
-                        ))
-                        del self.images[img_name]
-                        break
+                        translation = pose['translation']
+                        rotation = pose['rotation']
+                        stamp_readable = pose['stamp_readable']
+
+                    candidate_found = True
+                    self.csv.write("{},{},{},{},{},{},{},{},{}\n".format(
+                        img_name, translation.x, translation.y, translation.z,
+                        rotation.x, rotation.y, rotation.z, rotation.w,
+                        stamp_readable
+                    ))
+                i += 1
+                if candidate_found:
+                    self.annotations = OrderedDict(self.annotations.items()[i::])
+                    break
 
         print("[*] Done. Annotations written to: {}".format(os.path.join(self.output_path,
                                      self.csv_path)))
         self.csv.close()
         sys.exit(0)
+
 
 
 if __name__ == '__main__':
