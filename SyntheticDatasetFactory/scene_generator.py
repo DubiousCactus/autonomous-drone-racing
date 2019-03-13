@@ -20,15 +20,16 @@ import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
 from math import cos, sin, atan2
-from ModernGL.ext.obj import Obj
+from moderngl.ext.obj import Obj
 from PIL import Image
 
 
 class SceneGenerator:
     def __init__(self, mesh_path: str, width: int, height: int,
                  world_boundaries, gate_center: Vector3, camera_parameters,
-                 drone_pose):
+                 drone_pose, verbose=False):
         random.seed()
+        self.verbose = verbose
         self.mesh = Obj.open(mesh_path)
         self.width = width
         self.height = height
@@ -39,8 +40,12 @@ class SceneGenerator:
             try:
                 self.camera_parameters = yaml.safe_load(cam_file)
             except yaml.YAMLError as exc:
-                print(exc)
+                raise Exception(exc)
         self.setup_opengl()
+
+    def add_bias(self, roll, pitch):
+        self.pitch_bias = pitch
+        self.roll_bias = roll
 
     # TODO: Compute from the origin
     def compute_boundaries(self, world_boundaries):
@@ -57,10 +62,16 @@ class SceneGenerator:
 
         # print("Mesh width: {}\nMesh height: {}".format(mesh_width, mesh_height))
 
+#         return  {
+            # 'x': mesh_width * world_boundaries['x'],
+            # 'y': mesh_width * world_boundaries['y'],
+            # 'z': mesh_height * world_boundaries['z']
+#         }
+
         return  {
-            'x': mesh_width * world_boundaries['x'],
-            'y': mesh_width * world_boundaries['y'],
-            'z': mesh_height * world_boundaries['z']
+            'x': world_boundaries['x'] / 2,
+            'y': world_boundaries['y'] / 2,
+            'z': world_boundaries['z'] / 2
         }
 
     def setup_opengl(self):
@@ -80,14 +91,10 @@ class SceneGenerator:
             0
         ])
 
-        # print("Randomized translation: {}".format(translation))
-
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
         rotation = Quaternion.from_z_rotation(random.random() * np.pi)
-        # print("Randomized rotation: {}".format(rotation))
 
-        scale = Vector3([1., 1., 1.]) # Scale it by a factor of 1
-        model = Matrix44.from_translation(translation) * rotation * Matrix44.from_scale(scale)
+        model = Matrix44.from_translation(translation) * rotation
         gate_center = model * self.gate_center
 
         camera_intrinsics = [
@@ -108,63 +115,25 @@ class SceneGenerator:
             [0, 0, (-2.0*zfar*znear)/(zfar - znear), 0] # TODO: EXPLAIN WHY IT WORKS WHEN I FLIP [2][2] AND [3][2]
         ])
 
+        self.drone_pose.orientation.y + self.pitch_bias
+        self.drone_pose.orientation.x + self.roll_bias
+
         # Camera view matrix
-        '''
-         x: horizontal axis
-         y: depth axis
-         z: vertical axis
-        '''
-        print("Drone translation: {}".format(self.drone_pose.translation))
-        print("Drone orientation: {}".format(self.drone_pose.orientation))
-        rollRad = atan2( # X-axis rotation
-            2.0 * (self.drone_pose.orientation.w *
-                   self.drone_pose.orientation.x +
-                   self.drone_pose.orientation.y *
-                   self.drone_pose.orientation.z),
-            1.0 - 2.0 * (self.drone_pose.orientation.x *
-                         self.drone_pose.orientation.x +
-                         self.drone_pose.orientation.y *
-                         self.drone_pose.orientation.y)
-        )
-        yawRad = atan2(# Z-axis rotation
-            2.0 * (self.drone_pose.orientation.w *
-                   self.drone_pose.orientation.z +
-                   self.drone_pose.orientation.x *
-                   self.drone_pose.orientation.y),
-            1.0 - 2.0 * (self.drone_pose.orientation.y *
-                         self.drone_pose.orientation.y +
-                         self.drone_pose.orientation.z *
-                         self.drone_pose.orientation.z)
-        )
-        ray = 1.0
-        directionX = ray * (cos(rollRad) * sin(yawRad))
-        directionY = ray * (cos(rollRad) * cos(yawRad))
-        directionZ = ray * sin(rollRad)
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
             self.drone_pose.translation,
             # target: position in world coordinates that the camera is looking at
-#             (
-                # self.drone_pose.orientation.z * self.drone_pose.translation.x,
-                # self.drone_pose.orientation.y * self.drone_pose.translation.y,
-                # self.drone_pose.orientation.x * self.drone_pose.translation.z
-            # ),
-            # self.drone_pose.orientation * self.drone_pose.translation,
-            (
-                self.drone_pose.translation.x + directionX,
-                self.drone_pose.translation.y + directionY,
-                self.drone_pose.translation.z + directionZ
-            ),
-            # up: up vector of the camera. ModernGL seems to invert the y- and z- axis compared to the OpenGL doc !
+            self.drone_pose.translation + (self.drone_pose.orientation *
+                                           Vector3([5.0, 0.0, 0.0])),
+            # up: up vector of the camera.
             (0.0, 0.0, 1.0),
         )
         # Model View Projection matrix
-        mvp = projection * view * model
-        # Don't transform the perspective grid
-        no_translation_mvp = projection * view * Matrix44.identity()
+        mvp = projection * view * self.drone_pose.orientation * model
+        vp = projection * view * self.drone_pose.orientation
 
         # Converting the gate center's world coordinates to image coordinates
-        clip_space_gate_center = projection * (view * Vector4.from_vector3(gate_center, w=1.0))
+        clip_space_gate_center = projection * (view * self.drone_pose.orientation *  Vector4.from_vector3(gate_center, w=1.0))
 
         if clip_space_gate_center.w != 0:
             normalized_device_coordinate_space_gate_center\
@@ -181,13 +150,13 @@ class SceneGenerator:
         image_frame_gate_center[1] = self.height - image_frame_gate_center[1]
 
         # Shader program
-        self.prog['Light'].value = (0.0, 10.0, 0.0) # TODO
+        self.prog['Light'].value = (0.0, 0.0, 6.0) # TODO
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
 
-        self.grid_prog['Light'].value = (0.0, 10.0, 0.0)
-        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25)
-        self.grid_prog['Mvp'].write(no_translation_mvp.astype('f4').tobytes())
+        self.grid_prog['Light'].value = (0.0, 0.0, 6.0) # TODO
+        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
+        self.grid_prog['Mvp'].write(vp.astype('f4').tobytes())
 
         # Texturing
         texture_image = Image.open('data/shiny-white-metal-texture.jpg')
@@ -211,9 +180,9 @@ class SceneGenerator:
         # Framebuffers
         # Use 4 samples for MSAA anti-aliasing
         fbo1 = self.context.framebuffer(
-            self.context.renderbuffer((self.width, self.height), samples=4),
+            self.context.renderbuffer((self.width, self.height), samples=8),
             depth_attachment=self.context.depth_renderbuffer(
-                (self.width, self.height), samples=4
+                (self.width, self.height), samples=8
             )
         )
 
@@ -227,7 +196,10 @@ class SceneGenerator:
         self.context.clear(0.9, 0.9, 0.9)
         texture.use()
         vao.render()
-        vao_grid.render(moderngl.LINES, 65 * 4)
+
+        if self.verbose:
+            vao_grid.render(moderngl.LINES, 65 * 4)
+
         self.context.copy_framebuffer(fbo2, fbo1)
 
         # Loading the image using Pillow
@@ -235,8 +207,14 @@ class SceneGenerator:
                                                          alignment=1), 'raw', 'RGBA', 0, -1)
 
         '''
-            Apply distortion and rotation using the camera parameters computed above
+            Apply distortion using the camera parameters
         '''
         # TODO
 
-        return (img, image_frame_gate_center, rotation)
+        annotations = {
+            'gate_center_img_frame': image_frame_gate_center,
+            'gate_rotation': rotation,
+            'drone_pose': self.drone_pose.translation
+        }
+
+        return (img, annotations)
