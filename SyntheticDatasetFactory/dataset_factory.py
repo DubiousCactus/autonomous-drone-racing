@@ -56,6 +56,8 @@ class DatasetFactory:
         self.blur_amount = args.blur_amount
         self.cam_param = args.camera_parameters
         self.verbose = args.verbose
+        self.pitch_bias = args.pitch_bias
+        self.roll_bias = args.roll_bias
         self.background_dataset = Dataset(args.dataset)
         if not self.background_dataset.load(self.count, args.annotations):
             print("[!] Could not load dataset!")
@@ -84,6 +86,7 @@ class DatasetFactory:
                                    self.base_height, self.world_boundaries,
                                    self.gate_center, self.cam_param,
                                    background.annotations, self.verbose)
+        projector.add_bias(self.roll_bias, self.pitch_bias)
         projection, annotations = projector.generate()
         output = self.combine(projection, background.image())
         gate_center = self.scale_coordinates(
@@ -163,6 +166,10 @@ if __name__ == "__main__":
                         required=True)
     parser.add_argument('-v', dest='verbose', help='verbose output',
                         action='store_true', default=False)
+    parser.add_argument('--pitch-bias', dest='pitch_bias', help='pitch bias',
+                        type=float, default=0.0)
+    parser.add_argument('--roll-bias', dest='roll_bias', help='roll bias',
+                        type=float, default=0.0)
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.run()

@@ -40,8 +40,12 @@ class SceneGenerator:
             try:
                 self.camera_parameters = yaml.safe_load(cam_file)
             except yaml.YAMLError as exc:
-                print(exc)
+                raise Exception(exc)
         self.setup_opengl()
+
+    def add_bias(self, roll, pitch):
+        self.pitch_bias = pitch
+        self.roll_bias = roll
 
     # TODO: Compute from the origin
     def compute_boundaries(self, world_boundaries):
@@ -110,6 +114,9 @@ class SceneGenerator:
             [0, 0, (-zfar - znear)/(zfar - znear), -1],
             [0, 0, (-2.0*zfar*znear)/(zfar - znear), 0] # TODO: EXPLAIN WHY IT WORKS WHEN I FLIP [2][2] AND [3][2]
         ])
+
+        self.drone_pose.orientation.y + self.pitch_bias
+        self.drone_pose.orientation.x + self.roll_bias
 
         # Camera view matrix
         view = Matrix44.look_at(
@@ -200,7 +207,7 @@ class SceneGenerator:
                                                          alignment=1), 'raw', 'RGBA', 0, -1)
 
         '''
-            Apply distortion and rotation using the camera parameters computed above
+            Apply distortion using the camera parameters
         '''
         # TODO
 
