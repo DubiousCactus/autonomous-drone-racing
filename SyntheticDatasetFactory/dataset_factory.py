@@ -20,7 +20,7 @@ import os
 
 from pyrr import Vector3
 from PIL import Image, ImageDraw
-from scene_generator import SceneGenerator
+from scene_renderer import SceneRenderer
 from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 
 
@@ -59,19 +59,20 @@ class DatasetFactory:
         self.cam_param = args.camera_parameters
         self.verbose = args.verbose
         self.render_perspective = args.extra_verbose
+        self.debug = args.debug
         if self.render_perspective:
             self.verbose = True
-        self.pitch_bias = args.pitch_bias
-        self.roll_bias = args.roll_bias
-        self.background_dataset = Dataset(args.dataset)
+        self.background_dataset = Dataset(args.dataset, args.debug)
         if not self.background_dataset.load(self.count, args.annotations):
             print("[!] Could not load dataset!")
             sys.exit(1)
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
-        self.world_boundaries = {'x': 12, 'y': 12, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
-        self.gate_center = Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
+
+    def set_mesh_parameters(self, boundaries, gate_center):
+        self.world_boundaries = boundaries
+        self.gate_center = gate_center
 
     def run(self):
         print("[*] Generating dataset...")
@@ -87,11 +88,11 @@ class DatasetFactory:
 
     def generate(self, index):
         background = self.background_dataset.get()
-        projector = SceneGenerator(self.mesh_path, self.base_width,
+        projector = SceneRenderer(self.mesh_path, self.base_width,
                                    self.base_height, self.world_boundaries,
                                    self.gate_center, self.cam_param,
-                                   background.annotations, self.render_perspective)
-        projector.add_bias(self.roll_bias, self.pitch_bias)
+                                   background.annotations,
+                                  self.render_perspective, self.debug)
         projection, annotations = projector.generate()
         output = self.combine(projection, background.image())
         gate_center = self.scale_coordinates(
@@ -172,10 +173,12 @@ if __name__ == "__main__":
     parser.add_argument('-vv', dest='extra_verbose', help='extra verbose\
                         output (render the perspective grid)',
                         action='store_true', default=False)
-    parser.add_argument('--pitch-bias', dest='pitch_bias', help='pitch bias in\
-                        degrees', type=float, default=0.0)
-    parser.add_argument('--roll-bias', dest='roll_bias', help='roll bias in\
-                        degrees', type=float, default=0.0)
+    parser.add_argument('-d', dest='debug', action='store_true',
+                        default=False, help='use a fixed seed')
 
     datasetFactory = DatasetFactory(parser.parse_args())
+    datasetFactory.set_mesh_parameters(
+        {'x': 12, 'y': 12}, # Real world boundaries in meters (relative to the mesh's scale)
+        Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
+    )
     datasetFactory.run()

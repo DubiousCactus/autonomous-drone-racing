@@ -56,10 +56,13 @@ class AnnotatedImage:
 
 
 class Dataset:
-    def __init__(self, path: str):
+    def __init__(self, path: str, debug=False):
         if not os.path.isdir(path):
             raise Exception("Dataset directory {} not found".format(path))
-        random.seed()
+        if debug:
+            random.seed(1234)
+        else:
+            random.seed()
         self.path = path
         self.width = None
         self.height = None
