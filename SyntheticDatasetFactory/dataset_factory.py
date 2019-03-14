@@ -39,6 +39,8 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [x] Project on transparent background
 [x] Overlay with background image
 [x] Model the camera distortion
+[ ] Add background gates
+[ ] Save annotations
 [ ] Apply the distortion to the OpenGL projection <-
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
 [ ] Motion blur (shader ?)
@@ -56,6 +58,7 @@ class DatasetFactory:
         self.blur_amount = args.blur_amount
         self.cam_param = args.camera_parameters
         self.verbose = args.verbose
+        self.render_perspective = args.extra_verbose
         self.pitch_bias = args.pitch_bias
         self.roll_bias = args.roll_bias
         self.background_dataset = Dataset(args.dataset)
@@ -65,8 +68,8 @@ class DatasetFactory:
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
-        self.world_boundaries = {'x': 5, 'y': 5, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
-        self.gate_center = Vector3([0.0, 0.0, 2.1]) # Figure this out in Blender
+        self.world_boundaries = {'x': 4, 'y': 4, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
+        self.gate_center = Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
 
     def run(self):
         print("[*] Generating dataset...")
@@ -85,7 +88,7 @@ class DatasetFactory:
         projector = SceneGenerator(self.mesh_path, self.base_width,
                                    self.base_height, self.world_boundaries,
                                    self.gate_center, self.cam_param,
-                                   background.annotations, self.verbose)
+                                   background.annotations, self.render_perspective)
         projector.add_bias(self.roll_bias, self.pitch_bias)
         projection, annotations = projector.generate()
         output = self.combine(projection, background.image())
@@ -95,7 +98,6 @@ class DatasetFactory:
                         output.size[0]) and (gate_center[1] >= 0 and
                                              gate_center[1] <= output.size[1])
         if self.verbose:
-            print("[*] Gate is visible: {}".format(gate_visible))
             self.draw_gate_center(output, gate_center)
             self.draw_image_annotations(output, annotations)
 
@@ -109,8 +111,6 @@ class DatasetFactory:
     def scale_coordinates(self, coordinates, target_coordinates):
         coordinates[0] = (coordinates[0] * target_coordinates[0]) / self.base_width
         coordinates[1] = (coordinates[1] * target_coordinates[1]) / self.base_height
-        if self.verbose:
-            print("[*] Scaled gate center coordinates: {}".format(coordinates))
 
         return coordinates
 
@@ -131,9 +131,10 @@ class DatasetFactory:
                    coordinates[1] + 10), fill=color)
 
     def draw_image_annotations(self, img, annotations, color=(0, 255, 0, 255)):
-        text = "gate_center_image_frame: {}\ngate_rotation: {}\ndrone_pose: {}".format(
+        text = "gate_center_image_frame: {}\ngate_rotation: {}\ndrone_pose:\
+                {}\ndrone_orientation:{}".format(
             annotations['gate_center_img_frame'], annotations['gate_rotation'],
-            annotations['drone_pose'])
+            annotations['drone_pose'], annotations['drone_orientation'])
         text_draw = ImageDraw.Draw(img)
         text_draw.text((0, 0), text, color)
 
@@ -166,10 +167,13 @@ if __name__ == "__main__":
                         required=True)
     parser.add_argument('-v', dest='verbose', help='verbose output',
                         action='store_true', default=False)
-    parser.add_argument('--pitch-bias', dest='pitch_bias', help='pitch bias',
-                        type=float, default=0.0)
-    parser.add_argument('--roll-bias', dest='roll_bias', help='roll bias',
-                        type=float, default=0.0)
+    parser.add_argument('-vv', dest='extra_verbose', help='extra verbose\
+                        output (render the perspective grid)',
+                        action='store_true', default=False)
+    parser.add_argument('--pitch-bias', dest='pitch_bias', help='pitch bias in\
+                        degrees', type=float, default=0.0)
+    parser.add_argument('--roll-bias', dest='roll_bias', help='roll bias in\
+                        degrees', type=float, default=0.0)
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.run()

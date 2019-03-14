@@ -58,7 +58,8 @@ class AnnotatedImage:
 class Dataset:
     def __init__(self, path: str):
         if not os.path.isdir(path):
-            raise Exception("Dataset directory not found")
+            raise Exception("Dataset directory {} not found".format(path))
+        random.seed(2)
         self.path = path
         self.width = None
         self.height = None
@@ -126,6 +127,7 @@ class Dataset:
             annotatedImage.image.save(
                 os.path.join(self.path + str(annotatedImage.id) + '.png')
             )
+            # TODO: Save the annotation in the output CSV file
             self.data.task_done()
 
     def save(self, nb_threads):
