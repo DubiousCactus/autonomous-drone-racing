@@ -135,9 +135,9 @@ class SceneGenerator:
             self.drone_pose.translation + Vector3([100.0, 0.0, 0.0]),
             # up: up vector of the camera.
             (0.0, 0.0, 1.0), # We are using the Z-axis to match our base dataset
-        )
+        ) * self.drone_pose.orientation.matrix44
         # Model View Projection matrix
-        mvp = projection * view * self.drone_pose.orientation * model
+        mvp = projection * view * model
 
         # Converting the gate center's world coordinates to image coordinates
         clip_space_gate_center = projection * (view * self.drone_pose.orientation *  Vector4.from_vector3(gate_center, w=1.0))
@@ -179,7 +179,7 @@ class SceneGenerator:
 
             grid = np.array(grid)
 
-            vp = projection * view * self.drone_pose.orientation
+            vp = projection * view
             self.grid_prog['Light'].value = (0.0, 0.0, 6.0) # TODO
             self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
             self.grid_prog['Mvp'].write(vp.astype('f4').tobytes())

@@ -59,6 +59,8 @@ class DatasetFactory:
         self.cam_param = args.camera_parameters
         self.verbose = args.verbose
         self.render_perspective = args.extra_verbose
+        if self.render_perspective:
+            self.verbos = True
         self.pitch_bias = args.pitch_bias
         self.roll_bias = args.roll_bias
         self.background_dataset = Dataset(args.dataset)
