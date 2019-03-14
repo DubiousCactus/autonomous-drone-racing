@@ -90,9 +90,9 @@ class SceneGenerator:
         ])
 
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
-        rotation = Quaternion.from_z_rotation(random.random() * np.pi)
+        gate_rotation = Quaternion.from_z_rotation(random.random() * np.pi)
 
-        model = Matrix44.from_translation(gate_translation) * rotation
+        model = Matrix44.from_translation(gate_translation) * gate_rotation
         gate_center = model * self.gate_center
 
         camera_intrinsics = [
@@ -140,7 +140,7 @@ class SceneGenerator:
         mvp = projection * view * model
 
         # Converting the gate center's world coordinates to image coordinates
-        clip_space_gate_center = projection * (view * self.drone_pose.orientation *  Vector4.from_vector3(gate_center, w=1.0))
+        clip_space_gate_center = projection * (view *  Vector4.from_vector3(gate_center, w=1.0))
 
         if clip_space_gate_center.w != 0:
             normalized_device_coordinate_space_gate_center\
@@ -157,7 +157,7 @@ class SceneGenerator:
         image_frame_gate_center[1] = self.height - image_frame_gate_center[1]
 
         # Shader program
-        self.prog['Light'].value = (0.0, 0.0, 6.0) # TODO
+        self.prog['Light'].value = (0.0, 0.0, 4.0) # TODO
         self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         self.prog['Mvp'].write(mvp.astype('f4').tobytes())
 
@@ -173,9 +173,9 @@ class SceneGenerator:
         # Project the perspective as a grid
         if self.render_perspective:
             grid = []
-            for i in range(65):
-                grid.append([i - 32, -32.0, 0.0, i - 32, 32.0, 0.0])
-                grid.append([-32.0, i - 32, 0.0, 32.0, i - 32, 0.0])
+            for i in range(14):
+                grid.append([i - 7, -7, 0.0, i - 7, 7, 0.0])
+                grid.append([-7, i - 7, 0.0, 7, i - 7, 0.0])
 
             grid = np.array(grid)
 
@@ -193,9 +193,7 @@ class SceneGenerator:
         fbo1 = self.context.framebuffer(
             self.context.renderbuffer((self.width, self.height), samples=8),
             depth_attachment=self.context.depth_renderbuffer(
-                (self.width, self.height), samples=8
-            )
-        )
+                (self.width, self.height), samples=8))
 
         # Downsample to the final framebuffer
         fbo2 = self.context.framebuffer(self.context.renderbuffer((self.width,
@@ -227,7 +225,7 @@ class SceneGenerator:
             'gate_position': gate_translation,
             'gate_rotation':
                 [degrees(x) for x in
-                 quaternion.as_euler_angles(np.quaternion(*rotation.xyzw))],
+                 quaternion.as_euler_angles(np.quaternion(*gate_rotation.xyzw))],
             'drone_pose': self.drone_pose.translation,
             'drone_orientation':
                 [degrees(x) for x in

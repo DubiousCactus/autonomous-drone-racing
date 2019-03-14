@@ -60,7 +60,7 @@ class DatasetFactory:
         self.verbose = args.verbose
         self.render_perspective = args.extra_verbose
         if self.render_perspective:
-            self.verbos = True
+            self.verbose = True
         self.pitch_bias = args.pitch_bias
         self.roll_bias = args.roll_bias
         self.background_dataset = Dataset(args.dataset)
@@ -133,8 +133,7 @@ class DatasetFactory:
                    coordinates[1] + 10), fill=color)
 
     def draw_image_annotations(self, img, annotations, color=(0, 255, 0, 255)):
-        text = "gate_center_image_frame: {}\ngate_position: {}\n\
-                gate_rotation: {}\ndrone_pose: {}\ndrone_orientation:{}".format(
+        text = "gate_center_image_frame: {}\ngate_position: {}\ngate_rotation: {}\ndrone_pose: {}\ndrone_orientation:{}".format(
             annotations['gate_center_img_frame'], annotations['gate_position'],
                 annotations['gate_rotation'], annotations['drone_pose'],
                 annotations['drone_orientation'])
