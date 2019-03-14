@@ -68,7 +68,7 @@ class DatasetFactory:
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
-        self.world_boundaries = {'x': 4, 'y': 4, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
+        self.world_boundaries = {'x': 12, 'y': 12, 'z': 0} # Real world boundaries in meters (relative to the mesh's scale)
         self.gate_center = Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
 
     def run(self):
@@ -131,10 +131,11 @@ class DatasetFactory:
                    coordinates[1] + 10), fill=color)
 
     def draw_image_annotations(self, img, annotations, color=(0, 255, 0, 255)):
-        text = "gate_center_image_frame: {}\ngate_rotation: {}\ndrone_pose:\
-                {}\ndrone_orientation:{}".format(
-            annotations['gate_center_img_frame'], annotations['gate_rotation'],
-            annotations['drone_pose'], annotations['drone_orientation'])
+        text = "gate_center_image_frame: {}\ngate_position: {}\n\
+                gate_rotation: {}\ndrone_pose: {}\ndrone_orientation:{}".format(
+            annotations['gate_center_img_frame'], annotations['gate_position'],
+                annotations['gate_rotation'], annotations['drone_pose'],
+                annotations['drone_orientation'])
         text_draw = ImageDraw.Draw(img)
         text_draw.text((0, 0), text, color)
 

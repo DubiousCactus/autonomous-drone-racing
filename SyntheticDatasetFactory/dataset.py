@@ -59,7 +59,7 @@ class Dataset:
     def __init__(self, path: str):
         if not os.path.isdir(path):
             raise Exception("Dataset directory {} not found".format(path))
-        random.seed(2)
+        random.seed()
         self.path = path
         self.width = None
         self.height = None

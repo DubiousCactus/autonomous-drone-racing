@@ -29,7 +29,7 @@ class SceneGenerator:
     def __init__(self, mesh_path: str, width: int, height: int,
                  world_boundaries, gate_center: Vector3, camera_parameters,
                  drone_pose, render_perspective=False):
-        random.seed(2)
+        random.seed()
         self.render_perspective = render_perspective
         self.mesh = Obj.open(mesh_path)
         self.width = width
@@ -48,27 +48,7 @@ class SceneGenerator:
         self.pitch_bias = pitch
         self.roll_bias = roll
 
-    # TODO: Compute from the origin
     def compute_boundaries(self, world_boundaries):
-        # Set the orthographic coordinates for the boundaries, based on the size of the
-        # mesh
-        mesh_width = abs(
-            min(self.mesh.vert, key = lambda v_pair: v_pair[0])[0]
-            - max(self.mesh.vert, key = lambda v_pair: v_pair[0])[0]
-        )
-        mesh_height = abs(
-            min(self.mesh.vert, key = lambda v_pair: v_pair[2])[2]
-            - max(self.mesh.vert, key = lambda v_pair: v_pair[2])[2]
-        )
-
-        # print("Mesh width: {}\nMesh height: {}".format(mesh_width, mesh_height))
-
-#         return  {
-            # 'x': mesh_width * world_boundaries['x'],
-            # 'y': mesh_width * world_boundaries['y'],
-            # 'z': mesh_height * world_boundaries['z']
-#         }
-
         return  {
             'x': world_boundaries['x'] / 2,
             'y': world_boundaries['y'] / 2,
@@ -103,7 +83,7 @@ class SceneGenerator:
 
     def generate(self):
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
-        translation = Vector3([
+        gate_translation = Vector3([
             random.uniform(-self.boundaries['x'], self.boundaries['x']),
             random.uniform(-self.boundaries['y'], self.boundaries['y']),
             0
@@ -112,7 +92,7 @@ class SceneGenerator:
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
         rotation = Quaternion.from_z_rotation(random.random() * np.pi)
 
-        model = Matrix44.from_translation(translation) * rotation
+        model = Matrix44.from_translation(gate_translation) * rotation
         gate_center = model * self.gate_center
 
         camera_intrinsics = [
@@ -123,7 +103,7 @@ class SceneGenerator:
         fx, fy = camera_intrinsics[0][0], camera_intrinsics[1][1]
         cx, cy = camera_intrinsics[0][2], camera_intrinsics[1][2]
         x0, y0 = 0, 0 # Camera image origin
-        zfar, znear = 100.0, 0.01 # distances to the clipping plane
+        zfar, znear = 1000.0, 0.0001 # distances to the clipping plane
         # Works by following: https://blog.noctua-software.com/opencv-opengl-projection-matrix.html
         # Doesn't work by following: http://kgeorge.github.io/2014/03/08/calculating-opengl-perspective-matrix-from-opencv-intrinsic-matrix
         projection = Matrix44([
@@ -244,6 +224,7 @@ class SceneGenerator:
 
         annotations = {
             'gate_center_img_frame': image_frame_gate_center,
+            'gate_position': gate_translation,
             'gate_rotation':
                 [degrees(x) for x in
                  quaternion.as_euler_angles(np.quaternion(*rotation.xyzw))],
