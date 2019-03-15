@@ -14,7 +14,9 @@ positions, onto randomly selected background images from the given dataset.
 """
 
 import multiprocessing.dummy as mp
+import numpy as np
 import argparse
+import cv2
 import sys
 import os
 
@@ -41,9 +43,9 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [x] Model the camera distortion
 [ ] Add background gates
 [ ] Save annotations
-[ ] Apply the distortion to the OpenGL projection <-
+[ ] Apply the distortion to the OpenGL projection
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
-[ ] Motion blur (shader ?)
+[ ] Motion blur <-
 [x] Anti alisasing
 [ ] Ship it!
 
@@ -69,10 +71,14 @@ class DatasetFactory:
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
+        self.max_blur_amount = 1500
 
     def set_mesh_parameters(self, boundaries, gate_center):
         self.world_boundaries = boundaries
         self.gate_center = gate_center
+
+    def set_max_blur_amount(self, val):
+        self.max_blur_amount = val
 
     def run(self):
         print("[*] Generating dataset...")
@@ -94,7 +100,9 @@ class DatasetFactory:
                                    background.annotations,
                                   self.render_perspective, self.debug)
         projection, annotations = projector.generate()
-        output = self.combine(projection, background.image())
+        projection_blurred = self.apply_motion_blur(projection,
+                                                    amount=self.get_blur_amount(background.image()))
+        output = self.combine(projection_blurred, background.image())
         gate_center = self.scale_coordinates(
             annotations['gate_center_img_frame'], output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
@@ -125,6 +133,28 @@ class DatasetFactory:
         output.thumbnail((self.target_width, self.target_height), Image.ANTIALIAS)
 
         return output
+
+    def get_blur_amount(self, img: Image):
+        gray_scale = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2GRAY)
+        variance_of_laplacian = cv2.Laplacian(gray_scale, cv2.CV_64F).var()
+        blur_amount = variance_of_laplacian / self.max_blur_amount
+        if blur_amount > 1:
+            blur_amount = 1
+        blur_amount = 1 - blur_amount
+        print("blur ammount: {}".format(blur_amount))
+
+        return blur_amount
+
+    def apply_motion_blur(self, img: Image, amount=1):
+        size = int(15 * amount)
+        if size <= 0:
+            size = 2
+        kernel = np.zeros((size, size))
+        kernel[int((size)/2), :] = np.ones(size)
+        kernel /= size
+        cv_img = np.array(img)
+
+        return Image.fromarray(cv2.filter2D(cv_img, -1, kernel))
 
     def draw_gate_center(self, img, coordinates, color=(0, 255, 0, 255)):
         gate_draw = ImageDraw.Draw(img)
@@ -181,4 +211,5 @@ if __name__ == "__main__":
         {'x': 12, 'y': 12}, # Real world boundaries in meters (relative to the mesh's scale)
         Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
     )
+    datasetFactory.set_max_blur_amount(600) # Play with this value
     datasetFactory.run()
