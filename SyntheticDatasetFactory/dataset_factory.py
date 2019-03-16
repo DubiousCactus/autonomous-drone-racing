@@ -43,6 +43,7 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Overlay with background image
 [x] Model the camera distortion
 [ ] Add background gates <-
+[ ] Compute gate orientation with respect to the camera
 [x] Save annotations
 [ ] Apply the distortion to the OpenGL projection
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
