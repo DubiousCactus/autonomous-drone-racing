@@ -65,10 +65,10 @@ class DatasetFactory:
         self.max_blur_amount = args.blur_threshold
         self.noise_amount = args.noise_amount
         self.no_blur = args.no_blur
-        self.debug = args.debug
+        self.seed = args.seed
         if self.render_perspective:
             self.verbose = True
-        self.background_dataset = Dataset(args.dataset, args.debug)
+        self.background_dataset = Dataset(args.dataset, args.seed)
         if not self.background_dataset.load(self.count, args.annotations):
             print("[!] Could not load dataset!")
             sys.exit(1)
@@ -97,7 +97,7 @@ class DatasetFactory:
                                    self.base_height, self.world_boundaries,
                                    self.gate_center, self.cam_param,
                                    background.annotations,
-                                  self.render_perspective, self.debug)
+                                  self.render_perspective, self.seed)
         projection, annotations = projector.generate()
         projection_blurred = self.apply_motion_blur(projection,
                                                     amount=self.get_blur_amount(background.image()))
@@ -213,8 +213,7 @@ if __name__ == "__main__":
     parser.add_argument('-vv', dest='extra_verbose', help='extra verbose\
                         output (render the perspective grid)',
                         action='store_true', default=False)
-    parser.add_argument('-d', dest='debug', action='store_true',
-                        default=False, help='use a fixed seed')
+    parser.add_argument('--seed', dest='seed', default=None, help='use a fixed seed')
     parser.add_argument('--blur', dest='blur_threshold', default=200, type=int,
                         help='the blur threshold')
     parser.add_argument('--noise', dest='noise_amount', default=0.03,
@@ -224,7 +223,7 @@ if __name__ == "__main__":
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.set_mesh_parameters(
-        {'x': 12, 'y': 12}, # Real world boundaries in meters (relative to the mesh's scale)
+        {'x': 10, 'y': 10}, # Real world boundaries in meters (relative to the mesh's scale)
         Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
     )
     datasetFactory.run()

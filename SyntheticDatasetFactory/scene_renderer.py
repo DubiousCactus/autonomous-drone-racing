@@ -20,7 +20,7 @@ import random
 import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from moderngl.ext.obj import Obj
+from ModernGL.ext.obj import Obj
 from math import degrees
 from PIL import Image
 
@@ -28,9 +28,9 @@ from PIL import Image
 class SceneRenderer:
     def __init__(self, mesh_path: str, width: int, height: int,
                  world_boundaries, gate_center: Vector3, camera_parameters,
-                 drone_pose, render_perspective=False, debug=False):
-        if debug:
-            random.seed(1234)
+                 drone_pose, render_perspective=False, seed=None):
+        if seed:
+            random.seed(seed)
         else:
             random.seed()
         self.render_perspective = render_perspective
