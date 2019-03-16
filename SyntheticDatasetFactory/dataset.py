@@ -39,10 +39,10 @@ class BackgroundImage:
 
 
 class SyntheticAnnotations:
-    def __init__(self, center: Vector3, orientation: Vector3, on_screen: bool):
-        self.center = center
-        self.orientation = orientation
-        self.on_screen = on_screen
+    def __init__(self, center, orientation, on_screen: bool):
+        self.center = [int(x) for x in center]
+        self.orientation = int(orientation)
+        self.on_screen = 1 if on_screen else 0
 
 
 '''
@@ -128,19 +128,31 @@ class Dataset:
     def _save_one(self):
         while not self.data.empty():
             annotatedImage = self.data.get()
+            name = "%06d.png" % annotatedImage.id
             annotatedImage.image.save(
-                os.path.join(self.path + str(annotatedImage.id) + '.png')
+                os.path.join(self.path, name)
             )
-            # TODO: Save the annotation in the output CSV file
+            self.output_csv.write("{},{},{},{},{}\n".format(
+                name,
+                annotatedImage.annotations.center[0],
+                annotatedImage.annotations.center[1],
+                annotatedImage.annotations.orientation,
+                annotatedImage.annotations.on_screen
+            ))
             self.data.task_done()
 
     def save(self, nb_threads):
+        self.output_csv = open(os.path.join(self.path,
+                                            'annotations.csv'), 'w')
+        self.output_csv\
+            .write("frame,gate_center_x,gate_center_y,gate_rotation,gate_visible\n")
         for i in range(nb_threads):
             t = Thread(target=self._save_one)
             t.daemon = True
             t.start()
 
         self.data.join()
+        self.output_csv.close()
 
     def get_image_size(self):
         print("[*] Using {}x{} resolution".format(self.width, self.height))

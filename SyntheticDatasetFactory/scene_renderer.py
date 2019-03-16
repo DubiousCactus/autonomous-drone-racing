@@ -198,7 +198,7 @@ class SceneRenderer:
             'gate_position': gate_translation,
             'gate_rotation':
                 [degrees(x) for x in
-                 quaternion.as_euler_angles(np.quaternion(*gate_rotation.xyzw))],
+                 quaternion.as_euler_angles(np.quaternion(*gate_rotation.xyzw))][1],
             'drone_pose': self.drone_pose.translation,
             'drone_orientation':
                 [degrees(x) for x in

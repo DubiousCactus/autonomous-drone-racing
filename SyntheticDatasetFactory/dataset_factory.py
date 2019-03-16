@@ -42,8 +42,8 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Project on transparent background
 [x] Overlay with background image
 [x] Model the camera distortion
-[ ] Add background gates
-[ ] Save annotations
+[ ] Add background gates <-
+[x] Save annotations
 [ ] Apply the distortion to the OpenGL projection
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
 [x] Motion blur
@@ -141,6 +141,9 @@ class DatasetFactory:
             blur_amount = 0.9
 
         return 1 - blur_amount
+
+    def equalize_histograms(self, img: Image, bg: Image):
+        pass
 
     def add_noise(self, img):
         noisy_img = random_noise(img, mode='gaussian', var=self.noise_amount**2)
