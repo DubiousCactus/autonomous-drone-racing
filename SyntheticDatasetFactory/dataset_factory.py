@@ -22,8 +22,9 @@ import os
 
 from pyrr import Vector3
 from PIL import Image, ImageDraw
+from skimage.util import random_noise
 from scene_renderer import SceneRenderer
-from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
+from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotations
 
 
 '''
@@ -45,7 +46,7 @@ from dataset import Dataset, AnnotatedImage, SyntheticAnnotations
 [ ] Save annotations
 [ ] Apply the distortion to the OpenGL projection
 [ ] Histogram equalization of both images (hue, saturation, luminence ?...)
-[ ] Motion blur <-
+[x] Motion blur
 [x] Anti alisasing
 [ ] Ship it!
 
@@ -57,10 +58,12 @@ class DatasetFactory:
         self.mesh_path = args.mesh
         self.nb_threads = args.threads
         self.count = args.nb_images
-        self.blur_amount = args.blur_amount
         self.cam_param = args.camera_parameters
         self.verbose = args.verbose
         self.render_perspective = args.extra_verbose
+        self.max_blur_amount = args.blur_threshold
+        self.noise_amount = args.noise_amount
+        self.no_blur = args.no_blur
         self.debug = args.debug
         if self.render_perspective:
             self.verbose = True
@@ -71,14 +74,10 @@ class DatasetFactory:
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
-        self.max_blur_amount = 1500
 
     def set_mesh_parameters(self, boundaries, gate_center):
         self.world_boundaries = boundaries
         self.gate_center = gate_center
-
-    def set_max_blur_amount(self, val):
-        self.max_blur_amount = val
 
     def run(self):
         print("[*] Generating dataset...")
@@ -86,7 +85,6 @@ class DatasetFactory:
         p.map(self.generate, range(self.count))
         p.close()
         p.join()
-
         print("[*] Scaling to {}x{} resolution".format(self.target_width,
                                                        self.target_height))
         print("[*] Saving to {}".format(self.generated_dataset.path))
@@ -102,7 +100,8 @@ class DatasetFactory:
         projection, annotations = projector.generate()
         projection_blurred = self.apply_motion_blur(projection,
                                                     amount=self.get_blur_amount(background.image()))
-        output = self.combine(projection_blurred, background.image())
+        projection_noised = self.add_noise(projection_blurred)
+        output = self.combine(projection_noised, background.image())
         gate_center = self.scale_coordinates(
             annotations['gate_center_img_frame'], output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
@@ -139,22 +138,32 @@ class DatasetFactory:
         variance_of_laplacian = cv2.Laplacian(gray_scale, cv2.CV_64F).var()
         blur_amount = variance_of_laplacian / self.max_blur_amount
         if blur_amount > 1:
-            blur_amount = 1
-        blur_amount = 1 - blur_amount
-        print("blur ammount: {}".format(blur_amount))
+            blur_amount = 0.9
 
-        return blur_amount
+        return 1 - blur_amount
 
-    def apply_motion_blur(self, img: Image, amount=1):
-        size = int(15 * amount)
-        if size <= 0:
-            size = 2
-        kernel = np.zeros((size, size))
-        kernel[int((size)/2), :] = np.ones(size)
-        kernel /= size
+    def add_noise(self, img):
+        noisy_img = random_noise(img, mode='gaussian', var=self.noise_amount**2)
+        noisy_img = (255*noisy_img).astype(np.uint8)
+
+        return Image.fromarray(noisy_img)
+
+    def apply_motion_blur(self, img: Image, amount=0.5):
         cv_img = np.array(img)
 
-        return Image.fromarray(cv2.filter2D(cv_img, -1, kernel))
+        if self.no_blur:
+            return cv_img
+
+        if amount <= 0.3:
+            size = 3
+        elif amount <= 0.5:
+            size = 5
+        else:
+            size = 9
+        kernel = np.identity(size)
+        kernel /= size
+
+        return cv2.filter2D(cv_img, -1, kernel)
 
     def draw_gate_center(self, img, coordinates, color=(0, 255, 0, 255)):
         gate_draw = ImageDraw.Draw(img)
@@ -188,9 +197,6 @@ if __name__ == "__main__":
                         type=str)
     parser.add_argument('--count', dest='nb_images', default=5, type=int,
                         help='the number of images to be generated')
-    parser.add_argument('--blur-amount', dest='blur_amount', default=0.3,
-                        type=float, help='the percentage of motion blur to be \
-                        added')
     parser.add_argument('--res', dest='resolution', default='640x480',
                         type=str, help='the desired resolution')
     parser.add_argument('-t', dest='threads', default=4, type=int,
@@ -205,11 +211,16 @@ if __name__ == "__main__":
                         action='store_true', default=False)
     parser.add_argument('-d', dest='debug', action='store_true',
                         default=False, help='use a fixed seed')
+    parser.add_argument('--blur', dest='blur_threshold', default=200, type=int,
+                        help='the blur threshold')
+    parser.add_argument('--noise', dest='noise_amount', default=0.03,
+                        type=float, help='the gaussian noise amount')
+    parser.add_argument('--no-blur', dest='no_blur', action='store_true',
+                        default=False, help='disable synthetic motion blur')
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.set_mesh_parameters(
         {'x': 12, 'y': 12}, # Real world boundaries in meters (relative to the mesh's scale)
         Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
     )
-    datasetFactory.set_max_blur_amount(600) # Play with this value
     datasetFactory.run()

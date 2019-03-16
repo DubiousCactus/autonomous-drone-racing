@@ -83,10 +83,11 @@ class Dataset:
 
         return annotations
 
-    def load(self, count, annotations_path=None):
+    def load(self, count, annotations_path=None, randomize=True):
         print("[*] Loading and randomizing base dataset...")
         files = os.listdir(self.path)
-        random.shuffle(files)
+        if randomize:
+            random.shuffle(files)
 
         while count >= len(files):
             choice = random.choice(files)

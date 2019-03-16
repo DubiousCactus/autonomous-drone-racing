@@ -4,7 +4,8 @@
 '''
 Utility script to extract frames and drone poses from the given topics
 (usually used with rosbag).
-It generates a CSV file containing annotations for each extracted frame.
+It generates a CSV file containing annotations for each extracted frame, after
+synchronizing the timestamps.
 '''
 
 import os
@@ -19,6 +20,7 @@ from collections import OrderedDict
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import CompressedImage, Image
 
+TIME_STAMP_MAX_DIFF = 5
 
 class FramePoseExtractor():
     def __init__(self):
@@ -127,6 +129,7 @@ Typical command-line usage:
     Synchronizes the image timestamps with the pose timestamps, and writes the
     correct image-pose matches to a CSV file.
     '''
+    # TODO: Fix the first few frames' sync
     def _write_csv(self):
         print("[*] Synchronizing timestamps...")
         # Crop the images to avoid lag issues
@@ -140,7 +143,7 @@ Typical command-line usage:
                 if pose['stamp'] > img_timestamp:
                     if i > 0:
                         prev_pose = self.annotations[self.annotations.keys()[i-1]]
-                        if int((img_timestamp - prev_pose['stamp'])/1000000) <= 5:
+                        if int((img_timestamp - prev_pose['stamp'])/1000000) <= TIME_STAMP_MAX_DIFF:
                             translation = prev_pose['translation']
                             rotation = prev_pose['rotation']
                             stamp_readable = prev_pose['stamp_readable']
