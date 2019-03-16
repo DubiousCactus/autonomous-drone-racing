@@ -216,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', dest='seed', default=None, help='use a fixed seed')
     parser.add_argument('--blur', dest='blur_threshold', default=200, type=int,
                         help='the blur threshold')
-    parser.add_argument('--noise', dest='noise_amount', default=0.03,
+    parser.add_argument('--noise', dest='noise_amount', default=0.025,
                         type=float, help='the gaussian noise amount')
     parser.add_argument('--no-blur', dest='no_blur', action='store_true',
                         default=False, help='disable synthetic motion blur')
