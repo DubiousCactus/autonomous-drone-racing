@@ -21,6 +21,7 @@ import sys
 import os
 
 from pyrr import Vector3
+from itertools import repeat
 from PIL import Image, ImageDraw
 from skimage.util import random_noise
 from scene_renderer import SceneRenderer
@@ -42,7 +43,8 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Project on transparent background
 [x] Overlay with background image
 [x] Model the camera distortion
-[ ] Add background gates <-
+[x] Save output every N samples to avoid crash
+[ ] Add background gates
 [ ] Compute gate orientation with respect to the camera
 [x] Save annotations
 [ ] Apply the distortion to the OpenGL projection
@@ -75,6 +77,7 @@ class DatasetFactory:
         self.generated_dataset = Dataset(args.destination)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
+        self.sample_no = 0
 
     def set_mesh_parameters(self, boundaries, gate_center):
         self.world_boundaries = boundaries
@@ -82,16 +85,18 @@ class DatasetFactory:
 
     def run(self):
         print("[*] Generating dataset...")
+        e = mp.Event()
+        e.set()
         p = mp.Pool(self.nb_threads)
-        p.map(self.generate, range(self.count))
+        p.starmap(self.generate, zip(range(self.count), repeat(e)))
         p.close()
         p.join()
-        print("[*] Scaling to {}x{} resolution".format(self.target_width,
-                                                       self.target_height))
-        print("[*] Saving to {}".format(self.generated_dataset.path))
-        self.generated_dataset.save(self.nb_threads)
+        self.generated_dataset.end()
+        print("[*] Saved to {}".format(self.generated_dataset.path))
 
-    def generate(self, index):
+    def generate(self, index, event):
+        if not event.is_set():
+            event.wait()
         background = self.background_dataset.get()
         projector = SceneRenderer(self.mesh_path, self.base_width,
                                    self.base_height, self.world_boundaries,
@@ -103,8 +108,7 @@ class DatasetFactory:
                                                     amount=self.get_blur_amount(background.image()))
         projection_noised = self.add_noise(projection_blurred)
         output = self.combine(projection_noised, background.image())
-        gate_center = self.scale_coordinates(
-            annotations['gate_center_img_frame'], output.size)
+        gate_center = self.scale_coordinates( annotations['gate_center_img_frame'], output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
                         output.size[0]) and (gate_center[1] >= 0 and
                                              gate_center[1] <= output.size[1])
@@ -115,8 +119,12 @@ class DatasetFactory:
         self.generated_dataset.put(
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
                                                                annotations['gate_rotation'],
-                                                               gate_visible))
-        )
+                                                               gate_visible)))
+        self.sample_no += 1
+        if (self.sample_no % 100) == 0:
+            event.clear()
+            self.generated_dataset.save()
+            event.set()
 
     # Scale to target width/height
     def scale_coordinates(self, coordinates, target_coordinates):
@@ -128,9 +136,11 @@ class DatasetFactory:
     # NB: Thumbnail() only scales down!!
     def combine(self, projection: Image, background: Image):
         background = background.convert('RGBA')
-        projection.thumbnail((self.base_width, self.base_height), Image.ANTIALIAS)
+        if projection.size != (self.base_width, self.base_height):
+            projection.thumbnail((self.base_width, self.base_height), Image.ANTIALIAS)
         output = Image.alpha_composite(background, projection)
-        output.thumbnail((self.target_width, self.target_height), Image.ANTIALIAS)
+        if output.size != (self.target_width, self.target_height):
+            output.thumbnail((self.target_width, self.target_height), Image.ANTIALIAS)
 
         return output
 

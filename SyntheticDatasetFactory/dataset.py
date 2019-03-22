@@ -67,6 +67,7 @@ class Dataset:
         self.width = None
         self.height = None
         self.data = Queue()
+        self.saving = False
 
     def parse_annotations(self, path: str):
         if not os.path.isfile(path):
@@ -125,12 +126,21 @@ class Dataset:
     def put(self, image: AnnotatedImage):
         self.data.put(image)
 
-    def _save_one(self):
+    def save(self):
+        if not self.saving:
+            self.output_csv = open(os.path.join(self.path,
+                                                'annotations.csv'), 'w+')
+            self.output_csv.write(
+                "frame,gate_center_x,gate_center_y,gate_rotation,gate_visible\n")
+            self.saving = True
+            if not os.path.isdir(os.path.join(self.path, 'images')):
+                os.mkdir(os.path.join(self.path, 'images'))
+
         while not self.data.empty():
             annotatedImage = self.data.get()
             name = "%06d.png" % annotatedImage.id
             annotatedImage.image.save(
-                os.path.join(self.path, name)
+                os.path.join(self.path, 'images', name)
             )
             self.output_csv.write("{},{},{},{},{}\n".format(
                 name,
@@ -141,17 +151,9 @@ class Dataset:
             ))
             self.data.task_done()
 
-    def save(self, nb_threads):
-        self.output_csv = open(os.path.join(self.path,
-                                            'annotations.csv'), 'w')
-        self.output_csv\
-            .write("frame,gate_center_x,gate_center_y,gate_rotation,gate_visible\n")
-        for i in range(nb_threads):
-            t = Thread(target=self._save_one)
-            t.daemon = True
-            t.start()
-
         self.data.join()
+
+    def end(self):
         self.output_csv.close()
 
     def get_image_size(self):

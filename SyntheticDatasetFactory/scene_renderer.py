@@ -20,7 +20,7 @@ import random
 import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from ModernGL.ext.obj import Obj
+from moderngl.ext.obj import Obj
 from math import degrees
 from PIL import Image
 
