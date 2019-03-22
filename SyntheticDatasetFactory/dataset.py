@@ -126,17 +126,17 @@ class Dataset:
     def put(self, image: AnnotatedImage):
         self.data.put(image)
 
-    def save(self):
+    def save(self, generation_done_event):
         if not self.saving:
             self.output_csv = open(os.path.join(self.path,
-                                                'annotations.csv'), 'w+')
+                                                'annotations.csv'), 'w')
             self.output_csv.write(
                 "frame,gate_center_x,gate_center_y,gate_rotation,gate_visible\n")
             self.saving = True
             if not os.path.isdir(os.path.join(self.path, 'images')):
                 os.mkdir(os.path.join(self.path, 'images'))
 
-        while not self.data.empty():
+        while not generation_done_event.is_set():
             annotatedImage = self.data.get()
             name = "%06d.png" % annotatedImage.id
             annotatedImage.image.save(
@@ -152,8 +152,6 @@ class Dataset:
             self.data.task_done()
 
         self.data.join()
-
-    def end(self):
         self.output_csv.close()
 
     def get_image_size(self):

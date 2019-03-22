@@ -85,18 +85,19 @@ class DatasetFactory:
 
     def run(self):
         print("[*] Generating dataset...")
-        e = mp.Event()
-        e.set()
+        generation_done_event = mp.Event()
+        process = mp.Process(target=self.generated_dataset.save,
+                             args=(generation_done_event,))
+        process.start()
         p = mp.Pool(self.nb_threads)
-        p.starmap(self.generate, zip(range(self.count), repeat(e)))
+        p.map(self.generate, range(self.count))
         p.close()
         p.join()
-        self.generated_dataset.end()
+        generation_done_event.set()
+        process.join()
         print("[*] Saved to {}".format(self.generated_dataset.path))
 
-    def generate(self, index, event):
-        if not event.is_set():
-            event.wait()
+    def generate(self, index):
         background = self.background_dataset.get()
         projector = SceneRenderer(self.mesh_path, self.base_width,
                                    self.base_height, self.world_boundaries,
@@ -120,11 +121,6 @@ class DatasetFactory:
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
                                                                annotations['gate_rotation'],
                                                                gate_visible)))
-        self.sample_no += 1
-        if (self.sample_no % 100) == 0:
-            event.clear()
-            self.generated_dataset.save()
-            event.set()
 
     # Scale to target width/height
     def scale_coordinates(self, coordinates, target_coordinates):
