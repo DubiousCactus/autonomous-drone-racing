@@ -215,4 +215,7 @@ class SceneRenderer:
                  quaternion.as_euler_angles(np.quaternion(*self.drone_pose.orientation.xyzw))]
         }
 
+        fbo1.release()
+        fbo2.release()
+
         return (img, annotations)
