@@ -56,7 +56,7 @@ class AnnotatedImage:
 
 
 class Dataset:
-    def __init__(self, path: str, seed=None):
+    def __init__(self, path: str, seed=None, max=0):
         if not os.path.isdir(path):
             raise Exception("Dataset directory {} not found".format(path))
         if seed:
@@ -66,7 +66,7 @@ class Dataset:
         self.path = path
         self.width = None
         self.height = None
-        self.data = Queue()
+        self.data = Queue(maxsize=max)
         self.saving = False
 
     def parse_annotations(self, path: str):
@@ -136,8 +136,9 @@ class Dataset:
             if not os.path.isdir(os.path.join(self.path, 'images')):
                 os.mkdir(os.path.join(self.path, 'images'))
 
-        while not generation_done_event.is_set():
-            annotatedImage = self.data.get()
+        # while not generation_done_event.is_set():
+        for annotatedImage in iter(self.data.get, None):
+            # annotatedImage = self.data.get()
             name = "%06d.png" % annotatedImage.id
             annotatedImage.image.save(
                 os.path.join(self.path, 'images', name)
@@ -149,9 +150,7 @@ class Dataset:
                 annotatedImage.annotations.orientation,
                 annotatedImage.annotations.on_screen
             ))
-            self.data.task_done()
 
-        self.data.join()
         self.output_csv.close()
 
     def get_image_size(self):

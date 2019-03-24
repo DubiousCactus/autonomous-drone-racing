@@ -28,7 +28,7 @@ from PIL import Image
 class SceneRenderer:
     def __init__(self, mesh_path: str, width: int, height: int,
                  world_boundaries, gate_center: Vector3, camera_parameters,
-                 drone_pose, render_perspective=False, seed=None):
+                 render_perspective=False, seed=None):
         if seed:
             random.seed(seed)
         else:
@@ -38,7 +38,6 @@ class SceneRenderer:
         self.width = width
         self.height = height
         self.gate_center = gate_center
-        self.drone_pose = drone_pose
         self.boundaries = self.compute_boundaries(world_boundaries)
         with open(camera_parameters, 'r') as cam_file:
             try:
@@ -53,6 +52,9 @@ class SceneRenderer:
             'y': world_boundaries['y'] / 2
         }
 
+    def set_drone_pose(self, drone_pose):
+        self.drone_pose = drone_pose
+
     def setup_opengl(self):
         vertex_shader_source = open('data/shader.vert').read()
         fragment_shader_source = open('data/shader.frag').read()
@@ -61,6 +63,14 @@ class SceneRenderer:
         # Shaders
         self.prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
         self.grid_prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
+
+    def destroy(self):
+        self.prog.release()
+        self.grid_prog.release()
+        self.context.release()
+        del self.prog
+        del self.grid_prog
+        del self.context
 
     def generate(self):
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
