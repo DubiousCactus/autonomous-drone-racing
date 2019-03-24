@@ -188,7 +188,7 @@ class SceneRenderer:
         # Rendering
         fbo1.use()
         self.context.enable(moderngl.DEPTH_TEST)
-        self.context.clear(0, 0, 0, 1)
+        self.context.clear(0, 0, 0, 0)
         texture.use()
         vao.render()
 

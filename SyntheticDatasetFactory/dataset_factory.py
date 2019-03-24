@@ -91,7 +91,7 @@ class DatasetFactory:
                                         self.world_boundaries, self.gate_center,
                                         self.cam_param, self.render_perspective, self.seed)
         save_thread.start()
-        for i in tqdm(range(self.count)):
+        for i in tqdm(range(self.count), unit="img", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}"):
             self.generate(i, projector)
 
         self.generated_dataset.data.put(None)
@@ -134,7 +134,7 @@ class DatasetFactory:
                                                     amount=self.get_blur_amount(background.image()))
         projection_noised = self.add_noise(projection_blurred)
         output = self.combine(projection_noised, background.image())
-        gate_center = self.scale_coordinates( annotations['gate_center_img_frame'], output.size)
+        gate_center = self.scale_coordinates(annotations['gate_center_img_frame'], output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
                         output.size[0]) and (gate_center[1] >= 0 and
                                              gate_center[1] <= output.size[1])
