@@ -217,5 +217,8 @@ class SceneRenderer:
 
         fbo1.release()
         fbo2.release()
+        vao.release()
+        vbo.release()
 
         return (img, annotations)
+

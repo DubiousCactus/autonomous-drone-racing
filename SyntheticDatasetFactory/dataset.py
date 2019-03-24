@@ -143,13 +143,15 @@ class Dataset:
             annotatedImage.image.save(
                 os.path.join(self.path, 'images', name)
             )
-            self.output_csv.write("{},{},{},{},{}\n".format(
-                name,
-                annotatedImage.annotations.center[0],
-                annotatedImage.annotations.center[1],
-                annotatedImage.annotations.orientation,
-                annotatedImage.annotations.on_screen
-            ))
+            del annotatedImage
+        #     self.output_csv.write("{},{},{},{},{}\n".format(
+                # name,
+                # annotatedImage.annotations.center[0],
+                # annotatedImage.annotations.center[1],
+                # annotatedImage.annotations.orientation,
+                # annotatedImage.annotations.on_screen
+            # ))
+            # self.output_csv.flush()
 
         self.output_csv.close()
 
