@@ -20,7 +20,7 @@ import random
 import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from moderngl.ext.obj import Obj
+from ModernGL.ext.obj import Obj
 from math import degrees
 from PIL import Image
 
@@ -61,16 +61,15 @@ class SceneRenderer:
         # Context creation
         self.context = moderngl.create_standalone_context()
         # Shaders
-        self.prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
-        self.grid_prog = self.context.program(vertex_shader=vertex_shader_source, fragment_shader=fragment_shader_source)
+        self.prog = self.context.program(vertex_shader=vertex_shader_source,
+                                         fragment_shader=fragment_shader_source)
+        self.grid_prog = self.context.program(vertex_shader=vertex_shader_source,
+                             fragment_shader=fragment_shader_source)
 
     def destroy(self):
         self.prog.release()
         self.grid_prog.release()
         self.context.release()
-        del self.prog
-        del self.grid_prog
-        del self.context
 
     def generate(self):
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
@@ -171,21 +170,25 @@ class SceneRenderer:
 
         # Framebuffers
         # Use 4 samples for MSAA anti-aliasing
+        msaa_render_buffer = self.context.renderbuffer((self.width,
+                                                        self.height),
+                                                       samples=8)
+        msaa_depth_render_buffer = self.context.depth_renderbuffer((self.width,
+                                                                    self.height),
+                                                                   samples=8)
         fbo1 = self.context.framebuffer(
-            self.context.renderbuffer((self.width, self.height), samples=8),
-            depth_attachment=self.context.depth_renderbuffer(
-                (self.width, self.height), samples=8))
+            msaa_render_buffer,
+            depth_attachment=msaa_depth_render_buffer)
 
         # Downsample to the final framebuffer
-        fbo2 = self.context.framebuffer(self.context.renderbuffer((self.width,
-                                                                   self.height)),
-                                       self.context.depth_renderbuffer((self.width,
-                                                                        self.height)))
+        render_buffer = self.context.renderbuffer((self.width, self.height))
+        depth_render_buffer = self.context.depth_renderbuffer((self.width, self.height))
+        fbo2 = self.context.framebuffer(render_buffer, depth_render_buffer)
 
         # Rendering
         fbo1.use()
         self.context.enable(moderngl.DEPTH_TEST)
-        self.context.clear(0, 0, 0)
+        self.context.clear(0, 0, 0, 1)
         texture.use()
         vao.render()
 
@@ -215,8 +218,17 @@ class SceneRenderer:
                  quaternion.as_euler_angles(np.quaternion(*self.drone_pose.orientation.xyzw))]
         }
 
+        '''
+        A soon-to-be-fixed bug in ModernGL forces me to release the render
+        buffers manually
+        '''
+        msaa_render_buffer.release()
+        msaa_depth_render_buffer.release()
+        render_buffer.release()
+        depth_render_buffer.release()
         fbo1.release()
         fbo2.release()
+        texture.release()
         vao.release()
         vbo.release()
 

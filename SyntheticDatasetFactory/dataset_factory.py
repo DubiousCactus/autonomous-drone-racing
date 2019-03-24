@@ -15,7 +15,6 @@ positions, onto randomly selected background images from the given dataset.
 
 import multiprocessing.dummy as mp
 import numpy as np
-import stackimpact
 import argparse
 import cv2
 import sys
@@ -45,7 +44,7 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Project on transparent background
 [x] Overlay with background image
 [x] Model the camera distortion
-[x] Save output every N samples to avoid crash
+[x] Save generated dataset online in a separate thread
 [ ] Add background gates
 [ ] Compute gate orientation with respect to the camera
 [x] Save annotations
@@ -76,7 +75,7 @@ class DatasetFactory:
         if not self.background_dataset.load(self.count, args.annotations):
             print("[!] Could not load dataset!")
             sys.exit(1)
-        self.generated_dataset = Dataset(args.destination, max=30)
+        self.generated_dataset = Dataset(args.destination, max=100)
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
         self.sample_no = 0
@@ -87,37 +86,45 @@ class DatasetFactory:
 
     def run(self):
         print("[*] Generating dataset...")
-        agent = stackimpact.start(
-            agent_key = '08acc0a39fb1998607f39a2ce7766455a9c900a0',
-            app_name = 'MyPythonApp')
-        generation_done_event = mp.Event()
-        save_thread = mp.threading.Thread(target=self.generated_dataset.save,
-                             args=(generation_done_event,))
-        projector = SceneRenderer(self.mesh_path, self.base_width,
-                                   self.base_height, self.world_boundaries,
-                                   self.gate_center, self.cam_param,
-                                  self.render_perspective, self.seed)
+        save_thread = mp.threading.Thread(target=self.generated_dataset.save)
+        projector = SceneRenderer(self.mesh_path, self.base_width, self.base_height,
+                                        self.world_boundaries, self.gate_center,
+                                        self.cam_param, self.render_perspective, self.seed)
         save_thread.start()
         for i in tqdm(range(self.count)):
             self.generate(i, projector)
 
-        # generation_done_event.set()
         self.generated_dataset.data.put(None)
         save_thread.join()
-        print("[*] Saving the last bits...")
         print("[*] Saved to {}".format(self.generated_dataset.path))
-#         with mp.Pool(self.nb_threads) as p:
-            # max_ = self.count
-            # with tqdm(total=max_) as pbar:
-                # save_thread.start()
-                # for i, _ in tqdm(enumerate(p.imap_unordered(self.generate, range(max_)))):
-                    # pbar.update()
-                # p.close()
-                # p.join()
-                # self.generated_dataset.data.join()
-                # generation_done_event.set()
-                # save_thread.join()
-#                 print("[*] Saved to {}".format(self.generated_dataset.path))
+
+    '''
+    FIXME: Memory leaks all over... Not easy to reuse a projector per thread.
+    '''
+    def run_multi_threaded(self):
+        print("[*] Generating dataset...")
+        save_thread = mp.threading.Thread(target=self.generated_dataset.save)
+
+        with mp.Pool(self.nb_threads) as p:
+            max_ = self.count
+            with tqdm(total=max_) as pbar:
+                save_thread.start()
+                self.projectors = []
+                for i in range(self.nb_threads):
+                    self.projectors.append(SceneRenderer(self.mesh_path,
+                                                    self.base_width,
+                                                    self.base_height,
+                                                    self.world_boundaries, self.gate_center,
+                                                    self.cam_param, self.render_perspective,
+                                                    self.seed))
+                args = zip(range(max_), max_ * list(range(self.nb_threads)))
+                for i, _ in tqdm(enumerate(p.imap_unordered(self.generate, args))):
+                    pbar.update()
+                p.close()
+                p.join()
+                self.generated_dataset.data.put(None)
+                save_thread.join()
+                print("[*] Saved to {}".format(self.generated_dataset.path))
 
     def generate(self, index, projector):
         background = self.background_dataset.get()
@@ -125,8 +132,8 @@ class DatasetFactory:
         projection, annotations = projector.generate()
         projection_blurred = self.apply_motion_blur(projection,
                                                     amount=self.get_blur_amount(background.image()))
-        # projection_noised = self.add_noise(projection_blurred)
-        output = self.combine(Image.fromarray(projection_blurred), background.image())
+        projection_noised = self.add_noise(projection_blurred)
+        output = self.combine(projection_noised, background.image())
         gate_center = self.scale_coordinates( annotations['gate_center_img_frame'], output.size)
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
                         output.size[0]) and (gate_center[1] >= 0 and
@@ -139,14 +146,6 @@ class DatasetFactory:
             AnnotatedImage(output, index, SyntheticAnnotations(gate_center,
                                                                annotations['gate_rotation'],
                                                                gate_visible)))
-        # projector.destroy()
-        # del projector
-        del output
-        # del projection_noised
-        del projection_blurred
-        del projection
-        del annotations
-        del background
 
     # Scale to target width/height
     def scale_coordinates(self, coordinates, target_coordinates):
