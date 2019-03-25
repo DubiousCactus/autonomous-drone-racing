@@ -135,7 +135,8 @@ class SceneRenderer:
         return image_frame_gate_center
 
     '''
-        Project the perspective as a grid
+        Project the perspective as a grid (might need some tuning for
+        non-square environments)
     '''
     def render_perspective_grid(self, view):
         vertex_shader_source = open('data/shader.vert').read()
@@ -144,9 +145,12 @@ class SceneRenderer:
                              fragment_shader=fragment_shader_source)
 
         grid = []
-        for i in range(13):
-            grid.append([i - 6, -6, 0.0, i - 6, 6, 0.0])
-            grid.append([-6, i - 6, 0.0, 6, i - 6, 0.0])
+        x_length = int(self.boundaries['x'])
+        for i in range(x_length * 2 + 1):
+            grid.append([i - x_length, -x_length, 0.0,
+                         i - x_length, x_length, 0.0])
+            grid.append([-x_length, i - x_length, 0.0,
+                         x_length, i - x_length, 0.0])
 
         grid = np.array(grid)
 
