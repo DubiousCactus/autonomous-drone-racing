@@ -56,12 +56,8 @@ class SceneRenderer:
         self.drone_pose = drone_pose
 
     def setup_opengl(self):
-        vertex_shader_source = open('data/shader.vert').read()
-        fragment_shader_source = open('data/shader.frag').read()
         # Context creation
         self.context = moderngl.create_standalone_context()
-        self.grid_prog = self.context.program(vertex_shader=vertex_shader_source,
-                             fragment_shader=fragment_shader_source)
         camera_intrinsics = [
             self.camera_parameters['camera_matrix']['data'][0:3],
             self.camera_parameters['camera_matrix']['data'][3:6],
@@ -81,7 +77,6 @@ class SceneRenderer:
         ])
 
     def destroy(self):
-        self.grid_prog.release()
         self.context.release()
 
     def render_gate(self, view):
@@ -99,6 +94,8 @@ class SceneRenderer:
         mvp = self.projection * view * model
 
         # Shader program
+        vertex_shader_source = open('data/shader.vert').read()
+        fragment_shader_source = open('data/shader.frag').read()
         prog = self.context.program(vertex_shader=vertex_shader_source,
                                          fragment_shader=fragment_shader_source)
         prog['Light'].value = (0.0, 0.0, 4.0) # TODO
@@ -108,7 +105,7 @@ class SceneRenderer:
         # Vertex Buffer and Vertex Array
         vbo = self.context.buffer(self.mesh.pack())
         vao = self.context.simple_vertex_array(prog, vbo, *['in_vert', 'in_text', 'in_norm'])
-        vbo.release() # TODO: Would this work?
+        # vbo.release() # TODO: Would this work?
 
         return vao, model, gate_translation, gate_rotation
 
@@ -143,6 +140,11 @@ class SceneRenderer:
         Project the perspective as a grid
     '''
     def render_perspective_grid(self, view):
+        vertex_shader_source = open('data/shader.vert').read()
+        fragment_shader_source = open('data/shader.frag').read()
+        grid_prog = self.context.program(vertex_shader=vertex_shader_source,
+                             fragment_shader=fragment_shader_source)
+
         grid = []
         for i in range(13):
             grid.append([i - 6, -6, 0.0, i - 6, 6, 0.0])
@@ -151,13 +153,13 @@ class SceneRenderer:
         grid = np.array(grid)
 
         vp = self.projection * view
-        self.grid_prog['Light'].value = (0.0, 0.0, 6.0) # TODO
-        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
-        self.grid_prog['Mvp'].write(vp.astype('f4').tobytes())
+        grid_prog['Light'].value = (0.0, 0.0, 6.0) # TODO
+        grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
+        grid_prog['Mvp'].write(vp.astype('f4').tobytes())
 
         vbo= self.context.buffer(grid.astype('f4').tobytes())
-        vao= self.context.simple_vertex_array(self.grid_prog, vbo, 'in_vert')
-        vbo.release() # TODO: Would this work?
+        vao= self.context.simple_vertex_array(grid_prog, vbo, 'in_vert')
+        # vbo.release() # TODO: Would this work?
 
         return vao
 
@@ -212,24 +214,24 @@ class SceneRenderer:
         gate_rotation = None
         min_prox = None
         # Render at least one gate
-        for i in range(random.randint(1, self.max_gates)):
+        for i in range(random.randint(1, max_gates)):
             # TODO: Release VAO and VBO
             vao, model, translation, rotation = self.render_gate(view)
             proximity = self.compute_camera_proximity(translation)
             # Pick the target gate: the closest to the camera
             if min_prox is None or proximity < min_prox:
                 min_prox = proximity
-                gate_center = self.compute_gate_center(model)
+                gate_center = self.compute_gate_center(view, model)
                 gate_translation = translation
                 gate_rotation = rotation
             vao.render()
-            vao.release()
+            # vao.release()
 
         if self.render_perspective:
             # TODO: Release VAO and VBO
-            voa_grid = self.render_perspective_grid(view)
+            vao_grid = self.render_perspective_grid(view)
             vao_grid.render(moderngl.LINES, 65 * 4)
-            vao_grid.release()
+            # vao_grid.release()
 
         self.context.copy_framebuffer(fbo2, fbo1)
 
