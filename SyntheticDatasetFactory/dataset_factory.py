@@ -45,7 +45,7 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Overlay with background image
 [x] Model the camera distortion
 [x] Save generated dataset online in a separate thread
-[ ] Add background gates
+[ ] Add background gates <--
 [ ] Compute gate orientation with respect to the camera
 [x] Save annotations
 [ ] Apply the distortion to the OpenGL projection
@@ -91,7 +91,8 @@ class DatasetFactory:
                                         self.world_boundaries, self.gate_center,
                                         self.cam_param, self.render_perspective, self.seed)
         save_thread.start()
-        for i in tqdm(range(self.count), unit="img", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}"):
+        for i in tqdm(range(self.count),
+                      unit="img", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}"):
             self.generate(i, projector)
 
         self.generated_dataset.data.put(None)
@@ -255,6 +256,6 @@ if __name__ == "__main__":
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.set_mesh_parameters(
         {'x': 10, 'y': 10}, # Real world boundaries in meters (relative to the mesh's scale)
-        Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
+        Vector3([0.0, 0.0, 2.3]) # Gate center: figure this out yourself
     )
     datasetFactory.run()

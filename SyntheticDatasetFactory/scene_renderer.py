@@ -60,31 +60,8 @@ class SceneRenderer:
         fragment_shader_source = open('data/shader.frag').read()
         # Context creation
         self.context = moderngl.create_standalone_context()
-        # Shaders
-        self.prog = self.context.program(vertex_shader=vertex_shader_source,
-                                         fragment_shader=fragment_shader_source)
         self.grid_prog = self.context.program(vertex_shader=vertex_shader_source,
                              fragment_shader=fragment_shader_source)
-
-    def destroy(self):
-        self.prog.release()
-        self.grid_prog.release()
-        self.context.release()
-
-    def generate(self):
-        ''' Randomly move the gate around, while keeping it inside the boundaries '''
-        gate_translation = Vector3([
-            random.uniform(-self.boundaries['x'], self.boundaries['x']),
-            random.uniform(-self.boundaries['y'], self.boundaries['y']),
-            0
-        ])
-
-        ''' Randomly rotate the gate horizontally, around the Z-axis '''
-        gate_rotation = Quaternion.from_z_rotation(random.random() * np.pi)
-
-        model = Matrix44.from_translation(gate_translation) * gate_rotation
-        gate_center = model * self.gate_center
-
         camera_intrinsics = [
             self.camera_parameters['camera_matrix']['data'][0:3],
             self.camera_parameters['camera_matrix']['data'][3:6],
@@ -96,31 +73,55 @@ class SceneRenderer:
         zfar, znear = 1000.0, 0.001 # distances to the clipping plane
         # Works by following: https://blog.noctua-software.com/opencv-opengl-projection-matrix.html
         # Doesn't work by following: http://kgeorge.github.io/2014/03/08/calculating-opengl-perspective-matrix-from-opencv-intrinsic-matrix
-        projection = Matrix44([
+        self.projection = Matrix44([
             [fx/cx, 0, 0, 0],
             [0, fy/cy, 0, 0],
             [0, 0, (-zfar - znear)/(zfar - znear), -1],
             [0, 0, (-2.0*zfar*znear)/(zfar - znear), 0] # TODO: EXPLAIN WHY IT WORKS WHEN I FLIP [2][2] AND [3][2]
         ])
 
-        # Camera view matrix
-        view = Matrix44.look_at(
-            # eye: position of the camera in world coordinates
-            self.drone_pose.translation,
-            # target: position in world coordinates that the camera is looking at
-            self.drone_pose.translation + (self.drone_pose.orientation *
-                                           Vector3([1.0, 0.0, 0.0])),
-            # up: up vector of the camera.
-            self.drone_pose.orientation * Vector3([0.0, 0.0, 1.0]),
-        )
+    def destroy(self):
+        self.grid_prog.release()
+        self.context.release()
+
+    def render_gate(self, view):
+        ''' Randomly move the gate around, while keeping it inside the boundaries '''
+        gate_translation = Vector3([
+            random.uniform(-self.boundaries['x'], self.boundaries['x']),
+            random.uniform(-self.boundaries['y'], self.boundaries['y']),
+            0
+        ])
+        ''' Randomly rotate the gate horizontally, around the Z-axis '''
+        gate_rotation = Quaternion.from_z_rotation(random.random() * np.pi)
+        model = Matrix44.from_translation(gate_translation) * gate_rotation
 
         # Model View Projection matrix
-        mvp = projection * view * model
+        mvp = self.projection * view * model
 
-        # Converting the gate center's world coordinates to image coordinates
-        # TODO: Set to null if the camera is within 50cm of the gate !! (cause
-        # we can't see it duuuuh)
-        clip_space_gate_center = projection * (view *  Vector4.from_vector3(gate_center, w=1.0))
+        # Shader program
+        prog = self.context.program(vertex_shader=vertex_shader_source,
+                                         fragment_shader=fragment_shader_source)
+        prog['Light'].value = (0.0, 0.0, 4.0) # TODO
+        prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
+        prog['Mvp'].write(mvp.astype('f4').tobytes())
+
+        # Vertex Buffer and Vertex Array
+        vbo = self.context.buffer(self.mesh.pack())
+        vao = self.context.simple_vertex_array(prog, vbo, *['in_vert', 'in_text', 'in_norm'])
+        vbo.release() # TODO: Would this work?
+
+        return vao, model, gate_translation, gate_rotation
+
+    '''
+        Converting the gate center's world coordinates to image coordinates
+        TODO: Set to null if the camera is within 50cm of the gate !! (cause
+        we can't see it duuuuh)
+    '''
+    def compute_gate_center(self, view, model):
+        gate_center = model * self.gate_center
+        clip_space_gate_center = self.projection * (view *
+                                                    Vector4.from_vector3(gate_center,
+                                                                         w=1.0))
 
         if clip_space_gate_center.w != 0:
             normalized_device_coordinate_space_gate_center\
@@ -136,37 +137,52 @@ class SceneRenderer:
         # Translate from bottom-left to top-left
         image_frame_gate_center[1] = self.height - image_frame_gate_center[1]
 
-        # Shader program
-        self.prog['Light'].value = (0.0, 0.0, 4.0) # TODO
-        self.prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
-        self.prog['Mvp'].write(mvp.astype('f4').tobytes())
+        return image_frame_gate_center
+
+    '''
+        Project the perspective as a grid
+    '''
+    def render_perspective_grid(self, view):
+        grid = []
+        for i in range(13):
+            grid.append([i - 6, -6, 0.0, i - 6, 6, 0.0])
+            grid.append([-6, i - 6, 0.0, 6, i - 6, 0.0])
+
+        grid = np.array(grid)
+
+        vp = self.projection * view
+        self.grid_prog['Light'].value = (0.0, 0.0, 6.0) # TODO
+        self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
+        self.grid_prog['Mvp'].write(vp.astype('f4').tobytes())
+
+        vbo= self.context.buffer(grid.astype('f4').tobytes())
+        vao= self.context.simple_vertex_array(self.grid_prog, vbo, 'in_vert')
+        vbo.release() # TODO: Would this work?
+
+        return vao
+
+    '''
+        Returns the Euclidean distance of the gate to the camera
+    '''
+    def compute_camera_proximity(self, translation):
+        return np.linalg.norm(translation - self.drone_pose.translation)
+
+    def generate(self, background_gates=True, max_gates=5):
+        # Camera view matrix
+        view = Matrix44.look_at(
+            # eye: position of the camera in world coordinates
+            self.drone_pose.translation,
+            # target: position in world coordinates that the camera is looking at
+            self.drone_pose.translation + (self.drone_pose.orientation *
+                                           Vector3([1.0, 0.0, 0.0])),
+            # up: up vector of the camera.
+            self.drone_pose.orientation * Vector3([0.0, 0.0, 1.0]),
+        )
 
         # Texturing
         texture_image = Image.open('data/orange_texture.jpg')
         texture = self.context.texture(texture_image.size, 3, texture_image.tobytes())
         texture.build_mipmaps()
-
-        # Vertex Buffer and Vertex Array
-        vbo = self.context.buffer(self.mesh.pack())
-        vao = self.context.simple_vertex_array(self.prog, vbo, *['in_vert', 'in_text', 'in_norm'])
-
-        # Project the perspective as a grid
-        if self.render_perspective:
-            grid = []
-            for i in range(13):
-                grid.append([i - 6, -6, 0.0, i - 6, 6, 0.0])
-                grid.append([-6, i - 6, 0.0, 6, i - 6, 0.0])
-
-            grid = np.array(grid)
-
-            vp = projection * view
-            self.grid_prog['Light'].value = (0.0, 0.0, 6.0) # TODO
-            self.grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
-            self.grid_prog['Mvp'].write(vp.astype('f4').tobytes())
-
-            vbo_grid = self.context.buffer(grid.astype('f4').tobytes())
-            vao_grid = self.context.simple_vertex_array(self.grid_prog, vbo_grid, 'in_vert')
-
 
         # Framebuffers
         # Use 4 samples for MSAA anti-aliasing
@@ -190,10 +206,30 @@ class SceneRenderer:
         self.context.enable(moderngl.DEPTH_TEST)
         self.context.clear(0, 0, 0, 0)
         texture.use()
-        vao.render()
+
+        gate_center = None
+        gate_translation = None
+        gate_rotation = None
+        min_prox = None
+        # Render at least one gate
+        for i in range(random.randint(1, self.max_gates)):
+            # TODO: Release VAO and VBO
+            vao, model, translation, rotation = self.render_gate(view)
+            proximity = self.compute_camera_proximity(translation)
+            # Pick the target gate: the closest to the camera
+            if min_prox is None or proximity < min_prox:
+                min_prox = proximity
+                gate_center = self.compute_gate_center(model)
+                gate_translation = translation
+                gate_rotation = rotation
+            vao.render()
+            vao.release()
 
         if self.render_perspective:
+            # TODO: Release VAO and VBO
+            voa_grid = self.render_perspective_grid(view)
             vao_grid.render(moderngl.LINES, 65 * 4)
+            vao_grid.release()
 
         self.context.copy_framebuffer(fbo2, fbo1)
 
@@ -207,7 +243,7 @@ class SceneRenderer:
         # TODO
 
         annotations = {
-            'gate_center_img_frame': image_frame_gate_center,
+            'gate_center_img_frame': gate_center,
             'gate_position': gate_translation,
             'gate_rotation':
                 [degrees(x) for x in
@@ -229,8 +265,6 @@ class SceneRenderer:
         fbo1.release()
         fbo2.release()
         texture.release()
-        vao.release()
-        vbo.release()
 
         return (img, annotations)
 
