@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# vim:fenc=utf-8
+#
+# Copyright © 2019 Theo Morales <theo.morales.fr@gmail.com>
+#
+# Distributed under terms of the MIT license.
+
 
 '''
 Utility script to extract frames and drone poses from the given topics

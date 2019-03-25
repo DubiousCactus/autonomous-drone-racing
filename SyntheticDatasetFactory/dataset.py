@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2019 transpalette <transpalette@arch-cactus>
+# Copyright © 2019 Theo Morales <theo.morales.fr@gmail.com>
 #
 # Distributed under terms of the MIT license.
 

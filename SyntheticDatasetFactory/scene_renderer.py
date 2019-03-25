@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2019 theomorales <theomorales@Theos-MacBook-Pro.local>
+# Copyright © 2019 Theo Morales <theo.morales.fr@gmail.com>
 #
 # Distributed under terms of the MIT license.
 
@@ -56,7 +56,6 @@ class SceneRenderer:
         self.drone_pose = drone_pose
 
     def setup_opengl(self):
-        # Context creation
         self.context = moderngl.create_standalone_context()
         camera_intrinsics = [
             self.camera_parameters['camera_matrix']['data'][0:3],
@@ -105,7 +104,6 @@ class SceneRenderer:
         # Vertex Buffer and Vertex Array
         vbo = self.context.buffer(self.mesh.pack())
         vao = self.context.simple_vertex_array(prog, vbo, *['in_vert', 'in_text', 'in_norm'])
-        # vbo.release() # TODO: Would this work?
 
         return vao, model, gate_translation, gate_rotation
 
@@ -157,9 +155,8 @@ class SceneRenderer:
         grid_prog['Color'].value = (1.0, 1.0, 1.0, 0.25) # TODO
         grid_prog['Mvp'].write(vp.astype('f4').tobytes())
 
-        vbo= self.context.buffer(grid.astype('f4').tobytes())
-        vao= self.context.simple_vertex_array(grid_prog, vbo, 'in_vert')
-        # vbo.release() # TODO: Would this work?
+        vbo = self.context.buffer(grid.astype('f4').tobytes())
+        vao = self.context.simple_vertex_array(grid_prog, vbo, 'in_vert')
 
         return vao
 
@@ -167,6 +164,8 @@ class SceneRenderer:
         Returns the Euclidean distance of the gate to the camera
     '''
     def compute_camera_proximity(self, translation):
+        # TODO: Return large value if it's behind the camera
+        # TODO: Maybe also make sure it's in the field of view ?
         return np.linalg.norm(translation - self.drone_pose.translation)
 
     def generate(self, background_gates=True, max_gates=5):
@@ -215,7 +214,6 @@ class SceneRenderer:
         min_prox = None
         # Render at least one gate
         for i in range(random.randint(1, max_gates)):
-            # TODO: Release VAO and VBO
             vao, model, translation, rotation = self.render_gate(view)
             proximity = self.compute_camera_proximity(translation)
             # Pick the target gate: the closest to the camera
@@ -225,13 +223,12 @@ class SceneRenderer:
                 gate_translation = translation
                 gate_rotation = rotation
             vao.render()
-            # vao.release()
+            vao.release()
 
         if self.render_perspective:
-            # TODO: Release VAO and VBO
             vao_grid = self.render_perspective_grid(view)
             vao_grid.render(moderngl.LINES, 65 * 4)
-            # vao_grid.release()
+            vao_grid.release()
 
         self.context.copy_framebuffer(fbo2, fbo1)
 
