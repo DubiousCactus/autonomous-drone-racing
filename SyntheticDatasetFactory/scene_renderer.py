@@ -79,6 +79,7 @@ class SceneRenderer:
         self.context.release()
 
     def render_gate(self, view):
+        # TODO: Prevent gates from spawning too close to each other
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
         gate_translation = Vector3([
             random.uniform(-self.boundaries['x'], self.boundaries['x']),
@@ -109,10 +110,17 @@ class SceneRenderer:
 
     '''
         Converting the gate center's world coordinates to image coordinates
-        TODO: Set to null if the camera is within 50cm of the gate !! (cause
-        we can't see it duuuuh)
     '''
     def compute_gate_center(self, view, model):
+        # Return if the camera is within 60cm of the gate, because it's not
+        # visible
+        if np.linalg.norm(self.gate_center-self.drone_pose.translation) <= 0.6:
+            return [-1, -1]
+
+        # TODO: Move the gate center back to the image frame if it's slightly
+        # outside of the image frame (th gate frame is still visible and we can
+        # guess where to steer)
+
         gate_center = model * self.gate_center
         clip_space_gate_center = self.projection * (view *
                                                     Vector4.from_vector3(gate_center,
