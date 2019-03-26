@@ -54,6 +54,7 @@ class SceneRenderer:
 
     def set_drone_pose(self, drone_pose):
         self.drone_pose = drone_pose
+        self.gate_poses = []
 
     def setup_opengl(self):
         self.context = moderngl.create_standalone_context()
@@ -79,13 +80,24 @@ class SceneRenderer:
         self.context.release()
 
     def render_gate(self, view):
-        # TODO: Prevent gates from spawning too close to each other
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
-        gate_translation = Vector3([
-            random.uniform(-self.boundaries['x'], self.boundaries['x']),
-            random.uniform(-self.boundaries['y'], self.boundaries['y']),
-            0
-        ])
+        gate_translation = None
+        too_close = True
+        # Prevent gates from spawning too close to each other
+        while too_close:
+            too_close = False
+            gate_translation = Vector3([
+                random.uniform(-self.boundaries['x'], self.boundaries['x']),
+                random.uniform(-self.boundaries['y'], self.boundaries['y']),
+                0
+            ])
+            for gate_pose in self.gate_poses:
+                if np.linalg.norm(gate_pose - gate_translation) <= 1:
+                    too_close = True
+                    break
+
+        self.gate_poses.append(gate_translation)
+
         ''' Randomly rotate the gate horizontally, around the Z-axis '''
         gate_rotation = Quaternion.from_z_rotation(random.random() * np.pi)
         model = Matrix44.from_translation(gate_translation) * gate_rotation
@@ -112,13 +124,13 @@ class SceneRenderer:
         Converting the gate center's world coordinates to image coordinates
     '''
     def compute_gate_center(self, view, model):
-        # Return if the camera is within 60cm of the gate, because it's not
+        # Return if the camera is within 80cm of the gate, because it's not
         # visible
-        if np.linalg.norm(self.gate_center-self.drone_pose.translation) <= 0.6:
+        if np.linalg.norm(self.gate_center-self.drone_pose.translation) <= 0.8:
             return [-1, -1]
 
         # TODO: Move the gate center back to the image frame if it's slightly
-        # outside of the image frame (th gate frame is still visible and we can
+        # outside of the image frame (the gate frame is still visible and we can
         # guess where to steer)
 
         gate_center = model * self.gate_center
