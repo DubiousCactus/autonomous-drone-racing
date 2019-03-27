@@ -30,7 +30,7 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 
 
 '''
-    ----- TODO -----
+                ----- TODO -----
 
 [x] Thread it!
 [x] Random positioning of the gate
@@ -46,6 +46,7 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Model the camera distortion
 [x] Save generated dataset online in a separate thread
 [ ] Add background gates <--
+[x] Compute gate visibility percentage over the whole dataset
 [ ] Compute gate orientation with respect to the camera
 [x] Save annotations
 [ ] Apply the distortion to the OpenGL projection
@@ -79,6 +80,7 @@ class DatasetFactory:
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
         self.sample_no = 0
+        self.visible_gates = 0
 
     def set_mesh_parameters(self, boundaries, gate_center):
         self.world_boundaries = boundaries
@@ -98,6 +100,7 @@ class DatasetFactory:
         self.generated_dataset.data.put(None)
         save_thread.join()
         print("[*] Saved to {}".format(self.generated_dataset.path))
+        print("[*] Gate visibilty percentage: {}%".format(int((self.visible_gates/self.count)*100)))
 
     '''
     FIXME: Memory leaks all over... Not easy to reuse a projector per thread.
@@ -139,6 +142,9 @@ class DatasetFactory:
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
                         output.size[0]) and (gate_center[1] >= 0 and
                                              gate_center[1] <= output.size[1])
+        if gate_visible:
+            self.visible_gates += 1
+
         if self.verbose:
             self.draw_gate_center(output, gate_center)
             self.draw_image_annotations(output, annotations)

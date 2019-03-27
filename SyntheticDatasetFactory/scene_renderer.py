@@ -20,7 +20,7 @@ import random
 import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from ModernGL.ext.obj import Obj
+from moderngl.ext.obj import Obj
 from math import degrees
 from PIL import Image
 
@@ -132,6 +132,11 @@ class SceneRenderer:
         # TODO: Move the gate center back to the image frame if it's slightly
         # outside of the image frame (the gate frame is still visible and we can
         # guess where to steer)
+
+        '''
+        If the gate is less than 2m ahead, and if the gate center in pixels is
+        less than 1/5 of the image size outside, clip it to max x or min x
+        '''
 
         gate_center = model * self.gate_center
         clip_space_gate_center = self.projection * (view *
