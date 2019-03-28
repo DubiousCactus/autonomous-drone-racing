@@ -45,7 +45,7 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Overlay with background image
 [x] Model the camera distortion
 [x] Save generated dataset online in a separate thread
-[ ] Add background gates <--
+[x] Add background gates
 [x] Compute gate visibility percentage over the whole dataset
 [ ] Compute gate orientation with respect to the camera
 [x] Save annotations
@@ -70,6 +70,7 @@ class DatasetFactory:
         self.noise_amount = args.noise_amount
         self.no_blur = args.no_blur
         self.seed = args.seed
+        self.max_gates = args.max_gates
         if self.render_perspective:
             self.verbose = True
         self.background_dataset = Dataset(args.dataset, args.seed)
@@ -133,7 +134,7 @@ class DatasetFactory:
     def generate(self, index, projector):
         background = self.background_dataset.get()
         projector.set_drone_pose(background.annotations)
-        projection, annotations = projector.generate()
+        projection, annotations = projector.generate(max_gates=self.max_gates)
         projection_blurred = self.apply_motion_blur(projection,
                                                     amount=self.get_blur_amount(background.image()))
         projection_noised = self.add_noise(projection_blurred)
@@ -258,10 +259,12 @@ if __name__ == "__main__":
                         type=float, help='the gaussian noise amount')
     parser.add_argument('--no-blur', dest='no_blur', action='store_true',
                         default=False, help='disable synthetic motion blur')
+    parser.add_argument('--max-gates', dest='max_gates', type=int, help='the\
+                        maximum amount of gates to spawn')
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.set_mesh_parameters(
         {'x': 10, 'y': 10}, # Real world boundaries in meters (relative to the mesh's scale)
-        Vector3([0.0, 0.0, 2.3]) # Gate center: figure this out yourself
+        Vector3([0.0, 0.0, 2.2]) # Gate center: figure this out yourself
     )
     datasetFactory.run()

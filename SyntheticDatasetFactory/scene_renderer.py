@@ -157,6 +157,7 @@ class SceneRenderer:
         # Translate from bottom-left to top-left
         image_frame_gate_center[1] = self.height - image_frame_gate_center[1]
 
+
         return image_frame_gate_center
 
     '''
@@ -195,11 +196,11 @@ class SceneRenderer:
     def compute_camera_proximity(self, view, model):
         coords = self.compute_gate_center(view, model)
         if coords[0] < 0 or coords[0] > self.width or coords[1] < 0 or coords[1] > self.height:
-            return gate_center, 1000
+            return coords, 1000
         else:
-            return gate_center, np.linalg.norm((model * self.gate_center) - self.drone_pose.translation)
+            return coords, np.linalg.norm((model * self.gate_center) - self.drone_pose.translation)
 
-    def generate(self, background_gates=True, max_gates=6):
+    def generate(self, max_gates=6):
         # Camera view matrix
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
