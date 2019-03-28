@@ -66,7 +66,7 @@ class SceneRenderer:
         fx, fy = camera_intrinsics[0][0], camera_intrinsics[1][1]
         cx, cy = camera_intrinsics[0][2], camera_intrinsics[1][2]
         x0, y0 = 0, 0 # Camera image origin
-        zfar, znear = 1000.0, 0.1 # distances to the clipping plane
+        zfar, znear = 100.0, 0.1 # distances to the clipping plane
         # Works by following: https://blog.noctua-software.com/opencv-opengl-projection-matrix.html
         # Doesn't work by following: http://kgeorge.github.io/2014/03/08/calculating-opengl-perspective-matrix-from-opencv-intrinsic-matrix
         self.projection = Matrix44([
@@ -79,7 +79,7 @@ class SceneRenderer:
     def destroy(self):
         self.context.release()
 
-    def render_gate(self, view):
+    def render_gate(self, view, min_dist):
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
         gate_translation = None
         too_close = True
@@ -92,7 +92,7 @@ class SceneRenderer:
                 0
             ])
             for gate_pose in self.gate_poses:
-                if np.linalg.norm(gate_pose - gate_translation) <= 2:
+                if np.linalg.norm(gate_pose - gate_translation) <= float(min_dist):
                     too_close = True
                     break
 
@@ -124,9 +124,10 @@ class SceneRenderer:
         Converting the gate center's world coordinates to image coordinates
     '''
     def compute_gate_center(self, view, model):
-        # Return if the camera is within 80cm of the gate, because it's not
+        # Return if the camera is within 50cm of the gate, because it's not
         # visible
-        if np.linalg.norm(self.gate_center-self.drone_pose.translation) <= 1:
+        gate_center = model * self.gate_center
+        if np.linalg.norm(gate_center - self.drone_pose.translation)/2 <= 0.5:
             return [-1, -1]
 
         # TODO: Move the gate center back to the image frame if it's slightly
@@ -138,7 +139,6 @@ class SceneRenderer:
         less than 1/5 of the image size outside, clip it to max x or min x
         '''
 
-        gate_center = model * self.gate_center
         clip_space_gate_center = self.projection * (view *
                                                     Vector4.from_vector3(gate_center,
                                                                          w=1.0))
@@ -148,6 +148,10 @@ class SceneRenderer:
                 = Vector3(clip_space_gate_center.xyz) / clip_space_gate_center.w
         else: # Clipped
             normalized_device_coordinate_space_gate_center = clip_space_gate_center.xyz
+
+        # Behind the camera
+        if normalized_device_coordinate_space_gate_center.z >= 1:
+            return [-1, -1]
 
         viewOffset = 0
         image_frame_gate_center =\
@@ -200,7 +204,7 @@ class SceneRenderer:
         else:
             return coords, np.linalg.norm((model * self.gate_center) - self.drone_pose.translation)
 
-    def generate(self, max_gates=6):
+    def generate(self, min_dist=2.0, max_gates=6):
         # Camera view matrix
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
@@ -246,7 +250,7 @@ class SceneRenderer:
         min_prox = None
         # Render at least one gate
         for i in range(random.randint(1, max_gates)):
-            vao, model, translation, rotation = self.render_gate(view)
+            vao, model, translation, rotation = self.render_gate(view, min_dist)
             center, proximity = self.compute_camera_proximity(view, model)
             # Pick the target gate: the closest to the camera
             if min_prox is None or proximity < min_prox:
