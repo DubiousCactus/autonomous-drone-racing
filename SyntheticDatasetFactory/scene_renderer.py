@@ -19,9 +19,9 @@ import moderngl
 import random
 import yaml
 
-from pyrr import Matrix44, Quaternion, Vector3, Vector4
-from moderngl.ext.obj import Obj
-from math import degrees
+from pyrr import Matrix44, Quaternion, Vector3, Vector4, vector
+from ModernGL.ext.obj import Obj
+from math import degrees, radians, cos, sin
 from PIL import Image
 
 
@@ -126,7 +126,7 @@ class SceneRenderer:
     def compute_gate_center(self, view, model):
         # Return if the camera is within 80cm of the gate, because it's not
         # visible
-        if np.linalg.norm(self.gate_center-self.drone_pose.translation) <= 0.8:
+        if np.linalg.norm(self.gate_center-self.drone_pose.translation) <= 1:
             return [-1, -1]
 
         # TODO: Move the gate center back to the image frame if it's slightly
@@ -192,12 +192,28 @@ class SceneRenderer:
     '''
         Returns the Euclidean distance of the gate to the camera
     '''
-    def compute_camera_proximity(self, translation):
+    def compute_camera_proximity(self, model):
         # TODO: Return large value if it's behind the camera
         # TODO: Maybe also make sure it's in the field of view ?
-        return np.linalg.norm(translation - self.drone_pose.translation)
+        gate_center = model * self.gate_center
+        target = self.drone_pose.translation + (self.drone_pose.orientation * Vector3([1.0, 0.0, 0.0]))
+        target = Vector3([
+            cos(radians(self.drone_pose.orientation.z)) * cos(radians(self.drone_pose.orientation.x)),
+            sin(radians(self.drone_pose.orientation.z)) * cos(radians(self.drone_pose.orientation.x)),
+            sin(radians(self.drone_pose.orientation.x))
+        ])
 
-    def generate(self, background_gates=True, max_gates=5):
+        target = self.drone_pose.orientation * self.drone_pose.translation
+        print(target)
+        dot_product = vector.dot((gate_center - self.drone_pose.translation),
+                                 target)
+        print(dot_product)
+        if dot_product < 0:
+            return 1000
+        else:
+            return np.linalg.norm(gate_center - self.drone_pose.translation)
+
+    def generate(self, background_gates=True, max_gates=8):
         # Camera view matrix
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
@@ -244,7 +260,7 @@ class SceneRenderer:
         # Render at least one gate
         for i in range(random.randint(1, max_gates)):
             vao, model, translation, rotation = self.render_gate(view)
-            proximity = self.compute_camera_proximity(translation)
+            proximity = self.compute_camera_proximity(model)
             # Pick the target gate: the closest to the camera
             if min_prox is None or proximity < min_prox:
                 min_prox = proximity
