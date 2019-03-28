@@ -20,7 +20,7 @@ import random
 import yaml
 
 from pyrr import Matrix44, Quaternion, Vector3, Vector4, vector
-from ModernGL.ext.obj import Obj
+from moderngl.ext.obj import Obj
 from math import degrees, radians, cos, sin
 from PIL import Image
 
@@ -66,7 +66,7 @@ class SceneRenderer:
         fx, fy = camera_intrinsics[0][0], camera_intrinsics[1][1]
         cx, cy = camera_intrinsics[0][2], camera_intrinsics[1][2]
         x0, y0 = 0, 0 # Camera image origin
-        zfar, znear = 1000.0, 0.001 # distances to the clipping plane
+        zfar, znear = 1000.0, 0.1 # distances to the clipping plane
         # Works by following: https://blog.noctua-software.com/opencv-opengl-projection-matrix.html
         # Doesn't work by following: http://kgeorge.github.io/2014/03/08/calculating-opengl-perspective-matrix-from-opencv-intrinsic-matrix
         self.projection = Matrix44([
@@ -92,7 +92,7 @@ class SceneRenderer:
                 0
             ])
             for gate_pose in self.gate_poses:
-                if np.linalg.norm(gate_pose - gate_translation) <= 1:
+                if np.linalg.norm(gate_pose - gate_translation) <= 2:
                     too_close = True
                     break
 
@@ -192,28 +192,14 @@ class SceneRenderer:
     '''
         Returns the Euclidean distance of the gate to the camera
     '''
-    def compute_camera_proximity(self, model):
-        # TODO: Return large value if it's behind the camera
-        # TODO: Maybe also make sure it's in the field of view ?
-        gate_center = model * self.gate_center
-        target = self.drone_pose.translation + (self.drone_pose.orientation * Vector3([1.0, 0.0, 0.0]))
-        target = Vector3([
-            cos(radians(self.drone_pose.orientation.z)) * cos(radians(self.drone_pose.orientation.x)),
-            sin(radians(self.drone_pose.orientation.z)) * cos(radians(self.drone_pose.orientation.x)),
-            sin(radians(self.drone_pose.orientation.x))
-        ])
-
-        target = self.drone_pose.orientation * self.drone_pose.translation
-        print(target)
-        dot_product = vector.dot((gate_center - self.drone_pose.translation),
-                                 target)
-        print(dot_product)
-        if dot_product < 0:
-            return 1000
+    def compute_camera_proximity(self, view, model):
+        coords = self.compute_gate_center(view, model)
+        if coords[0] < 0 or coords[0] > self.width or coords[1] < 0 or coords[1] > self.height:
+            return gate_center, 1000
         else:
-            return np.linalg.norm(gate_center - self.drone_pose.translation)
+            return gate_center, np.linalg.norm((model * self.gate_center) - self.drone_pose.translation)
 
-    def generate(self, background_gates=True, max_gates=8):
+    def generate(self, background_gates=True, max_gates=6):
         # Camera view matrix
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
@@ -260,11 +246,11 @@ class SceneRenderer:
         # Render at least one gate
         for i in range(random.randint(1, max_gates)):
             vao, model, translation, rotation = self.render_gate(view)
-            proximity = self.compute_camera_proximity(model)
+            center, proximity = self.compute_camera_proximity(view, model)
             # Pick the target gate: the closest to the camera
             if min_prox is None or proximity < min_prox:
                 min_prox = proximity
-                gate_center = self.compute_gate_center(view, model)
+                gate_center = center
                 gate_translation = translation
                 gate_rotation = rotation
             vao.render()
