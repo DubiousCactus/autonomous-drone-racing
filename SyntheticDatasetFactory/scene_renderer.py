@@ -79,7 +79,7 @@ class SceneRenderer:
     def destroy(self):
         self.context.release()
 
-    def render_gate(self, view):
+    def render_gate(self, view, min_dist):
         ''' Randomly move the gate around, while keeping it inside the boundaries '''
         gate_translation = None
         too_close = True
@@ -92,7 +92,7 @@ class SceneRenderer:
                 0
             ])
             for gate_pose in self.gate_poses:
-                if np.linalg.norm(gate_pose - gate_translation) <= 2:
+                if np.linalg.norm(gate_pose - gate_translation) <= float(min_dist):
                     too_close = True
                     break
 
@@ -204,7 +204,7 @@ class SceneRenderer:
         else:
             return coords, np.linalg.norm((model * self.gate_center) - self.drone_pose.translation)
 
-    def generate(self, max_gates=6):
+    def generate(self, min_dist=2.0, max_gates=6):
         # Camera view matrix
         view = Matrix44.look_at(
             # eye: position of the camera in world coordinates
@@ -250,7 +250,7 @@ class SceneRenderer:
         min_prox = None
         # Render at least one gate
         for i in range(random.randint(1, max_gates)):
-            vao, model, translation, rotation = self.render_gate(view)
+            vao, model, translation, rotation = self.render_gate(view, min_dist)
             center, proximity = self.compute_camera_proximity(view, model)
             # Pick the target gate: the closest to the camera
             if min_prox is None or proximity < min_prox:

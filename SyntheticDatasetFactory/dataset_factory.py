@@ -71,6 +71,7 @@ class DatasetFactory:
         self.no_blur = args.no_blur
         self.seed = args.seed
         self.max_gates = args.max_gates
+        self.min_dist = args.min_dist
         if self.render_perspective:
             self.verbose = True
         self.background_dataset = Dataset(args.dataset, args.seed)
@@ -134,7 +135,7 @@ class DatasetFactory:
     def generate(self, index, projector):
         background = self.background_dataset.get()
         projector.set_drone_pose(background.annotations)
-        projection, annotations = projector.generate(max_gates=self.max_gates)
+        projection, annotations = projector.generate(min_dist=self.min_dist, max_gates=self.max_gates)
         projection_blurred = self.apply_motion_blur(projection,
                                                     amount=self.get_blur_amount(background.image()))
         projection_noised = self.add_noise(projection_blurred)
@@ -199,7 +200,7 @@ class DatasetFactory:
 
         if amount <= 0.3:
             size = 3
-        elif amount <= 0.5:
+        elif amount <= 0.7:
             size = 5
         else:
             size = 9
@@ -260,11 +261,14 @@ if __name__ == "__main__":
     parser.add_argument('--no-blur', dest='no_blur', action='store_true',
                         default=False, help='disable synthetic motion blur')
     parser.add_argument('--max-gates', dest='max_gates', type=int, help='the\
-                        maximum amount of gates to spawn')
+                        maximum amount of gates to spawn', default=6)
+    parser.add_argument('--min-dist', dest='min_dist', type=float, help='the\
+                        minimum distance between each gate, in meter',
+                        default=3.5)
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.set_mesh_parameters(
         {'x': 10, 'y': 10}, # Real world boundaries in meters (relative to the mesh's scale)
-        Vector3([0.0, 0.0, 2.2]) # Gate center: figure this out yourself
+        Vector3([0.0, 0.0, 2.1]) # Gate center: figure this out yourself
     )
     datasetFactory.run()
