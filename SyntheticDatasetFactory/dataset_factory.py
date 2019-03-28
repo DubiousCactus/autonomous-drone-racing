@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2019 transpalette <transpalette@arch-cactus>
+# Copyright © 2019 Theo Morales <theo.morales.fr@gmail.com>
 #
 # Distributed under terms of the MIT license.
 
@@ -30,7 +30,7 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 
 
 '''
-    ----- TODO -----
+                ----- TODO -----
 
 [x] Thread it!
 [x] Random positioning of the gate
@@ -45,7 +45,8 @@ from dataset import Dataset, BackgroundImage, AnnotatedImage, SyntheticAnnotatio
 [x] Overlay with background image
 [x] Model the camera distortion
 [x] Save generated dataset online in a separate thread
-[ ] Add background gates
+[x] Add background gates
+[x] Compute gate visibility percentage over the whole dataset
 [ ] Compute gate orientation with respect to the camera
 [x] Save annotations
 [ ] Apply the distortion to the OpenGL projection
@@ -69,6 +70,7 @@ class DatasetFactory:
         self.noise_amount = args.noise_amount
         self.no_blur = args.no_blur
         self.seed = args.seed
+        self.max_gates = args.max_gates
         if self.render_perspective:
             self.verbose = True
         self.background_dataset = Dataset(args.dataset, args.seed)
@@ -79,6 +81,7 @@ class DatasetFactory:
         self.base_width, self.base_height = self.background_dataset.get_image_size()
         self.target_width, self.target_height = [int(x) for x in args.resolution.split('x')]
         self.sample_no = 0
+        self.visible_gates = 0
 
     def set_mesh_parameters(self, boundaries, gate_center):
         self.world_boundaries = boundaries
@@ -91,12 +94,14 @@ class DatasetFactory:
                                         self.world_boundaries, self.gate_center,
                                         self.cam_param, self.render_perspective, self.seed)
         save_thread.start()
-        for i in tqdm(range(self.count), unit="img", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}"):
+        for i in tqdm(range(self.count),
+                      unit="img", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}"):
             self.generate(i, projector)
 
         self.generated_dataset.data.put(None)
         save_thread.join()
         print("[*] Saved to {}".format(self.generated_dataset.path))
+        print("[*] Gate visibilty percentage: {}%".format(int((self.visible_gates/self.count)*100)))
 
     '''
     FIXME: Memory leaks all over... Not easy to reuse a projector per thread.
@@ -129,7 +134,7 @@ class DatasetFactory:
     def generate(self, index, projector):
         background = self.background_dataset.get()
         projector.set_drone_pose(background.annotations)
-        projection, annotations = projector.generate()
+        projection, annotations = projector.generate(max_gates=self.max_gates)
         projection_blurred = self.apply_motion_blur(projection,
                                                     amount=self.get_blur_amount(background.image()))
         projection_noised = self.add_noise(projection_blurred)
@@ -138,6 +143,9 @@ class DatasetFactory:
         gate_visible = (gate_center[0] >=0 and gate_center[0] <=
                         output.size[0]) and (gate_center[1] >= 0 and
                                              gate_center[1] <= output.size[1])
+        if gate_visible:
+            self.visible_gates += 1
+
         if self.verbose:
             self.draw_gate_center(output, gate_center)
             self.draw_image_annotations(output, annotations)
@@ -251,10 +259,12 @@ if __name__ == "__main__":
                         type=float, help='the gaussian noise amount')
     parser.add_argument('--no-blur', dest='no_blur', action='store_true',
                         default=False, help='disable synthetic motion blur')
+    parser.add_argument('--max-gates', dest='max_gates', type=int, help='the\
+                        maximum amount of gates to spawn')
 
     datasetFactory = DatasetFactory(parser.parse_args())
     datasetFactory.set_mesh_parameters(
         {'x': 10, 'y': 10}, # Real world boundaries in meters (relative to the mesh's scale)
-        Vector3([0.0, 0.0, 2.3]) # Figure this out in Blender
+        Vector3([0.0, 0.0, 2.2]) # Gate center: figure this out yourself
     )
     datasetFactory.run()
