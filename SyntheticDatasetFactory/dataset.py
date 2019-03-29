@@ -90,20 +90,18 @@ class Dataset:
         if randomize:
             random.shuffle(files)
 
-        while count >= len(files):
+        annotations = self.parse_annotations(annotations_path)
+        # Remove files without annotations
+        files = [file for file in files if file in annotations]
+        while count > len(files):
             choice = random.choice(files)
             full_path = os.path.join(self.path, choice)
             if os.path.isfile(full_path) and full_path != annotations_path:
                 files += [choice]
 
-        not_found = 0
-        annotations = self.parse_annotations(annotations_path)
         for file in files:
             full_path = os.path.join(self.path, file)
             if os.path.isfile(full_path) and full_path != annotations_path:
-                if file not in annotations:
-                    not_found += 1
-                    continue
                 self.data.put(BackgroundImage(full_path, annotations[file]))
                 self.data.task_done()
                 if not self.width and not self.height:
@@ -111,7 +109,6 @@ class Dataset:
                         self.width, self.height = img.size
 
         self.data.join()
-        print("[!] {} annotations could not be found!".format(not_found))
         return self.data.qsize() != 0
 
     '''
