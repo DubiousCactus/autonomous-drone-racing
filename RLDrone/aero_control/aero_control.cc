@@ -28,5 +28,16 @@ namespace gazebo
 		// Example: apply a small linear velocity
 		this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
 	}
+
+	void AeroControl::SetVelocity(const ignition::math::Vector3d vel)
+	{
+		this->model->SetLinearVel(vel);
+	}
+
+	bool AeroControl::IsCrashed()
+	{
+		// TODO
+		return false;
+	}
 }
 

@@ -20,6 +20,7 @@ namespace gazebo
 			void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/);
 			void OnUpdate();
 			void SetVelocity(const ignition::math::Vector3d vel);
+			bool IsCrashed();
 		private:
 			physics::ModelPtr model;
 			event::ConnectionPtr updateConnection;
