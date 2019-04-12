@@ -20,7 +20,7 @@ namespace gazebo
 		std::cout << "Loading model " << _parent->GetName() << std::endl;
 		this->model = _parent;
 		this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-				std::bind(&ModelPush::OnUpdate, this));
+				std::bind(&AeroControl::OnUpdate, this));
 	}
 
 	void AeroControl::OnUpdate()
