@@ -20,13 +20,13 @@ namespace gazebo
 		public:
 			AeroControl();
 			void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
+			void OnUpdate();
 		private:
 			physics::ModelPtr model;
 			event::ConnectionPtr updateConnection;
 			transport::NodePtr node;
 			transport::SubscriberPtr subVelocity;
 			transport::PublisherPtr pubCrashed;
-			void OnUpdate();
 			void SetVelocity(ConstVector3dPtr &msg);
 			bool IsCrashed();
 	};

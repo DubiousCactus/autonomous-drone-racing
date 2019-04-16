@@ -1,4 +1,3 @@
-#include <functional>
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/transport/transport.hh>

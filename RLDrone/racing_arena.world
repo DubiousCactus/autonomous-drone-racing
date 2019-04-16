@@ -1,7 +1,6 @@
 <sdf version='1.6'>
   <world name='default'>
-    <plugin name='aero_control' filename='libaero_control.dylib'/>
-    <plugin name='race_control' filename='libreinforcement_learning.dylib'/>
+    <plugin name='race_control' filename='libreinforcement_learning.so'/>
     <model name='ground_plane'>
       <static>1</static>
       <link name='link'>
