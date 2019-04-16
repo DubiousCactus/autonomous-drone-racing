@@ -1,6 +1,6 @@
 <sdf version='1.6'>
   <world name='default'>
-    <plugin name='race_control' filename='libreinforcement_learning.so'/>
+    <plugin name='race_control' filename='libreinforcement_learning.dylib'/>
     <model name='ground_plane'>
       <static>1</static>
       <link name='link'>
@@ -595,7 +595,7 @@
       </link>
       <pose frame=''>7 9 0 0 -0 4e-06</pose>
     </model>
-    <model name='gate'>
+    <!--<model name='gate'>
       <static>1</static>
       <link name='gate'>
         <visual name='visual'>
@@ -674,7 +674,7 @@
         <kinematic>0</kinematic>
       </link>
       <pose frame=''>-7.55218 0.99354 0 0 -0 0</pose>
-    </model>
+    </model>-->
     <light name='user_point_light_0' type='point'>
       <pose frame=''>7.4811 -0.181449 1 0 -0 0</pose>
       <diffuse>0.5 0.5 0.5 1</diffuse>
@@ -706,7 +706,7 @@
       <real_time>638 820621044</real_time>
       <wall_time>1550147480 367965778</wall_time>
       <iterations>619750</iterations>
-      <model name='gate'>
+      <!--<model name='gate'>
         <pose frame=''>7.44474 4.05799 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='gate'>
@@ -755,7 +755,7 @@
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
-      </model>
+      </model>-->
       <model name='grey_wall'>
         <pose frame=''>10 0 0 0 -0 1.5708</pose>
         <scale>1 1 1</scale>

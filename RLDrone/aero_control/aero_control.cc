@@ -22,7 +22,7 @@ namespace gazebo
 		this->updateConnection = event::Events::ConnectWorldUpdateBegin(
 				std::bind(&AeroControl::OnUpdate, this));
 		this->node = transport::NodePtr(new transport::Node());
-		this->node->Init(this->model->GetWorld()->GetName());
+		this->node->Init(this->model->GetWorld()->Name());
 		std::string topicName = "~/" + this->model->GetName() + "/velocity";
 		std::cout << "[*] Subscribing to topic " << topicName << std::endl;
 		this->subVelocity = this->node->Subscribe(topicName, &AeroControl::SetVelocity, this);
@@ -33,7 +33,6 @@ namespace gazebo
 		// Example: apply a small linear velocity
 		//this->model->SetLinearVel(ignition::math::Vector3d(.3, 0, 0));
 		//TODO: Publish to crashed
-		std::cout << "[*] OnUpdate()" << std::endl;
 	}
 
 	void AeroControl::SetVelocity(ConstVector3dPtr &msg)
