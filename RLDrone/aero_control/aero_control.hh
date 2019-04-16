@@ -7,8 +7,10 @@
 
 #include <functional>
 #include <gazebo/gazebo.hh>
-#include <gazebo/common/common.hh>
+#include <gazebo/common/Plugin.hh>
 #include <gazebo/physics/physics.hh>
+#include <gazebo/transport/transport.hh>
+#include <gazebo/msgs/msgs.hh>
 #include <ignition/math/Vector3.hh>
 
 namespace gazebo
@@ -17,13 +19,16 @@ namespace gazebo
 	{
 		public:
 			AeroControl();
-			void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/);
-			void OnUpdate();
-			void SetVelocity(const ignition::math::Vector3d vel);
-			bool IsCrashed();
+			void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
 		private:
 			physics::ModelPtr model;
 			event::ConnectionPtr updateConnection;
+			transport::NodePtr node;
+			transport::SubscriberPtr subVelocity;
+			transport::PublisherPtr pubCrashed;
+			void OnUpdate();
+			void SetVelocity(ConstVector3dPtr &msg);
+			bool IsCrashed();
 	};
 	GZ_REGISTER_MODEL_PLUGIN(AeroControl)
 }
