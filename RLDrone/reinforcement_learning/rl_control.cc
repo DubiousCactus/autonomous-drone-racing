@@ -21,9 +21,9 @@ namespace gazebo
 	{
 		std::cout << "[*] Loading RLControl plugin..." << std::endl;
 		this->world = _parent;
-		this->node = transport::NodePtr(new transport::Node());
-		this->node->Init(this->world->Name());
-		this->pubVelocity = this->node->Advertise<msgs::Vector3d>("~/intel_aero/velocity");
+		//this->node = transport::NodePtr(new transport::Node());
+		//this->node->Init(this->world->Name());
+		//this->pubVelocity = this->node->Advertise<msgs::Vector3d>("~/intel_aero/velocity");
 		this->SpawnDrone(ignition::math::Vector3d(0, 0, 0));
 		std::string topicName = "~/intel_aero/crashed";
 		std::cout  << "[*] Subscribing to topic " << topicName << std::endl;
@@ -37,9 +37,9 @@ namespace gazebo
 		std::cout << "[*] Waiting for connection on ~/intel_aero/velocity" << std::endl;
 		//this->pubVelocity->WaitForConnection();
 		this->isCrashed = false;
-		msgs::Vector3d velMsg;
-		msgs::Set(&velMsg, ignition::math::Vector3d(.9, 0, .5));
-		this->pubVelocity->Publish(velMsg);
+		//msgs::Vector3d velMsg;
+		//msgs::Set(&velMsg, ignition::math::Vector3d(.9, 0, .5));
+		//this->pubVelocity->Publish(velMsg);
 		std::cout << "[*] End of training session" << std::endl;
 	}
 
@@ -47,7 +47,8 @@ namespace gazebo
 	{
 		std::cout << "[*] Spawning Intel Aero at " << location << std::endl;
 		// The filename must be in the GAZEBO_MODEL_PATH environment variable.
-		this->world->InsertModelFile("model://Intel Aero");
+		this->world->InsertModelFile("model://aero");
+		//this->world->InsertModelFile("model://Intel Aero");
 	}
 /*
 	void RLControl::SetCrashed(ConstBoolPtr &msg)

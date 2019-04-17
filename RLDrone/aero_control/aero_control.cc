@@ -19,13 +19,13 @@ namespace gazebo
 	{
 		std::cout << "[*] Loading model " << _parent->GetName() << std::endl;
 		this->model = _parent;
-		this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+		/*this->updateConnection = event::Events::ConnectWorldUpdateBegin(
 				std::bind(&AeroControl::OnUpdate, this));
 		this->node = transport::NodePtr(new transport::Node());
 		this->node->Init(this->model->GetWorld()->Name());
 		std::string topicName = "~/" + this->model->GetName() + "/velocity";
 		std::cout << "[*] Subscribing to topic " << topicName << std::endl;
-		this->subVelocity = this->node->Subscribe(topicName, &AeroControl::SetVelocity, this);
+		this->subVelocity = this->node->Subscribe(topicName, &AeroControl::SetVelocity, this);*/
 	}
 
 	void AeroControl::OnUpdate()

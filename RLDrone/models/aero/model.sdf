@@ -32,7 +32,10 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="./meshes/intel_aero.dae" scale="1 1 1"/>
+        <mesh>
+          <scale>1 1 1</scale>
+          <uri>file://meshes/intel_aero.dae</uri>
+        </mesh>
       </geometry>
     </visual>
     <collision>
@@ -67,7 +70,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./meshes/intel_aero_propeller.dae" scale="1 1 1"/>
+        <mesh>
+          <scale>1 1 1</scale>
+          <uri>file://meshes/intel_aero_propeller.dae</uri>
+        </mesh>
       </geometry>
     </visual>
     <collision>
@@ -115,7 +121,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./meshes/intel_aero_propeller.dae" scale="1 1 1"/>
+        <mesh>
+          <scale>1 1 1</scale>
+          <uri>file://meshes/intel_aero_propeller.dae</uri>
+        </mesh>
       </geometry>
     </visual>
     <collision>
@@ -163,7 +172,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./meshes/intel_aero_propeller.dae" scale="1 1 1"/>
+        <mesh>
+          <scale>1 1 1</scale>
+          <uri>file://meshes/intel_aero_propeller.dae</uri>
+        </mesh>
       </geometry>
     </visual>
     <collision>
@@ -211,7 +223,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="./meshes/intel_aero_propeller.dae" scale="1 1 1"/>
+        <mesh>
+          <scale>1 1 1</scale>
+          <uri>file://meshes/intel_aero_propeller.dae</uri>
+        </mesh>
       </geometry>
     </visual>
     <collision>
@@ -763,6 +778,6 @@
     </plugin>
   </gazebo>-->
   <gazebo>
-    <plugin filename="libaero_control.so" name="aero_control"/>
+    <plugin filename="libaero_control.dylib" name="aero_control"/>
   </gazebo>
 </robot>
