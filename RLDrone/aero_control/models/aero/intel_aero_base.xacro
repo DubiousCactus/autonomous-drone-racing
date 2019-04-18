@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
 <robot name="aero" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:include filename="$(find rotors_description)/urdf/component_snippets.xacro" />
+  <xacro:include filename="$(find aero_control)/models/aero/component_snippets.xacro" />
   <!-- Instantiate ardrone "mechanics" -->
-  <xacro:include filename="$(find rotors_description)/urdf/intel_aero.xacro" />
+  <xacro:include filename="$(find aero_control)/models/aero/intel_aero.xacro" />
 
   <!-- Instantiate a controller. -->
   <xacro:controller_plugin_macro namespace="${namespace}" imu_sub_topic="imu" />

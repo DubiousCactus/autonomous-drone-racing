@@ -6,6 +6,7 @@
  */
 
 #include <functional>
+#include <ros/ros.h>
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/physics/physics.hh>

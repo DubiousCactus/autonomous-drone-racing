@@ -33,8 +33,7 @@
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh>
-          <scale>1 1 1</scale>
-          <uri>file://meshes/intel_aero.dae</uri>
+          <uri>model://aero_control/meshes/intel_aero.dae</uri>
         </mesh>
       </geometry>
     </visual>
@@ -47,13 +46,13 @@
     </collision>
   </link>
   <!-- attach multirotor_base_plugin to the base_link -->
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_multirotor_base_plugin.so" name="multirotor_base_plugin">
       <robotNamespace>intel_aero</robotNamespace>
       <linkName>intel_aero/base_link</linkName>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <joint name="intel_aero/rotor_0_joint" type="continuous">
     <origin rpy="0 0 0" xyz="0.13081475452 -0.13081475452 0.02"/>
     <axis xyz="0 0 1"/>
@@ -71,8 +70,7 @@
     <visual>
       <geometry>
         <mesh>
-          <scale>1 1 1</scale>
-          <uri>file://meshes/intel_aero_propeller.dae</uri>
+          <uri>model://aero_control/meshes/intel_aero_propeller.dae</uri>
         </mesh>
       </geometry>
     </visual>
@@ -83,7 +81,7 @@
       </geometry>
     </collision>
   </link>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_motor_model.so" name="intel_aero_front_right_motor_model">
       <robotNamespace>intel_aero</robotNamespace>
       <jointName>intel_aero/rotor_0_joint</jointName>
@@ -101,7 +99,7 @@
       <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <gazebo reference="intel_aero/rotor_0">
     <material>Gazebo/Red</material>
   </gazebo>
@@ -122,8 +120,7 @@
     <visual>
       <geometry>
         <mesh>
-          <scale>1 1 1</scale>
-          <uri>file://meshes/intel_aero_propeller.dae</uri>
+          <uri>model://aero_control/meshes/intel_aero_propeller.dae</uri>
         </mesh>
       </geometry>
     </visual>
@@ -134,7 +131,7 @@
       </geometry>
     </collision>
   </link>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_motor_model.so" name="intel_aero_back_left_motor_model">
       <robotNamespace>intel_aero</robotNamespace>
       <jointName>intel_aero/rotor_1_joint</jointName>
@@ -152,7 +149,7 @@
       <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <gazebo reference="intel_aero/rotor_1">
     <material>Gazebo/Blue</material>
   </gazebo>
@@ -173,8 +170,7 @@
     <visual>
       <geometry>
         <mesh>
-          <scale>1 1 1</scale>
-          <uri>file://meshes/intel_aero_propeller.dae</uri>
+          <uri>model://aero_control/meshes/intel_aero_propeller.dae</uri>
         </mesh>
       </geometry>
     </visual>
@@ -185,7 +181,7 @@
       </geometry>
     </collision>
   </link>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_motor_model.so" name="intel_aero_front_left_motor_model">
       <robotNamespace>intel_aero</robotNamespace>
       <jointName>intel_aero/rotor_2_joint</jointName>
@@ -203,7 +199,7 @@
       <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <gazebo reference="intel_aero/rotor_2">
     <material>Gazebo/Red</material>
   </gazebo>
@@ -224,8 +220,7 @@
     <visual>
       <geometry>
         <mesh>
-          <scale>1 1 1</scale>
-          <uri>file://meshes/intel_aero_propeller.dae</uri>
+          <uri>model://aero_control/meshes/intel_aero_propeller.dae</uri>
         </mesh>
       </geometry>
     </visual>
@@ -236,7 +231,7 @@
       </geometry>
     </collision>
   </link>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_motor_model.so" name="intel_aero_back_right_motor_model">
       <robotNamespace>intel_aero</robotNamespace>
       <jointName>intel_aero/rotor_3_joint</jointName>
@@ -254,11 +249,11 @@
       <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <gazebo reference="intel_aero/rotor_3">
     <material>Gazebo/Blue</material>
   </gazebo>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_controller_interface.so" name="controller_interface">
       <robotNamespace>intel_aero</robotNamespace>
       <commandAttitudeThrustSubTopic>command/attitude</commandAttitudeThrustSubTopic>
@@ -267,7 +262,7 @@
       <imuSubTopic>imu</imuSubTopic>
       <motorSpeedCommandPubTopic>gazebo/command/motor_speed</motorSpeedCommandPubTopic>
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <!-- IMU link -->
   <link name="intel_aero/imu_link">
     <inertial>
@@ -284,34 +279,34 @@
     <child link="intel_aero/imu_link"/>
     <limit effort="0" lower="0" upper="0" velocity="0"/>
   </joint>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_imu_plugin.so" name="rotors_gazebo_imu_plugin">
-      [> A good description of the IMU parameters can be found in the kalibr documentation:
-           https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model-and-Intrinsics <]
+      <!-- A good description of the IMU parameters can be found in the kalibr documentation:
+           https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model-and-Intrinsics -->
       <robotNamespace>intel_aero</robotNamespace>
-      [> (string, required): ros namespace in which the messages are published <]
+      <!-- (string, required): ros namespace in which the messages are published -->
       <linkName>intel_aero/imu_link</linkName>
-      [> (string, required): name of the body which holds the IMU sensor <]
+      <!-- (string, required): name of the body which holds the IMU sensor -->
       <imuTopic>imu</imuTopic>
-      [> (string): name of the sensor output topic and prefix of service names (defaults to imu) <]
+      <!-- (string): name of the sensor output topic and prefix of service names (defaults to imu) -->
       <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
-      [> Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] <]
+      <!-- Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] -->
       <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
-      [> Gyroscope bias random walk [rad/s/s/sqrt(Hz)] <]
+      <!-- Gyroscope bias random walk [rad/s/s/sqrt(Hz)] -->
       <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
-      [> Gyroscope bias correlation time constant [s] <]
+      <!-- Gyroscope bias correlation time constant [s] -->
       <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
-      [> Gyroscope turn on bias standard deviation [rad/s] <]
+      <!-- Gyroscope turn on bias standard deviation [rad/s] -->
       <accelerometerNoiseDensity>0.004</accelerometerNoiseDensity>
-      [> Accelerometer noise density (two-sided spectrum) [m/s^2/sqrt(Hz)] <]
+      <!-- Accelerometer noise density (two-sided spectrum) [m/s^2/sqrt(Hz)] -->
       <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
-      [> Accelerometer bias random walk. [m/s^2/s/sqrt(Hz)] <]
+      <!-- Accelerometer bias random walk. [m/s^2/s/sqrt(Hz)] -->
       <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
-      [> Accelerometer bias correlation time constant [s] <]
+      <!-- Accelerometer bias correlation time constant [s] -->
       <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
-      [> Accelerometer turn on bias standard deviation [m/s^2] <]
+      <!-- Accelerometer turn on bias standard deviation [m/s^2] -->
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <link name="intel_aero/camera_mono_link">
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -359,7 +354,7 @@
           <stddev>0.007</stddev>
         </noise>
       </camera>
-      <!--<plugin filename="libgazebo_ros_camera.so" name="intel_aero_camera_mono_controller">
+      <plugin filename="libgazebo_ros_camera.so" name="intel_aero_camera_mono_controller">
         <robotNamespace>intel_aero</robotNamespace>
         <alwaysOn>true</alwaysOn>
         <updateRate>30.0</updateRate>
@@ -374,7 +369,7 @@
         <distortionT1>0.0</distortionT1>
         <distortionT2>0.0</distortionT2>
         <center>0.5 0.5</center>
-      </plugin>-->
+      </plugin>
     </sensor>
   </gazebo>
   <link name="intel_aero/camera_optical_flow_link">
@@ -424,7 +419,7 @@
           <stddev>0.007</stddev>
         </noise>
       </camera>
-      <!--<plugin filename="libgazebo_ros_camera.so" name="intel_aero_camera_optical_flow_controller">
+      <plugin filename="libgazebo_ros_camera.so" name="intel_aero_camera_optical_flow_controller">
         <robotNamespace>intel_aero</robotNamespace>
         <alwaysOn>true</alwaysOn>
         <updateRate>120.0</updateRate>
@@ -439,7 +434,7 @@
         <distortionT1>0.0</distortionT1>
         <distortionT2>0.0</distortionT2>
         <center>0.5 0.5</center>
-      </plugin>-->
+      </plugin>
     </sensor>
   </gazebo>
   <!-- Camera link -->
@@ -492,10 +487,10 @@
   <!-- **********************************************************-->
   <!-- GAZEBO DEFINITIONS ***************************************-->
   <!-- Load plugin to the model ("robot" in urdf format)-->
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librealsense_gazebo_plugin.so" name="realsense_plugin"/>
-    [><pose frame="">0 0 0.015 0 0 0</pose><]
-  </gazebo>-->
+    <!--<pose frame="">0 0 0.015 0 0 0</pose>-->
+  </gazebo>
   <!-- Load parameters to model's main link-->
   <gazebo reference="stereors200_camera">
     <self_collide>0</self_collide>
@@ -663,24 +658,24 @@
           </vertical>
         </velocity_sensing>
       </gps>
-      <!--<plugin filename="librotors_gazebo_gps_plugin.so" name="rotors_gazebo_gps_plugin">
+      <plugin filename="librotors_gazebo_gps_plugin.so" name="rotors_gazebo_gps_plugin">
         <robotNamespace>intel_aero</robotNamespace>
-        [> (string, required): ros namespace in which the messages are published <]
+        <!-- (string, required): ros namespace in which the messages are published -->
         <linkName>intel_aero/gps_link</linkName>
-        [> (string, required): name of the body which holds the GPS sensor <]
+        <!-- (string, required): name of the body which holds the GPS sensor -->
         <gpsTopic>gps</gpsTopic>
-        [> (string): name of the sensor output topic and prefix of service names (defaults to 'gps') <]
+        <!-- (string): name of the sensor output topic and prefix of service names (defaults to 'gps') -->
         <groundSpeedTopic>ground_speed</groundSpeedTopic>
-        [> (string): name of the ground speed output topic (defaults to 'ground_speed') <]
+        <!-- (string): name of the ground speed output topic (defaults to 'ground_speed') -->
         <horPosStdDev>3.0</horPosStdDev>
-        [> standard deviation for horizontal position noise [m] <]
+        <!-- standard deviation for horizontal position noise [m] -->
         <verPosStdDev>6.0</verPosStdDev>
-        [> standard deviation for vertical position noise [m] <]
+        <!-- standard deviation for vertical position noise [m] -->
         <horVelStdDev>0.1</horVelStdDev>
-        [> standard deviation for horizontal speed noise [m/s] <]
+        <!-- standard deviation for horizontal speed noise [m/s] -->
         <verVelStdDev>0.1</verVelStdDev>
-        [> standard deviation for vertical speed noise [m/s] <]
-      </plugin>-->
+        <!-- standard deviation for vertical speed noise [m/s] -->
+      </plugin>
     </sensor>
   </gazebo>
   <!-- IMU link -->
@@ -699,34 +694,34 @@
     <child link="intel_aero/imugt_link"/>
     <limit effort="0" lower="0" upper="0" velocity="0"/>
   </joint>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_imu_plugin.so" name="rotors_gazebo_imugt_plugin">
-      [> A good description of the IMU parameters can be found in the kalibr documentation:
-           https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model-and-Intrinsics <]
+      <!-- A good description of the IMU parameters can be found in the kalibr documentation:
+           https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model-and-Intrinsics -->
       <robotNamespace>intel_aero</robotNamespace>
-      [> (string, required): ros namespace in which the messages are published <]
+      <!-- (string, required): ros namespace in which the messages are published -->
       <linkName>intel_aero/imugt_link</linkName>
-      [> (string, required): name of the body which holds the IMU sensor <]
+      <!-- (string, required): name of the body which holds the IMU sensor -->
       <imuTopic>ground_truth/imu</imuTopic>
-      [> (string): name of the sensor output topic and prefix of service names (defaults to imu) <]
+      <!-- (string): name of the sensor output topic and prefix of service names (defaults to imu) -->
       <gyroscopeNoiseDensity>0.0</gyroscopeNoiseDensity>
-      [> Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] <]
+      <!-- Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] -->
       <gyroscopeRandomWalk>0.0</gyroscopeRandomWalk>
-      [> Gyroscope bias random walk [rad/s/s/sqrt(Hz)] <]
+      <!-- Gyroscope bias random walk [rad/s/s/sqrt(Hz)] -->
       <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
-      [> Gyroscope bias correlation time constant [s] <]
+      <!-- Gyroscope bias correlation time constant [s] -->
       <gyroscopeTurnOnBiasSigma>0.0</gyroscopeTurnOnBiasSigma>
-      [> Gyroscope turn on bias standard deviation [rad/s] <]
+      <!-- Gyroscope turn on bias standard deviation [rad/s] -->
       <accelerometerNoiseDensity>0.0</accelerometerNoiseDensity>
-      [> Accelerometer noise density (two-sided spectrum) [m/s^2/sqrt(Hz)] <]
+      <!-- Accelerometer noise density (two-sided spectrum) [m/s^2/sqrt(Hz)] -->
       <accelerometerRandomWalk>0.0</accelerometerRandomWalk>
-      [> Accelerometer bias random walk. [m/s^2/s/sqrt(Hz)] <]
+      <!-- Accelerometer bias random walk. [m/s^2/s/sqrt(Hz)] -->
       <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
-      [> Accelerometer bias correlation time constant [s] <]
+      <!-- Accelerometer bias correlation time constant [s] -->
       <accelerometerTurnOnBiasSigma>0.0</accelerometerTurnOnBiasSigma>
-      [> Accelerometer turn on bias standard deviation [m/s^2] <]
+      <!-- Accelerometer turn on bias standard deviation [m/s^2] -->
     </plugin>
-  </gazebo>-->
+  </gazebo>
   <!-- odometry link -->
   <link name="intel_aero/odometry_sensorgt_link">
     <inertial>
@@ -742,7 +737,7 @@
     <child link="intel_aero/odometry_sensorgt_link"/>
     <limit effort="0" lower="0" upper="0" velocity="0"/>
   </joint>
-  <!--<gazebo>
+  <gazebo>
     <plugin filename="librotors_gazebo_odometry_plugin.so" name="odometry_sensorgt">
       <linkName>intel_aero/odometry_sensorgt_link</linkName>
       <robotNamespace>intel_aero</robotNamespace>
@@ -752,32 +747,32 @@
       <transformTopic>ground_truth/transform</transformTopic>
       <odometryTopic>ground_truth/odometry</odometryTopic>
       <parentFrameId>world</parentFrameId>
-      [> Use the scoped link name here. e.g. Model::link. <]
+      <!-- Use the scoped link name here. e.g. Model::link. -->
       <childFrameId>intel_aero/base_link</childFrameId>
       <measurementDivisor>1</measurementDivisor>
-      [> only every (seq % measurementDivisor) == 0 measurement is published [int] <]
+      <!-- only every (seq % measurementDivisor) == 0 measurement is published [int] -->
       <measurementDelay>0</measurementDelay>
-      [> time that measurement gets held back before it's published in [simulation cycles (int)] <]
+      <!-- time that measurement gets held back before it's published in [simulation cycles (int)] -->
       <unknownDelay>0.0</unknownDelay>
-      [> additional delay, that just gets added to the timestamp [s] <]
+      <!-- additional delay, that just gets added to the timestamp [s] -->
       <noiseNormalPosition>0 0 0</noiseNormalPosition>
-      [> standard deviation of additive white gaussian noise [m] <]
+      <!-- standard deviation of additive white gaussian noise [m] -->
       <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
-      [> standard deviation white gaussian noise [rad]: q_m = q*quaternionFromSmallAngleApproximation(noiseNormalQ) <]
+      <!-- standard deviation white gaussian noise [rad]: q_m = q*quaternionFromSmallAngleApproximation(noiseNormalQ) -->
       <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
-      [> standard deviation of additive white gaussian noise [m/s] <]
+      <!-- standard deviation of additive white gaussian noise [m/s] -->
       <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
-      [> standard deviation of additive white gaussian noise [rad/s] <]
+      <!-- standard deviation of additive white gaussian noise [rad/s] -->
       <noiseUniformPosition>0 0 0</noiseUniformPosition>
-      [> symmetric bounds of uniform noise [m] <]
+      <!-- symmetric bounds of uniform noise [m] -->
       <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
-      [> symmetric bounds of uniform noise [rad], computation see above <]
+      <!-- symmetric bounds of uniform noise [rad], computation see above -->
       <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
-      [> symmetric bounds of uniform noise [m/s] <]
+      <!-- symmetric bounds of uniform noise [m/s] -->
       <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
     </plugin>
-  </gazebo>-->
-  <gazebo>
-    <plugin filename="libaero_control.dylib" name="aero_control"/>
   </gazebo>
+  <!--<gazebo>
+    <plugin filename="libaero_control.so" name="aero_control"/>
+  </gazebo>-->
 </robot>

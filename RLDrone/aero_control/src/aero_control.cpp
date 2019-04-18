@@ -5,27 +5,35 @@
  * Distributed under terms of the MIT license.
  */
 
-#include "aero_control.hh"
+#include "aero_control.hpp"
 
 
 namespace gazebo
 {
 	AeroControl::AeroControl(): ModelPlugin()
 	{
-		std::cout << "[*] Created AeroControl plugin" << std::endl;
+		ROS_INFO("[AERO] Created AeroControl plugin");
 	}
 
 	void AeroControl::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 	{
-		std::cout << "[*] Loading model " << _parent->GetName() << std::endl;
-		this->model = _parent;
-		/*this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+		// Make sure the ROS node for Gazebo has already been initialized
+		if (!ros::isInitialized())
+		{
+			ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin. "
+					<< "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
+			return;
+		}
+
+		ROS_INFO("[AERO] Loading model ");
+		/*this->model = _parent;
+		this->updateConnection = event::Events::ConnectWorldUpdateBegin(
 				std::bind(&AeroControl::OnUpdate, this));
 		this->node = transport::NodePtr(new transport::Node());
-		this->node->Init(this->model->GetWorld()->Name());
+		this->node->Init(this->model->GetWorld()->GetName());
 		std::string topicName = "~/" + this->model->GetName() + "/velocity";
-		std::cout << "[*] Subscribing to topic " << topicName << std::endl;
-		this->subVelocity = this->node->Subscribe(topicName, &AeroControl::SetVelocity, this);*/
+		std::cout << "[AERO] Subscribing to topic " << topicName << std::endl;*/
+		//this->subVelocity = this->node->Subscribe(topicName, &AeroControl::SetVelocity, this);
 	}
 
 	void AeroControl::OnUpdate()
@@ -37,7 +45,7 @@ namespace gazebo
 
 	void AeroControl::SetVelocity(ConstVector3dPtr &msg)
 	{
-		std::cout << "[*] Got velocity command: " << msg << std::endl;
+		ROS_INFO("[AERO] Got velocity command: ");
 		this->model->SetLinearVel(msgs::ConvertIgn(*msg));
 	}
 

@@ -1,3 +1,4 @@
+#include <ros/ros.h>
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/transport/transport.hh>
@@ -19,8 +20,10 @@ namespace gazebo
 			transport::NodePtr node;
 			transport::PublisherPtr pubVelocity;
 			transport::SubscriberPtr subCrashed;
+			transport::SubscriberPtr subSpawned;
 			bool isCrashed;
 			void SpawnDrone(const ignition::math::Vector3d location);
+			void ModelSpawned(ConstModelPtr &msg);
 			//void SetCrashed(ConstBoolPtr &msg);
 			void Train();
 	};

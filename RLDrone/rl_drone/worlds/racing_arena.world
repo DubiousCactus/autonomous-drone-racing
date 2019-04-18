@@ -1,6 +1,5 @@
 <sdf version='1.6'>
   <world name='default'>
-    <plugin name='race_control' filename='libreinforcement_learning.dylib'/>
     <model name='ground_plane'>
       <static>1</static>
       <link name='link'>
@@ -900,5 +899,6 @@
         <projection_type>perspective</projection_type>
       </camera>
     </gui>
+    <plugin name='rl_drone' filename='librl_drone.so'/>
   </world>
 </sdf>
