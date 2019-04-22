@@ -26,14 +26,16 @@ namespace gazebo
 		}
 
 		ROS_INFO("[AERO] Loading model ");
-		/*this->model = _parent;
+		this->model = _parent;
 		this->updateConnection = event::Events::ConnectWorldUpdateBegin(
 				std::bind(&AeroControl::OnUpdate, this));
 		this->node = transport::NodePtr(new transport::Node());
 		this->node->Init(this->model->GetWorld()->GetName());
+		transport::run();
 		std::string topicName = "~/" + this->model->GetName() + "/velocity";
-		std::cout << "[AERO] Subscribing to topic " << topicName << std::endl;*/
-		//this->subVelocity = this->node->Subscribe(topicName, &AeroControl::SetVelocity, this);
+		ROS_INFO("[AERO] Subscribing to topic ");
+		std::cout << topicName << std::endl;
+		this->subVelocity = this->node->Subscribe(topicName, &AeroControl::SetVelocity, this);
 	}
 
 	void AeroControl::OnUpdate()
@@ -46,6 +48,7 @@ namespace gazebo
 	void AeroControl::SetVelocity(ConstVector3dPtr &msg)
 	{
 		ROS_INFO("[AERO] Got velocity command: ");
+		std::cout << msg->DebugString() << std::endl;
 		this->model->SetLinearVel(msgs::ConvertIgn(*msg));
 	}
 

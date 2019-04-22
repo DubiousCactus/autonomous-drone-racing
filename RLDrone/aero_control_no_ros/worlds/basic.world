@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="basic">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://aero_control_no_ros/models/aero_working_standalone</uri>
+    </include>
+    <plugin name='aero_control_no_ros' filename='libaero_control_no_ros.so'/>
+  </world>
+</sdf>
