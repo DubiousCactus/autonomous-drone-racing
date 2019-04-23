@@ -8,19 +8,21 @@
 #ifndef PID_H
 #define PID_H
 
-#include <Eigen>
+#include <Eigen/Dense>
+#include <string>
+#include <map>
 
-typedef std::map<char, float> k_param;
+typedef std::map<std::string, float> gain_param;
 
 class PID {
 	public:
-		PID(k_param gain_z, k_param gain_y, float x_velocity, int rate);
+		PID(gain_param gain_z, gain_param gain_y, float x_velocity, int rate);
+		Eigen::Vector3d Compute(Eigen::Vector3d gate_err, Eigen::Vector3d current_velocity);
 	private:
-		std::map gain_z, gain_y;
+		gain_param gain_z, gain_y;
 		float x_velocity;
 		int rate;
 		Eigen::Vector3d err_integral;
-		Eigen::Vector3d Compute(Eigen::Vector3d gate_err, Eigen::Vector3d current_velocity);
-}
+};
 
 #endif /* !PID_H */

@@ -9,7 +9,7 @@
 #define CONTROLLER_H
 
 #include <ros/ros.h>
-#include <Eigen>
+#include <Eigen/Dense>
 
 #include "PID.h"
 
@@ -20,9 +20,12 @@ typedef enum State {
 	CROSSING
 } State;
 
+typedef int* GatePredictionMessagePtr;
+typedef int* Vector3Ptr;
+
 class Controller {
 	public:
-		Controller();
+		Controller(gain_param k_x, gain_param k_y, float z_velocity);
 		~Controller();
 		void Run();
 	private:
@@ -33,6 +36,6 @@ class Controller {
 		int rate;
 		void GatePredictionCallback(const GatePredictionMessagePtr &msg);
 		void CurrentVelocityCallback(const Vector3Ptr &msg);
-}
+};
 
 #endif /* !CONTROLLER_H */
