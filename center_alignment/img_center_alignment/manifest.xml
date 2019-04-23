@@ -1,0 +1,14 @@
+<package>
+  <description brief="img_center_alignment">
+
+    Align the predicted gate center with the image center in the image frame, using a PID controller.
+
+  </description>
+  <author>Theo Morales</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/img_center_alignment</url>
+
+</package>
+
+
