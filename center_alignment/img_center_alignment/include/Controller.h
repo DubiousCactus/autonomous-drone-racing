@@ -9,12 +9,14 @@
 #define CONTROLLER_H
 
 #include <ros/ros.h>
-#include <Eigen/Dense>
+#include <geometry_msgs/TwistStamped.h>
+#include <eigen3/Eigen/Dense>
 
 #include "PID.h"
 
 
-typedef enum State {
+typedef enum {
+	LANDED,
 	AIMING,
 	FLYING,
 	CROSSING
@@ -32,10 +34,16 @@ class Controller {
 		PID *PIDBoy;
 		State state;
 		Eigen::Vector3d current_velocity;
+		ros::NodeHandle handle;
+		ros::Subscriber subHeightSensor;
+		ros::Subscriber subPredictor;
+		ros::Subscriber subVelocity;
+		float altitude;
 		int gate_region;
 		int rate;
+		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessagePtr &msg);
-		void CurrentVelocityCallback(const Vector3Ptr &msg);
+		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
 };
 
 #endif /* !CONTROLLER_H */

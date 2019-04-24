@@ -23,13 +23,13 @@ Eigen::Vector3d PID::Compute(Eigen::Vector3d err, Eigen::Vector3d current_veloci
 	this->err_integral += err * (1./this->rate);
 	Eigen::Vector3d err_derivative = -current_velocity;
 	Eigen::Vector3d velocity;
-	float z = this->gain_z.at("p") * err(0)
-		+ this->gain_z.at("i") * this->err_integral(0)
-		+ this->gain_z.at("d") * err_derivative(0);
+	float z = this->gain_z.at("p") * err(1)
+		+ this->gain_z.at("i") * this->err_integral(1)
+		+ this->gain_z.at("d") * err_derivative(1);
 
-	float y = this->gain_y.at("p") * err(1)
-		+ this->gain_y.at("i") * this->err_integral(1)
-		+ this->gain_y.at("d") * err_derivative(1);
+	float y = this->gain_y.at("p") * err(0)
+		+ this->gain_y.at("i") * this->err_integral(0)
+		+ this->gain_y.at("d") * err_derivative(0);
 
 	velocity << this->x_velocity, y, z;
 

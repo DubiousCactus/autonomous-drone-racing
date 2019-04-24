@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(img_center_alignment)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -12,7 +14,7 @@ project(img_center_alignment)
 ## System dependencies are found with CMake's conventions
 find_package(catkin REQUIRED COMPONENTS roscpp)
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+#find_package(Eigen3 REQUIRED NO_MODULE)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -146,7 +148,8 @@ add_executable(${PROJECT_NAME}_node src/PID.cpp src/Controller.cpp)
 ## Specify libraries to link a library or executable target against
  target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
-   Eigen3::Eigen
+   #Eigen3::Eigen
+   /usr/include/eigen3/
  )
 
 #############
