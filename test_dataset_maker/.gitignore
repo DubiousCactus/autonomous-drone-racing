@@ -1,2 +1,3 @@
 test_dataset_extracted/
 annotated_test_dataset/
+__pycache__/
