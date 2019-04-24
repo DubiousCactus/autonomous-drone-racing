@@ -7,7 +7,7 @@
 # Distributed under terms of the GPLv3 license.
 
 """
-Dataset class, holding background images along with their annotations
+Dataset class
 """
 
 import random
@@ -20,17 +20,17 @@ from threading import Thread
 from pyrr import Vector3, Quaternion
 
 
-class BackgroundAnnotations:
+class BaseAnnotations:
     def __init__(self, translation: Vector3, orientation: Quaternion):
         self.translation = translation
         self.orientation = orientation
 
 
 '''
-Holds a background image along with its annotations
+Holds a base image along with its annotations
 '''
-class BackgroundImage:
-    def __init__(self, image_path: str, annotations: BackgroundAnnotations):
+class BaseImage:
+    def __init__(self, image_path: str, annotations: BaseAnnotations):
         self.file = image_path
         self.annotations = annotations
 
@@ -38,7 +38,7 @@ class BackgroundImage:
         return Image.open(self.file)
 
 
-class SyntheticAnnotations:
+class TestAnnotations:
     def __init__(self, center, orientation: Quaternion, distance: float, on_screen: bool):
         self.center = [int(x) for x in center]
         self.orientation = orientation
@@ -47,13 +47,13 @@ class SyntheticAnnotations:
 
 
 '''
-Holds a generated image along with its annotations
+Holds a test image along with its annotations
 '''
 class AnnotatedImage:
-    def __init__(self, image: Image, id, annotations: SyntheticAnnotations):
+    def __init__(self, image: Image, id, annotations: [TestAnnotations]):
         self.image = image
         self.id = id
-        self.annotations = annotations
+        self.candidates = annotations
 
 
 class Dataset:
@@ -79,35 +79,36 @@ class Dataset:
             file.readline() # Discard the header
             for line in file:
                 items = line.split(',')
-                annotations[items[0].strip()] = BackgroundAnnotations(
+                annotations[items[0].strip()] = BaseAnnotations(
                     Vector3([float(x) for x in items[1:4]]),
                     Quaternion([float(x) for x in items[4:8]])
                 )
 
         return annotations
 
-    def load(self, count, annotations_path=None, randomize=True):
+    def load(self, count=None, annotations_path=None, randomize=True):
         print("[*] Loading and randomizing base dataset...")
         if randomize:
             files = os.listdir(self.path)
             random.shuffle(files)
         else:
-            file = sorted(os.listdir(self.path))
+            files = sorted(os.listdir(self.path))
 
         annotations = self.parse_annotations(annotations_path)
         # Remove files without annotations
         files = [file for file in files if file in annotations]
-        while count > len(files):
-            choice = random.choice(files)
-            full_path = os.path.join(self.path, choice)
-            if os.path.isfile(full_path) and full_path != annotations_path:
-                files += [choice]
+        if count is not None:
+            while count > len(files):
+                choice = random.choice(files)
+                full_path = os.path.join(self.path, choice)
+                if os.path.isfile(full_path) and full_path != annotations_path:
+                    files += [choice]
 
         for file in files:
             full_path = os.path.join(self.path, file)
             if os.path.isfile(full_path) and full_path != annotations_path:
                 self.count += 1
-                self.data.put(BackgroundImage(full_path, annotations[file]))
+                self.data.put(BaseImage(full_path, annotations[file]))
                 self.data.task_done()
                 if not self.width and not self.height:
                     with Image.open(full_path) as img:
@@ -117,7 +118,7 @@ class Dataset:
         return self.data.qsize() != 0
 
     '''
-    Returns the next BackgroundImage in the Queue
+    Returns the next BaseImage in the Queue
     '''
     def get(self):
         return self.data.get()
@@ -144,18 +145,19 @@ class Dataset:
             annotatedImage.image.save(
                 os.path.join(self.path, 'images', name)
             )
-            self.output_csv.write("{},{},{},{},{},{},{},{}\n".format(
-                name,
-                annotatedImage.annotations.center[0],
-                annotatedImage.annotations.center[1],
-                annotatedImage.annotations.orientation.x,
-                annotatedImage.annotations.orientation.y,
-                annotatedImage.annotations.orientation.z,
-                annotatedImage.annotations.orientation.w,
-                annotatedImage.annotations.distance,
-                annotatedImage.annotations.on_screen
-            ))
-            self.output_csv.flush()
+            for candidate in annotatedImage.candidates:
+                self.output_csv.write("{},{},{},{},{},{},{},{},{}\n".format(
+                    name,
+                    candidate.center[0],
+                    candidate.center[1],
+                    candidate.orientation.x,
+                    candidate.orientation.y,
+                    candidate.orientation.z,
+                    candidate.orientation.w,
+                    candidate.distance,
+                    candidate.on_screen
+                ))
+                self.output_csv.flush()
         self.output_csv.close()
 
     def get_image_size(self):
