@@ -21,7 +21,8 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 	this->pubVelocity =
 		this->handle.advertise<geometry_msgs::TwistStamped>("/uav/command_velocity",
 				100);
-	this->subPredictor = this->handle.subscribe("~predictor", 1000, &Controller::GatePredictionCallback, this);
+	this->subPredictor = this->handle.subscribe("~predictor", 1000,
+			&Controller::GatePredictionCallback, this);
 }
 
 Controller::~Controller()
@@ -29,11 +30,9 @@ Controller::~Controller()
 	delete this->PIDBoy;
 }
 
-void Controller::GatePredictionCallback(const GatePredictionMessagePtr &msg)
+void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
 {
-	// TODO: Compute pixel coordinates in the image frame (remember the scaling!)
-	// TODO: Substract the image center from each axis
-	//this->gate_region = msg.region;
+	this->gate_region = msg.window;
 }
 
 void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg)

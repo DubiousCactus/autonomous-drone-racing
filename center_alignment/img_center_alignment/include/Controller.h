@@ -50,7 +50,7 @@ class Controller {
 		int gate_region;
 		int rate;
 		void HeightSensorCallback(const Vector3Ptr &msg);
-		void GatePredictionCallback(const GatePredictionMessagePtr &msg);
+		void GatePredictionCallback(const GatePredictionMessage &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
 		void PublishVelocity(Eigen::Vector3d velocity);
 		void PublishVelocity(float yawVelocity);
