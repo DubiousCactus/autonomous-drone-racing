@@ -15,11 +15,14 @@
 #include "PID.h"
 
 
+#define DETECTION_RATE 20
+
 typedef enum {
 	LANDED,
 	AIMING,
 	FLYING,
-	CROSSING
+	CROSSING,
+	LEAVING
 } State;
 
 typedef int* GatePredictionMessagePtr;
@@ -38,12 +41,15 @@ class Controller {
 		ros::Subscriber subHeightSensor;
 		ros::Subscriber subPredictor;
 		ros::Subscriber subVelocity;
+		ros::Publisher pubVelocity;
 		float altitude;
 		int gate_region;
 		int rate;
 		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessagePtr &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
+		void PublishVelocity(Eigen::Vector3d velocity);
+		void PublishVelocity(float yawVelocity);
 };
 
 #endif /* !CONTROLLER_H */

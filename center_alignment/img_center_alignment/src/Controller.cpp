@@ -18,6 +18,9 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 	this->altitude = .0;
 	this->subVelocity = this->handle.subscribe("~local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
+	this->pubVelocity =
+		this->handle.advertise<geometry_msgs::TwistStampedPtr>("/uav/command_velocity",
+				100);
 }
 
 Controller::~Controller()
@@ -43,8 +46,25 @@ void Controller::HeightSensorCallback(const Vector3Ptr &msg)
 	//this->altitude = msg;
 }
 
+void Controller::PublishVelocity(Eigen::Vector3d velocity)
+{
+	geometry_msgs::TwistStampedPtr twistStamped;
+	twistStamped->twist.linear.x = velocity.x();
+	twistStamped->twist.linear.y = velocity.y();
+	twistStamped->twist.linear.z = velocity.z();
+	this->pubVelocity.publish(twistStamped);
+}
+
+void Controller::PublishVelocity(float yawVelocity)
+{
+	geometry_msgs::TwistStampedPtr twistStamped;
+	twistStamped->twist.angular.z = yawVelocity;
+	this->pubVelocity.publish(twistStamped);
+}
+
 void Controller::Run()
 {
+	int tick = 0;
 	ros::Rate rate(this->rate);
 	Eigen::Vector3d gate_center;
 
@@ -55,17 +75,19 @@ void Controller::Run()
 		switch (this->state) {
 			case LANDED:
 				{
-					// TODO: Fly up to 2m
+					/* Take off */
 					while (this->altitude < 200) {
-						Eigen::Vector3d velocity(0, 0, 0.2);
-						// TODO: Apply velocity
+						Eigen::Vector3d velocity(0, 0, 0.1);
+						this->PublishVelocity(velocity);
 					}
 					this->state = AIMING;
 				}
 			case AIMING:
 				{
-					while (this->gate_region == 0)
-						// TODO: Yaw around
+					while (this->gate_region == 0) {
+						// Yaw velocity of 0.1
+						this->PublishVelocity(0.1);
+					}
 					// gate_center = ...; TODO: Compute region center
 					this->state = FLYING;
 					break;
@@ -80,15 +102,26 @@ void Controller::Run()
 							this->current_velocity);
 
 					/* Apply the velocity or send it to the drone */
-					// TODO
-					
-					// TODO: If the height sensor indicates we're in a gate
-					this->state = CROSSING;
+					this->PublishVelocity(velocity);
+
+					if (tick >= DETECTION_RATE) {
+						tick = 0;
+						this->state = AIMING;
+					}
+					//this->state = CROSSING;
 					break;
 				}
 			case CROSSING:
+				{
+					// TODO: If the height sensor indicates we're in a gate
+					this->state = LEAVING;
+				}
+				break;
+			case LEAVING:
+				// TODO: fly straight ahead for 1 meter
 				break;
 		}
+		tick++;
 	}
 }
 
