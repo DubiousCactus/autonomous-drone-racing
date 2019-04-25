@@ -19,7 +19,7 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 	this->subVelocity = this->handle.subscribe("~local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
-		this->handle.advertise<geometry_msgs::TwistStampedPtr>("/uav/command_velocity",
+		this->handle.advertise<geometry_msgs::TwistStamped>("/uav/command_velocity",
 				100);
 }
 
@@ -57,9 +57,25 @@ void Controller::PublishVelocity(Eigen::Vector3d velocity)
 
 void Controller::PublishVelocity(float yawVelocity)
 {
-	geometry_msgs::TwistStampedPtr twistStamped;
-	twistStamped->twist.angular.z = yawVelocity;
+	geometry_msgs::TwistStamped twistStamped;
+	twistStamped.twist.angular.z = yawVelocity;
 	this->pubVelocity.publish(twistStamped);
+}
+
+Eigen::Vector3d Controller::ComputeGateCenter()
+{
+	int window_size = sqrt(NB_WINDOWS);
+	int window_width = IMG_WIDTH/window_size;
+	int window_height = IMG_HEIGHT/window_size;
+	int window_xindex = this->gate_region % window_size;
+	if (window_xindex == 0)
+		window_xindex = window_size;
+	int window_x = (window_xindex - 1) * window_width;
+	int window_y = window_height * (this->gate_region/window_size);
+	return Eigen::Vector3d(
+			window_x + (window_width/2),
+			window_y + (window_height/2),
+			0);
 }
 
 void Controller::Run()
@@ -67,6 +83,7 @@ void Controller::Run()
 	int tick = 0;
 	ros::Rate rate(this->rate);
 	Eigen::Vector3d gate_center;
+	Eigen::Vector3d origin(IMG_WIDTH/2, IMG_HEIGHT/2);
 
 	while (ros::ok()) {
 		rate.sleep();
@@ -86,16 +103,16 @@ void Controller::Run()
 				{
 					while (this->gate_region == 0) {
 						// Yaw velocity of 0.1
-						this->PublishVelocity(0.1);
+						this->PublishVelocity(0.05);
 					}
-					// gate_center = ...; TODO: Compute region center
+					gate_center = this->ComputeGateCenter();
 					this->state = FLYING;
 					break;
 				}
 			case FLYING:
 				{
 					/* Compute the gate error */
-					Eigen::Vector3d gate_err; // TODO
+					Eigen::Vector3d gate_err = gate_center - origin;
 
 					/* Compute the velocity from the PID controller */
 					auto velocity = this->PIDBoy->Compute(gate_err,

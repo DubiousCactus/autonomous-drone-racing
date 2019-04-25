@@ -11,11 +11,16 @@
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <eigen3/Eigen/Dense>
+#include <math.h>
 
 #include "PID.h"
 
 
+// TODO: Read from config
 #define DETECTION_RATE 20
+#define IMG_WIDTH 340
+#define IMG_HEIGHT 255
+#define NB_WINDOWS 25
 
 typedef enum {
 	LANDED,
@@ -50,6 +55,7 @@ class Controller {
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
 		void PublishVelocity(Eigen::Vector3d velocity);
 		void PublishVelocity(float yawVelocity);
+		Eigen::Vector3d ComputeGateCenter();
 };
 
 #endif /* !CONTROLLER_H */
