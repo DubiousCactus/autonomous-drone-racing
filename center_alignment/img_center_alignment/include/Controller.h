@@ -10,6 +10,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <img_center_alignment/GatePredictionMessage.h>
 #include <eigen3/Eigen/Dense>
 #include <math.h>
 
@@ -31,6 +32,8 @@ typedef enum {
 } State;
 
 typedef int* Vector3Ptr;
+
+using namespace img_center_alignment;
 
 class Controller {
 	public:
