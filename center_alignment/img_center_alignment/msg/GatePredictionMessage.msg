@@ -1,2 +1,2 @@
 Header header
-int window
+int8 window

@@ -30,7 +30,6 @@ typedef enum {
 	LEAVING
 } State;
 
-typedef int* GatePredictionMessagePtr;
 typedef int* Vector3Ptr;
 
 class Controller {

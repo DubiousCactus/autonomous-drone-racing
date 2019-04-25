@@ -21,6 +21,7 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 	this->pubVelocity =
 		this->handle.advertise<geometry_msgs::TwistStamped>("/uav/command_velocity",
 				100);
+	this->subPredictor = this->handle.subscribe("~predictor", 1000, &Controller::GatePredictionCallback, this);
 }
 
 Controller::~Controller()
