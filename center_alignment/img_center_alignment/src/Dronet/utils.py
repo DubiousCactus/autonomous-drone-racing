@@ -6,7 +6,7 @@ import rospy
 
 bridge = CvBridge()
 
-def callback_img(data, target_size, rootpath, save_img):
+def callback_img(data, target_size, rootpath):
     try:
         image_type = data.encoding
         img = bridge.imgmsg_to_cv2(data, image_type)
@@ -15,10 +15,6 @@ def callback_img(data, target_size, rootpath, save_img):
 
     img = cv2.resize(img, target_size)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # TODO: RGB2GRAY ?
-
-    if rootpath and save_img:
-        temp = rospy.Time.now()
-        cv2.imwrite("{}/{}.jpg".format(rootpath, temp), img)
 
     return np.asarray(img, dtype=np.float32) * np.float32(1.0/255)
 
