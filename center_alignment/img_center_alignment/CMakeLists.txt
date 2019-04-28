@@ -12,7 +12,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 #find_package(catkin REQUIRED)
 
 ## System dependencies are found with CMake's conventions
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs message_generation)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  std_msgs
+  message_generation
+)
 
 #find_package(Eigen3 REQUIRED NO_MODULE)
 
@@ -49,7 +54,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs message_generation
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-   GatePrediction.msg
+   GatePredictionMessage.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -104,7 +109,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES img_center_alignment
-  CATKIN_DEPENDS roscpp message_runtime
+  CATKIN_DEPENDS roscpp rospy message_runtime
   #DEPENDS eigen
 )
 
@@ -132,7 +137,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/PID.cpp src/Controller.cpp)
+add_executable(img_center_controller src/PID.cpp src/Controller.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -142,13 +147,18 @@ add_executable(${PROJECT_NAME}_node src/PID.cpp src/Controller.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(
+  img_center_controller
+  ${PROJECT_NAME}_generate_messages_cpp
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(${PROJECT_NAME}_node
+ target_link_libraries(img_center_controller
    ${catkin_LIBRARIES}
    #Eigen3::Eigen
-   /usr/include/eigen3/
+   #/usr/include/eigen3/
  )
 
 #############

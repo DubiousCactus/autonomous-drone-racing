@@ -8,7 +8,7 @@
 #include "PID.h"
 
 
-PID::PID(gain_param gain_z, gain_param gain_y, float x_velocity, int rate)
+PID::PID(gain_param gain_z, gain_param gain_y, double x_velocity, int rate)
 {
 	/* PID parameter maps("proportional", "integral", "derivative") for x, y
  	 * and z */
@@ -18,20 +18,19 @@ PID::PID(gain_param gain_z, gain_param gain_y, float x_velocity, int rate)
 	this->rate = rate;
 }
 
-Eigen::Vector3d PID::Compute(Eigen::Vector3d err, Eigen::Vector3d current_velocity)
+Vector3d PID::Compute(Vector3d err, Vector3d current_velocity)
 {
 	this->err_integral += err * (1./this->rate);
-	Eigen::Vector3d err_derivative = -current_velocity;
-	Eigen::Vector3d velocity;
-	float z = this->gain_z.at("p") * err(1)
-		+ this->gain_z.at("i") * this->err_integral(1)
-		+ this->gain_z.at("d") * err_derivative(1);
+	Vector3d err_derivative = -current_velocity;
+	double z = this->gain_z.at("p") * err.y
+		+ this->gain_z.at("i") * this->err_integral.y
+		+ this->gain_z.at("d") * err_derivative.y;
 
-	float y = this->gain_y.at("p") * err(0)
-		+ this->gain_y.at("i") * this->err_integral(0)
-		+ this->gain_y.at("d") * err_derivative(0);
+	double y = this->gain_y.at("p") * err.x
+		+ this->gain_y.at("i") * this->err_integral.x
+		+ this->gain_y.at("d") * err_derivative.x;
 
-	velocity << this->x_velocity, y, z;
+	Vector3d velocity(this->x_velocity, y, z);
 
 	return velocity;
 }

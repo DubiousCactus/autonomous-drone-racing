@@ -11,14 +11,13 @@
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <img_center_alignment/GatePredictionMessage.h>
-#include <eigen3/Eigen/Dense>
 #include <math.h>
 
 #include "PID.h"
 
 
 // TODO: Read from config
-#define DETECTION_RATE 20
+#define DETECTION_RATE 10000
 #define IMG_WIDTH 340
 #define IMG_HEIGHT 255
 #define NB_WINDOWS 25
@@ -43,7 +42,7 @@ class Controller {
 	private:
 		PID *PIDBoy;
 		State state;
-		Eigen::Vector3d current_velocity;
+		Vector3d current_velocity;
 		ros::NodeHandle handle;
 		ros::Subscriber subHeightSensor;
 		ros::Subscriber subPredictor;
@@ -55,9 +54,9 @@ class Controller {
 		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessage &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
-		void PublishVelocity(Eigen::Vector3d velocity);
+		void PublishVelocity(Vector3d velocity);
 		void PublishVelocity(float yawVelocity);
-		Eigen::Vector3d ComputeGateCenter();
+		Vector3d ComputeGateCenter();
 };
 
 #endif /* !CONTROLLER_H */
