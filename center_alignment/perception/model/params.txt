@@ -1,0 +1,3 @@
+lr=0.003 no decay
+80.000 samples
+batch size = 100
