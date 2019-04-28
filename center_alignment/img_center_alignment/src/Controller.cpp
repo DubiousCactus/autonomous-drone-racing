@@ -7,6 +7,7 @@
 
 #include "Controller.h"
 #include <iostream>
+#include <algorithm>
 
 void testCB(const GatePredictionMessage &msg)
 {
@@ -14,19 +15,23 @@ void testCB(const GatePredictionMessage &msg)
 	std::cout << "Gate region: " << msg.window << std::endl;
 }
 
-Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
+Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int filter_window_size)
 {
 	this->rate = 100;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
 	this->state = AIMING;
 	this->gate_region = 0;
 	this->altitude = .0;
+	if (filter_window_size % 2) {
+		filter_window_size--;
+	}
+	this->filter_window = std::array<int, filter_window_size>;
 	this->subVelocity = this->handle.subscribe("/local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
 		this->handle.advertise<geometry_msgs::TwistStamped>("/uav/command_velocity",
 				100);
-	this->subPredictor = this->handle.subscribe("/predictor", 10,
+	this->subPredictor = this->handle.subscribe("/predictor", 100,
 			&Controller::GatePredictionCallback, this);
 }
 
@@ -36,9 +41,23 @@ Controller::~Controller()
 	delete this->PIDBoy;
 }
 
+/* Simple Median Filter implementation */
+int Controller::FilterPrediction(int prediction)
+{
+	if (this->filter_window->size() < this->filter_window->max_size())
+		return prediction;
+
+	std::array<int, this->filter_window->size() + 1> sortedWindow;
+	sortedWindow = this->filter_window;
+	sortedWindow.back() = prediction;
+	std::sort(std::begin(sortedWindow), std::end(sortedWindow));
+
+	return sortedWindow.at(sortedWindow.size()/2);
+}
+
 void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
 {
-	this->gate_region = msg.window;
+	this->gate_region = this->FilterPrediction(msg.window);
 }
 
 void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg)
@@ -167,7 +186,7 @@ int main(int argc, char **argv)
 	k_y.insert(std::pair<std::string, float>("i", 0.5));
 	k_y.insert(std::pair<std::string, float>("d", 0.5));
 
-	Controller controller(k_x, k_y, 0.05); // TODO: create maps from config
+	Controller controller(k_x, k_y, 0.05, 30); // TODO: create maps from config
 	controller.Run();
 
 	ros::shutdown();
