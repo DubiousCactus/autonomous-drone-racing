@@ -22,11 +22,15 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int
 		filter_window_size--;
 	}
 	this->filter_window.resize(filter_window_size);
+	this->filter_window_size = filter_window_size;
+	this->previous_predictions.resize(5);
 	this->subVelocity = this->handle.subscribe("/local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
-		this->handle.advertise<geometry_msgs::TwistStamped>("/uav/command_velocity",
+		this->handle.advertise<geometry_msgs::Quaternion>("/IntelDrone/command_velocity",
 				100);
+	this->pubFilteredWindow =
+		this->handle.advertise<geometry_msgs::TwistStamped>("/predictor/filtered", 100);
 	this->subPredictor = this->handle.subscribe("/predictor", 100,
 			&Controller::GatePredictionCallback, this);
 
@@ -43,18 +47,26 @@ Controller::~Controller()
 /* Simple Median Filter implementation */
 int Controller::FilterPrediction(int prediction)
 {
-	if (this->filter_window.size() < this->filter_window.max_size())
+	if (this->filter_window.size() < this->filter_window_size) {
+		this->filter_window.push_front(prediction);
 		return prediction;
+	}
 
-	if (this->filter_window.size() == this->filter_window.max_size())
+	if (this->filter_window.size() == this->filter_window_size)
 		this->filter_window.pop_back();
 
+	std::cout << "returning filtered" << std::endl;
 	std::deque<int> sortedWindow = this->filter_window;
 	sortedWindow.resize(sortedWindow.max_size() + 1);
 	sortedWindow.push_front(prediction);
 	std::sort(std::begin(sortedWindow), std::end(sortedWindow));
 	this->filter_window.push_front(prediction);
+	geometry_msgs::TwistStamped stupid;
+	stupid.header.stamp = ros::Time::now();
+	stupid.twist.linear.x = sortedWindow.at(sortedWindow.size()/2);
+	this->pubFilteredWindow.publish(stupid);
 
+	std::cout << "published" << std::endl;
 	return sortedWindow.at(sortedWindow.size()/2);
 }
 
@@ -75,6 +87,10 @@ void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
 {
 	this->gate_region = this->FilterPrediction(msg.window);
+	/*if (this->previous_predictions.size() == this->previous_predictions.max_size()) {
+		this->previous_predictions.pop_back();
+	}*/
+	this->previous_predictions.push_front(this->gate_region);
 }
 
 void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg)
@@ -91,20 +107,26 @@ void Controller::HeightSensorCallback(const Vector3Ptr &msg)
 
 void Controller::PublishVelocity(Vector3d velocity)
 {
-	geometry_msgs::TwistStamped twistStamped;
+	geometry_msgs::Quaternion quat;
+	quat.x = velocity.x;
+	quat.y = velocity.y;
+	quat.z = velocity.z;
+	/*geometry_msgs::TwistStamped twistStamped;
 	twistStamped.twist.linear.x = velocity.x;
 	twistStamped.twist.linear.y = velocity.y;
 	twistStamped.twist.linear.z = velocity.z;
-	twistStamped.header.stamp = ros::Time::now();
-	this->pubVelocity.publish(twistStamped);
+	twistStamped.header.stamp = ros::Time::now();*/
+	this->pubVelocity.publish(quat);
 }
 
 void Controller::PublishVelocity(float yawVelocity)
 {
-	geometry_msgs::TwistStamped twistStamped;
+	geometry_msgs::Quaternion quat;
+	quat.w = yawVelocity;
+	/*geometry_msgs::TwistStamped twistStamped;
 	twistStamped.twist.angular.z = yawVelocity;
-	twistStamped.header.stamp = ros::Time::now();
-	this->pubVelocity.publish(twistStamped);
+	twistStamped.header.stamp = ros::Time::now();*/
+	this->pubVelocity.publish(quat);
 }
 
 Vector3d Controller::ComputeGateCenter()
@@ -129,7 +151,7 @@ void Controller::Run()
 	ros::Rate rate(this->rate);
 	Vector3d gate_center;
 	Vector3d origin(IMG_WIDTH/2, IMG_HEIGHT/2);
-	ros::Time startLeavingTime;
+	ros::Time startLeavingTime, startTakeOffTime, startCrossingTime;
 
 	while (ros::ok()) {
 		rate.sleep();
@@ -141,17 +163,21 @@ void Controller::Run()
 					std::cout << "[*] Press <ENTER> to start flying" << std::endl;
 					if (std::cin.get()) {
 						std::cout << "[*] Taking off!" << std::endl;
+						startTakeOffTime = ros::Time::now();
 						this->state = TAKEOFF;
 					}
 				}
 			case TAKEOFF:
 				{
 					/* Take off */
-					if (this->altitude < 200) {
+					//if (this->altitude < 200) {
+					ros::Duration d = ros::Time::now() - startTakeOffTime;
+					if (d.toSec() < 5) {
 						Vector3d velocity(0, 0, 0.1);
 						this->PublishVelocity(velocity);
 					} else {
 						std::cout << "[*] Aiming" << std::endl;
+						this->PublishVelocity(Vector3d(0, 0, 0));
 						this->state = AIMING;
 					}
 					break;
@@ -162,6 +188,7 @@ void Controller::Run()
 						// Yaw velocity
 						this->PublishVelocity(0.05);
 					} else {
+						this->PublishVelocity(Vector3d(0, 0, 0));
 						gate_center = this->ComputeGateCenter();
 						std::cout << "[*] Flying towards target" << std::endl;
 						this->state = FLYING;
@@ -170,10 +197,15 @@ void Controller::Run()
 				}
 			case REFINING:
 				{
-					if (this->gate_region == 0) {
+					if ((this->previous_predictions.at(0) == 13) &&
+							std::equal(this->previous_predictions.begin() + 1,
+							this->previous_predictions.end(),
+							this->previous_predictions.begin())) {
 						std::cout << "[*] Crossing the gate, watch out !" << std::endl;
+						startCrossingTime = ros::Time::now();
 						this->state = CROSSING;
-					} else {
+					} else if (this->gate_region != 0) {
+						this->PublishVelocity(Vector3d(0, 0, 0));
 						gate_center = this->ComputeGateCenter();
 						this->state = FLYING;
 					}
@@ -193,6 +225,7 @@ void Controller::Run()
 
 					if (tick >= DETECTION_RATE) {
 						tick = 0;
+						this->PublishVelocity(Vector3d(0, 0, 0));
 						std::cout << "[*] Correcting course..." << std::endl;
 						this->state = REFINING;
 					}
@@ -200,7 +233,9 @@ void Controller::Run()
 				}
 			case CROSSING:
 				{
-					if (this->altitude > MAX_GATE_HEIGHT) {
+					//if (this->altitude > MAX_GATE_HEIGHT) {
+					ros::Duration timeElapsed = ros::Time::now() - startCrossingTime;
+					if (timeElapsed.toSec() < CROSSING_TIME) {
 						this->PublishVelocity(Vector3d(0.1, 0, 0));
 					} else {
 						std::cout << "[*] Leaving the gate" << std::endl;

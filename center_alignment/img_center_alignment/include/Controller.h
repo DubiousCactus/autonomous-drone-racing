@@ -11,6 +11,8 @@
 #include <ros/ros.h>
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Quaternion.h>
+#include <std_msgs/UInt8.h>
 #include <img_center_alignment/GatePredictionMessage.h>
 #include <img_center_alignment/PIDConfig.h>
 #include <math.h>
@@ -20,7 +22,7 @@
 
 
 // TODO: Read from config
-#define DETECTION_RATE 100
+#define DETECTION_RATE 10 // 100 / 10 = 10Hz
 #define IMG_WIDTH 340
 #define IMG_HEIGHT 255
 #define NB_WINDOWS 25
@@ -57,11 +59,14 @@ class Controller {
 		ros::Subscriber subPredictor;
 		ros::Subscriber subVelocity;
 		ros::Publisher pubVelocity;
+		ros::Publisher pubFilteredWindow;
 		dynamic_reconfigure::Server<PIDConfig> dynRcfgServer;
 		float altitude;
 		int gate_region;
 		int rate;
+		int filter_window_size;
 		std::deque<int> filter_window;
+		std::deque<int> previous_predictions;
 		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessage &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
