@@ -12,7 +12,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <img_center_alignment/GatePredictionMessage.h>
 #include <math.h>
-#include <array>
+#include <deque>
 
 #include "PID.h"
 
@@ -53,7 +53,7 @@ class Controller {
 		float altitude;
 		int gate_region;
 		int rate;
-		std::array *filter_window;
+		std::deque<int> filter_window;
 		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessage &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);

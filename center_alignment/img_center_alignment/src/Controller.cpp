@@ -25,7 +25,7 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int fil
 	if (filter_window_size % 2) {
 		filter_window_size--;
 	}
-	this->filter_window = std::array<int, filter_window_size>;
+	this->filter_window.resize(filter_window_size);
 	this->subVelocity = this->handle.subscribe("/local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
@@ -44,13 +44,17 @@ Controller::~Controller()
 /* Simple Median Filter implementation */
 int Controller::FilterPrediction(int prediction)
 {
-	if (this->filter_window->size() < this->filter_window->max_size())
+	if (this->filter_window.size() < this->filter_window.max_size())
 		return prediction;
 
-	std::array<int, this->filter_window->size() + 1> sortedWindow;
-	sortedWindow = this->filter_window;
-	sortedWindow.back() = prediction;
+	if (this->filter_window.size() == this->filter_window.max_size())
+		this->filter_window.pop_back();
+
+	std::deque<int> sortedWindow = this->filter_window;
+	sortedWindow.resize(sortedWindow.max_size() + 1);
+	sortedWindow.push_front(prediction);
 	std::sort(std::begin(sortedWindow), std::end(sortedWindow));
+	this->filter_window.push_front(prediction);
 
 	return sortedWindow.at(sortedWindow.size()/2);
 }
@@ -65,6 +69,7 @@ void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg
 	this->current_velocity = Vector3d(msg->twist.linear.x, msg->twist.linear.y,
 			msg->twist.linear.z);
 }
+
 
 void Controller::HeightSensorCallback(const Vector3Ptr &msg)
 {
