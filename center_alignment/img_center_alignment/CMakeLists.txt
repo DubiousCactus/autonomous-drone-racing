@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  dynamic_reconfigure
 )
 
 #find_package(Eigen3 REQUIRED NO_MODULE)
@@ -92,10 +93,9 @@ generate_messages(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/PID.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -150,6 +150,7 @@ add_executable(img_center_controller src/PID.cpp src/Controller.cpp)
 add_dependencies(
   img_center_controller
   ${PROJECT_NAME}_generate_messages_cpp
+  ${PROJECT_NAME}_gencfg
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )

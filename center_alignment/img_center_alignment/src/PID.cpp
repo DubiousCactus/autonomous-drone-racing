@@ -12,10 +12,15 @@ PID::PID(gain_param gain_z, gain_param gain_y, double x_velocity, int rate)
 {
 	/* PID parameter maps("proportional", "integral", "derivative") for x, y
  	 * and z */
-	this->gain_z = gain_z;
-	this->gain_y = gain_y;
-	this->x_velocity = x_velocity;
+	this->SetGainParameters(gain_z, gain_y, x_velocity);
 	this->rate = rate;
+}
+
+void PID::SetGainParameters(gain_param z, gain_param y, double x_velocity)
+{
+	this->gain_z = z;
+	this->gain_y = y;
+	this->x_velocity = x_velocity;
 }
 
 Vector3d PID::Compute(Vector3d err, Vector3d current_velocity)

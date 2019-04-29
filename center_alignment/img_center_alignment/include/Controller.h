@@ -9,8 +9,10 @@
 #define CONTROLLER_H
 
 #include <ros/ros.h>
+#include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <img_center_alignment/GatePredictionMessage.h>
+#include <img_center_alignment/PIDConfig.h>
 #include <math.h>
 #include <deque>
 
@@ -55,6 +57,7 @@ class Controller {
 		ros::Subscriber subPredictor;
 		ros::Subscriber subVelocity;
 		ros::Publisher pubVelocity;
+		dynamic_reconfigure::Server<PIDConfig> dynRcfgServer;
 		float altitude;
 		int gate_region;
 		int rate;
@@ -64,6 +67,7 @@ class Controller {
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
 		void PublishVelocity(Vector3d velocity);
 		void PublishVelocity(float yawVelocity);
+		void DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level);
 		int FilterPrediction(int prediction);
 		Vector3d ComputeGateCenter();
 };

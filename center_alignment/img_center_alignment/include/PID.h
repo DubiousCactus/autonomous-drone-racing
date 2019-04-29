@@ -76,6 +76,7 @@ class PID {
 	public:
 		PID(gain_param gain_z, gain_param gain_y, double x_velocity, int rate);
 		Vector3d Compute(Vector3d gate_err, Vector3d current_velocity);
+		void SetGainParameters(gain_param z, gain_param y, double x_velocity);
 	private:
 		gain_param gain_z, gain_y;
 		double x_velocity;

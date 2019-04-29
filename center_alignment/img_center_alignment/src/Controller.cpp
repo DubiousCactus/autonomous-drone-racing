@@ -29,6 +29,9 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int
 				100);
 	this->subPredictor = this->handle.subscribe("/predictor", 100,
 			&Controller::GatePredictionCallback, this);
+
+	this->dynRcfgServer.setCallback(
+			boost::bind(&Controller::DynamicReconfigureCallback, this, _1, _2));
 }
 
 
@@ -53,6 +56,20 @@ int Controller::FilterPrediction(int prediction)
 	this->filter_window.push_front(prediction);
 
 	return sortedWindow.at(sortedWindow.size()/2);
+}
+
+void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
+{
+	gain_param gain_z, gain_y;
+	gain_z.insert(std::pair<std::string, float>("p", cfg.k_p_z));
+	gain_z.insert(std::pair<std::string, float>("i", cfg.k_i_z));
+	gain_z.insert(std::pair<std::string, float>("d", cfg.k_d_z));
+
+	gain_y.insert(std::pair<std::string, float>("p", cfg.k_p_y));
+	gain_y.insert(std::pair<std::string, float>("i", cfg.k_i_y));
+	gain_y.insert(std::pair<std::string, float>("d", cfg.k_d_y));
+
+	this->PIDBoy->SetGainParameters(gain_z, gain_y, cfg.x_vel);
 }
 
 void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
@@ -228,7 +245,7 @@ int main(int argc, char **argv)
 	k_y.insert(std::pair<std::string, float>("i", 0.5));
 	k_y.insert(std::pair<std::string, float>("d", 0.5));
 
-	Controller controller(k_x, k_y, 0.05, 30); // TODO: create maps from config
+	Controller controller(k_x, k_y, 0.05, 30);
 	controller.Run();
 
 	ros::shutdown();
