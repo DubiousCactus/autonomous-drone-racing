@@ -9,17 +9,13 @@
 #include <iostream>
 #include <algorithm>
 
-void testCB(const GatePredictionMessage &msg)
-{
-	std::cout << "CALLBACK" << std::endl;
-	std::cout << "Gate region: " << msg.window << std::endl;
-}
 
-Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int filter_window_size)
+Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int
+		filter_window_size)
 {
 	this->rate = 100;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
-	this->state = AIMING;
+	this->state = LANDED;
 	this->gate_region = 0;
 	this->altitude = .0;
 	if (filter_window_size % 2) {
@@ -90,6 +86,7 @@ void Controller::PublishVelocity(float yawVelocity)
 {
 	geometry_msgs::TwistStamped twistStamped;
 	twistStamped.twist.angular.z = yawVelocity;
+	twistStamped.header.stamp = ros::Time::now();
 	this->pubVelocity.publish(twistStamped);
 }
 
@@ -115,6 +112,7 @@ void Controller::Run()
 	ros::Rate rate(this->rate);
 	Vector3d gate_center;
 	Vector3d origin(IMG_WIDTH/2, IMG_HEIGHT/2);
+	ros::Time startLeavingTime;
 
 	while (ros::ok()) {
 		rate.sleep();
@@ -123,11 +121,20 @@ void Controller::Run()
 		switch (this->state) {
 			case LANDED:
 				{
+					std::cout << "[*] Press <ENTER> to start flying" << std::endl;
+					if (std::cin.get()) {
+						std::cout << "[*] Taking off!" << std::endl;
+						this->state = TAKEOFF;
+					}
+				}
+			case TAKEOFF:
+				{
 					/* Take off */
 					if (this->altitude < 200) {
 						Vector3d velocity(0, 0, 0.1);
 						this->PublishVelocity(velocity);
 					} else {
+						std::cout << "[*] Aiming" << std::endl;
 						this->state = AIMING;
 					}
 					break;
@@ -135,8 +142,20 @@ void Controller::Run()
 			case AIMING:
 				{
 					if (this->gate_region == 0) {
-						// Yaw velocity of 0.1
+						// Yaw velocity
 						this->PublishVelocity(0.05);
+					} else {
+						gate_center = this->ComputeGateCenter();
+						std::cout << "[*] Flying towards target" << std::endl;
+						this->state = FLYING;
+					}
+					break;
+				}
+			case REFINING:
+				{
+					if (this->gate_region == 0) {
+						std::cout << "[*] Crossing the gate, watch out !" << std::endl;
+						this->state = CROSSING;
 					} else {
 						gate_center = this->ComputeGateCenter();
 						this->state = FLYING;
@@ -157,20 +176,38 @@ void Controller::Run()
 
 					if (tick >= DETECTION_RATE) {
 						tick = 0;
-						this->state = AIMING;
+						std::cout << "[*] Correcting course..." << std::endl;
+						this->state = REFINING;
 					}
-					//this->state = CROSSING;
 					break;
 				}
 			case CROSSING:
 				{
-					// TODO: If the height sensor indicates we're in a gate
-					this->state = LEAVING;
+					if (this->altitude > MAX_GATE_HEIGHT) {
+						this->PublishVelocity(Vector3d(0.1, 0, 0));
+					} else {
+						std::cout << "[*] Leaving the gate" << std::endl;
+						startLeavingTime = ros::Time::now();
+						this->state = LEAVING;
+					}
 					break;
 				}
 			case LEAVING:
-				// TODO: fly straight ahead for 1 meter
-				break;
+				{
+					ros::Duration timeElapsed = ros::Time::now() - startLeavingTime;
+					if (timeElapsed.toSec() < CROSSING_TIME) {
+						this->PublishVelocity(Vector3d(0.1, 0, 0));
+					} else {
+						std::cout << "[*] Targetting new gate" << std::endl;
+						this->state = AIMING;
+					}
+					break;
+				}
+			case LANDING:
+				{
+					// TODO: Land
+					 break;
+				}
 		}
 		tick++;
 	}

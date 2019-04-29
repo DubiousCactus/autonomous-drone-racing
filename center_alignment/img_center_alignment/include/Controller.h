@@ -18,17 +18,22 @@
 
 
 // TODO: Read from config
-#define DETECTION_RATE 10000
+#define DETECTION_RATE 100
 #define IMG_WIDTH 340
 #define IMG_HEIGHT 255
 #define NB_WINDOWS 25
+#define CROSSING_TIME 5
+#define MAX_GATE_HEIGHT 100
 
 typedef enum {
 	LANDED,
+	TAKEOFF,
 	AIMING,
+	REFINING,
 	FLYING,
 	CROSSING,
-	LEAVING
+	LEAVING,
+	LANDING
 } State;
 
 typedef int* Vector3Ptr;
