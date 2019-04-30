@@ -21,9 +21,7 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int
 	if (filter_window_size % 2) {
 		filter_window_size--;
 	}
-	this->filter_window.resize(filter_window_size);
 	this->filter_window_size = filter_window_size;
-	this->previous_predictions.resize(5);
 	this->subVelocity = this->handle.subscribe("/local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
@@ -52,22 +50,23 @@ int Controller::FilterPrediction(int prediction)
 		return prediction;
 	}
 
+	std::vector<int>
+		sortedWindow(this->filter_window.begin(), this->filter_window.end());
+	sortedWindow.push_back(prediction);
+	std::sort(std::begin(sortedWindow), std::end(sortedWindow));
+
 	if (this->filter_window.size() == this->filter_window_size)
 		this->filter_window.pop_back();
 
-	std::cout << "returning filtered" << std::endl;
-	std::deque<int> sortedWindow = this->filter_window;
-	sortedWindow.resize(sortedWindow.max_size() + 1);
-	sortedWindow.push_front(prediction);
-	std::sort(std::begin(sortedWindow), std::end(sortedWindow));
 	this->filter_window.push_front(prediction);
+
+	int filtered_pred = sortedWindow.at(sortedWindow.size()/2);
 	geometry_msgs::TwistStamped stupid;
 	stupid.header.stamp = ros::Time::now();
-	stupid.twist.linear.x = sortedWindow.at(sortedWindow.size()/2);
+	stupid.twist.linear.x = filtered_pred;
 	this->pubFilteredWindow.publish(stupid);
 
-	std::cout << "published" << std::endl;
-	return sortedWindow.at(sortedWindow.size()/2);
+	return filtered_pred;
 }
 
 void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
@@ -87,10 +86,6 @@ void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
 {
 	this->gate_region = this->FilterPrediction(msg.window);
-	/*if (this->previous_predictions.size() == this->previous_predictions.max_size()) {
-		this->previous_predictions.pop_back();
-	}*/
-	this->previous_predictions.push_front(this->gate_region);
 }
 
 void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg)
@@ -197,10 +192,10 @@ void Controller::Run()
 				}
 			case REFINING:
 				{
-					if ((this->previous_predictions.at(0) == 13) &&
-							std::equal(this->previous_predictions.begin() + 1,
-							this->previous_predictions.end(),
-							this->previous_predictions.begin())) {
+					if ((this->filter_window.back() == 13) &&
+							std::equal(this->filter_window.begin(),
+							this->filter_window.end(),
+							this->filter_window.begin())) {
 						std::cout << "[*] Crossing the gate, watch out !" << std::endl;
 						startCrossingTime = ros::Time::now();
 						this->state = CROSSING;

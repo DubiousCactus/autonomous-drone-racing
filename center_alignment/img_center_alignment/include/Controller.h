@@ -16,7 +16,7 @@
 #include <img_center_alignment/GatePredictionMessage.h>
 #include <img_center_alignment/PIDConfig.h>
 #include <math.h>
-#include <deque>
+#include <list>
 
 #include "PID.h"
 
@@ -28,6 +28,7 @@
 #define NB_WINDOWS 25
 #define CROSSING_TIME 5
 #define MAX_GATE_HEIGHT 100
+#define PREVIOUS_PREDICTIONS_CNT 5
 
 typedef enum {
 	LANDED,
@@ -65,8 +66,7 @@ class Controller {
 		int gate_region;
 		int rate;
 		int filter_window_size;
-		std::deque<int> filter_window;
-		std::deque<int> previous_predictions;
+		std::list<int> filter_window;
 		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessage &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
