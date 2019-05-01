@@ -27,11 +27,13 @@ Velocity PID::Compute(Vector3d err, Velocity current_velocity)
 {
 	this->err_integral += err * (1./this->rate);
 	Vector3d err_derivative = -current_velocity.linear;
-	double z = this->gain_z.at("p") * err.y;
-		/*+ this->gain_z.at("i") * this->err_integral.y
-		+ this->gain_z.at("d") * err_derivative.z;*/
+	double z = this->gain_z.at("p") * err.y
+		+ this->gain_z.at("i") * this->err_integral.y
+		+ this->gain_z.at("d") * err_derivative.z;
 
-	double yaw = this->gain_yaw.at("p") * err.x;
+	double yaw = this->gain_yaw.at("p") * err.x
+		+ this->gain_yaw.at("i") * this->err_integral.x
+		+ this->gain_yaw.at("d") * -current_velocity.yaw;
 
 	Vector3d linVel(this->x_velocity, 0, z);
 	Velocity vel;

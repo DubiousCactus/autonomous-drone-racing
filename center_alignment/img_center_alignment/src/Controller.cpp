@@ -10,26 +10,19 @@
 #include <algorithm>
 
 
-Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity, int
-		filter_window_size)
+Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 {
 	this->rate = 100;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
-	this->state = AIMING;
+	this->state = LANDED;
 	this->gate_region = 0;
 	this->altitude = .0;
-	if (filter_window_size % 2) {
-		filter_window_size--;
-	}
-	this->filter_window_size = filter_window_size;
 	this->subVelocity = this->handle.subscribe("/mavros/local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
 		this->handle.advertise<geometry_msgs::Quaternion>("/IntelDrone/command_velocity_body",
 				100);
-	this->pubFilteredWindow =
-		this->handle.advertise<geometry_msgs::TwistStamped>("/predictor/filtered", 100);
-	this->subPredictor = this->handle.subscribe("/predictor/raw", 100,
+	this->subPredictor = this->handle.subscribe("/predictor/filtered", 100,
 			&Controller::GatePredictionCallback, this);
 
 	this->dynRcfgServer.setCallback(
@@ -42,33 +35,6 @@ Controller::~Controller()
 	delete this->PIDBoy;
 }
 
-/* Simple Median Filter implementation */
-int Controller::FilterPrediction(int prediction)
-{
-	if (this->filter_window.size() < this->filter_window_size) {
-		this->filter_window.push_front(prediction);
-		return prediction;
-	}
-
-	std::vector<int>
-		sortedWindow(this->filter_window.begin(), this->filter_window.end());
-	sortedWindow.push_back(prediction);
-	std::sort(std::begin(sortedWindow), std::end(sortedWindow));
-
-	if (this->filter_window.size() == this->filter_window_size)
-		this->filter_window.pop_back();
-
-	this->filter_window.push_front(prediction);
-
-	int filtered_pred = sortedWindow.at(sortedWindow.size()/2);
-	geometry_msgs::TwistStamped stupid;
-	stupid.header.stamp = ros::Time::now();
-	stupid.twist.linear.x = filtered_pred;
-	this->pubFilteredWindow.publish(stupid);
-
-	return filtered_pred;
-}
-
 void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 {
 	gain_param gain_z, gain_yaw;
@@ -76,16 +42,20 @@ void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 	gain_z.insert(std::pair<std::string, float>("i", cfg.k_i_z));
 	gain_z.insert(std::pair<std::string, float>("d", cfg.k_d_z));
 
-	gain_yaw.insert(std::pair<std::string, float>("p", cfg.k_p_y));
-	gain_yaw.insert(std::pair<std::string, float>("i", cfg.k_i_y));
-	gain_yaw.insert(std::pair<std::string, float>("d", cfg.k_d_y));
+	gain_yaw.insert(std::pair<std::string, float>("p", cfg.k_p_yaw));
+	gain_yaw.insert(std::pair<std::string, float>("i", cfg.k_i_yaw));
+	gain_yaw.insert(std::pair<std::string, float>("d", cfg.k_d_yaw));
 
 	this->PIDBoy->SetGainParameters(gain_z, gain_yaw, cfg.x_vel);
 }
 
 void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
 {
-	this->gate_region = this->FilterPrediction(msg.window);
+	this->gate_region = msg.window;
+	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT) {
+		this->previous_predictions.pop_back();
+	}
+	this->previous_predictions.push_front(msg.window);
 }
 
 void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg)
@@ -156,6 +126,38 @@ Vector3d Controller::ComputeGateCenter()
 			0);
 }
 
+
+bool Controller::CrossingCondition()
+{
+	bool crossing = false;
+	std::list<int> acceptable_regions = {8, 12, 13, 14, 18};
+	//std::cout << "[*] Checking crossing condition:\t" << std::endl;
+	/*for (auto p = this->previous_predictions.begin(); p !=
+			this->previous_predictions.end(); p++)
+		std::cout << *p << " ";
+	std::cout << std::endl;*/
+
+	if (this->previous_predictions.size() >=
+			PREVIOUS_PREDICTIONS_CNT && (std::find(acceptable_regions.begin(),
+					acceptable_regions.end(), this->gate_region) ==
+				acceptable_regions.end())) {
+		crossing = true;
+		this->previous_predictions.pop_front();
+		for (auto windowIt = this->previous_predictions.begin(); windowIt
+				!= this->previous_predictions.end(); windowIt++ ) {
+			if (std::find(acceptable_regions.begin(), acceptable_regions.end(),
+						*windowIt) == acceptable_regions.end()) {
+				//std::cout << "\t\tNOT CROSSING!" << std::endl;
+				crossing = false;
+				break;
+			}
+		}
+		this->previous_predictions.clear();
+	}
+
+	return crossing;
+}
+
 void Controller::Run()
 {
 	int tick = 0;
@@ -202,23 +204,16 @@ void Controller::Run()
 					} else {
 						this->PublishVelocity(0);
 						gate_center = this->ComputeGateCenter();
-						std::cout << "[*] Flying towards gate center: " <<
+						/*std::cout << "[*] Flying towards gate center: " <<
 							gate_center.x << "," << gate_center.y << "]" <<
-							std::endl;
+							std::endl;*/
 						this->state = FLYING;
 					}
 					break;
 				}
 			case REFINING:
 				{
-					bool crossing = true;
-					for (auto windowIt = this->filter_window.begin(); windowIt
-							!= this->filter_window.end(); windowIt++ ) {
-						if (*windowIt != 13) {
-							crossing = false;
-							break;
-						}
-					}
+					bool crossing = this->CrossingCondition();
 					if (crossing) {
 						std::cout << "[*] Crossing the gate, watch out !" << std::endl;
 						startCrossingTime = ros::Time::now();
@@ -226,13 +221,15 @@ void Controller::Run()
 					} else if (this->gate_region != 0) {
 						this->PublishVelocity(Vector3d(0, 0, 0));
 						gate_center = this->ComputeGateCenter();
-						std::cout << "[*] Flying towards window " <<
-							this->gate_region << std::endl;
+						/*std::cout << "[*] Flying towards window " <<
+							this->gate_region << std::endl;*/
 						this->state = FLYING;
+					} else {
+						std::cout << "[*] Gate lost! Re-targetting..." << std::endl;
+						this->state = AIMING;
 					}
 					break;
 				}
-						std::cout << "[*] Aiming" << std::endl;
 			case FLYING:
 				{
 					/* Compute the gate error */
@@ -248,10 +245,8 @@ void Controller::Run()
 					if (tick >= DETECTION_RATE) {
 						tick = 0;
 						this->PublishVelocity(Vector3d(0, 0, 0));
-						std::cout << "[*] Correcting course..." << std::endl;
+						//std::cout << "[*] Correcting course..." << std::endl;
 						this->state = REFINING;
-						//std::cout << "[*] Aiming" << std::endl;
-						//this->state = AIMING;
 					}
 					break;
 				}
@@ -260,7 +255,7 @@ void Controller::Run()
 					//if (this->altitude > MAX_GATE_HEIGHT) {
 					ros::Duration timeElapsed = ros::Time::now() - startCrossingTime;
 					if (timeElapsed.toSec() < CROSSING_TIME) {
-						this->PublishVelocity(Vector3d(0.3, 0, 0));
+						this->PublishVelocity(Vector3d(0.5, 0, 0));
 					} else {
 						std::cout << "[*] Leaving the gate" << std::endl;
 						startLeavingTime = ros::Time::now();
@@ -272,7 +267,7 @@ void Controller::Run()
 				{
 					ros::Duration timeElapsed = ros::Time::now() - startLeavingTime;
 					if (timeElapsed.toSec() < CROSSING_TIME) {
-						this->PublishVelocity(Vector3d(0.1, 0, 0));
+						this->PublishVelocity(Vector3d(0.5, 0, 0));
 					} else {
 						std::cout << "[*] Targetting new gate" << std::endl;
 						this->state = AIMING;
@@ -296,7 +291,7 @@ int main(int argc, char **argv)
 
 	// TODO: Read from config
 	gain_param k_x, k_y;
-	k_x.insert(std::pair<std::string, float>("p", 0.5));
+	k_x.insert(std::pair<std::string, float>("p", 0.2));
 	k_x.insert(std::pair<std::string, float>("i", 0.5));
 	k_x.insert(std::pair<std::string, float>("d", 0.5));
 
@@ -304,7 +299,7 @@ int main(int argc, char **argv)
 	k_y.insert(std::pair<std::string, float>("i", 0.5));
 	k_y.insert(std::pair<std::string, float>("d", 0.5));
 
-	Controller controller(k_x, k_y, 0.05, 30);
+	Controller controller(k_x, k_y, 0.1);
 	controller.Run();
 
 	ros::shutdown();

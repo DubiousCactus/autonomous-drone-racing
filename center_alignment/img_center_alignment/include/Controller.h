@@ -28,7 +28,7 @@
 #define NB_WINDOWS 25
 #define CROSSING_TIME 5
 #define MAX_GATE_HEIGHT 100
-#define PREVIOUS_PREDICTIONS_CNT 5
+#define PREVIOUS_PREDICTIONS_CNT 10
 
 typedef enum {
 	LANDED,
@@ -47,8 +47,7 @@ using namespace img_center_alignment;
 
 class Controller {
 	public:
-		Controller(gain_param k_x, gain_param k_y, float z_velocity,
-				int filter_window_size);
+		Controller(gain_param k_x, gain_param k_y, float z_velocity);
 		~Controller();
 		void Run();
 	private:
@@ -60,13 +59,11 @@ class Controller {
 		ros::Subscriber subPredictor;
 		ros::Subscriber subVelocity;
 		ros::Publisher pubVelocity;
-		ros::Publisher pubFilteredWindow;
 		dynamic_reconfigure::Server<PIDConfig> dynRcfgServer;
 		float altitude;
 		int gate_region;
 		int rate;
-		int filter_window_size;
-		std::list<int> filter_window;
+		std::list<int> previous_predictions;
 		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessage &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
@@ -74,8 +71,8 @@ class Controller {
 		void PublishVelocity(Vector3d velocity);
 		void PublishVelocity(float yawVelocity);
 		void DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level);
-		int FilterPrediction(int prediction);
 		Vector3d ComputeGateCenter();
+		bool CrossingCondition();
 };
 
 #endif /* !CONTROLLER_H */
