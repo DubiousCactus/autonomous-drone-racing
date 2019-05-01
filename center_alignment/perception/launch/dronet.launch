@@ -3,8 +3,8 @@
   <arg name="namespace" default="intel_aero" />
   <node name="vision" pkg="perception" type="dronet_node.py" output="screen">
     <remap from="camera" to="/camera/color/image_raw/compressed"/>
-        <param name="json_model_path" value="$(find perception)/model/model_struct.json"/>
-        <param name="weights_path" value="$(find perception)/model/model_weights_29.h5"/>
+        <param name="json_model_path" value="$(find perception)/model/struct.json"/>
+        <param name="weights_path" value="$(find perception)/model/weights.h5"/>
         <param name="target_size" value="340,255"/>
   </node>
 </launch>

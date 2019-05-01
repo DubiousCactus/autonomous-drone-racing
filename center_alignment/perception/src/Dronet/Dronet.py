@@ -18,9 +18,10 @@ TEST_PHASE=0
 class Dronet(object):
     def __init__(self,
                  json_model_path,
-                 weights_path, target_size=(340, 255), filter_size=30):
+                 weights_path, target_size=(340, 255), filter_size=10):
         self.bridge = CvBridge()
         self.filter_size = filter_size
+        self.original_size = (640, 480)
         self.predictorPublisher = rospy.Publisher("predictor/raw",
                                                   GatePredictionMessage,
                                                   queue_size=5)
@@ -65,6 +66,7 @@ class Dronet(object):
             msg.window = pred_filtered
             self.filteredPredictorPublisher.publish(msg)
 
-            vis = utils.visualize(cv_image, prediction, pred_filtered, self.target_size)
+            vis = utils.visualize(cv_image, prediction, pred_filtered,
+                                  self.original_size)
             self.visPublisher.publish(self.bridge.cv2_to_imgmsg(vis,
                                                                 encoding="rgb8"))
