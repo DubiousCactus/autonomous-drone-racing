@@ -6,22 +6,23 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
-  catkin_simple REQUIRED
+)
+
+add_message_files(
+  FILES  GatePrediction.msg
 )
 
 catkin_python_setup()
-catkin_simple()
 
-
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
-cs_export()
+catkin_package(
+  CATKIN_DEPENDS message_runtime
+)
+
+
+catkin_install_python(PROGRAMS nodes/dronet_node.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

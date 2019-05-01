@@ -72,13 +72,18 @@ typedef struct Vector3d {
 } Vector3d;
 
 
+typedef struct Velocity {
+	Vector3d linear;
+	double yaw;
+} Velocity;
+
 class PID {
 	public:
-		PID(gain_param gain_z, gain_param gain_y, double x_velocity, int rate);
-		Vector3d Compute(Vector3d gate_err, Vector3d current_velocity);
+		PID(gain_param gain_z, gain_param gain_yaw, double x_velocity, int rate);
+		Velocity Compute(Vector3d gate_err, Velocity current_velocity);
 		void SetGainParameters(gain_param z, gain_param y, double x_velocity);
 	private:
-		gain_param gain_z, gain_y;
+		gain_param gain_z, gain_yaw;
 		double x_velocity;
 		int rate;
 		Vector3d err_integral;

@@ -1,0 +1,98 @@
+<NeuralNetwork>
+    <Inputs>
+        <InputsNumber>6</InputsNumber>
+        <Item Index="1">
+            <Name>error_y</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="2">
+            <Name>error_y_old</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="3">
+            <Name>error_y_old_old</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="4">
+            <Name>d_error_y</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="5">
+            <Name>d_error_yold</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="6">
+            <Name>d_error_y_old_old</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+    </Inputs>
+    <ScalingLayer>
+        <ScalingNeuronsNumber>6</ScalingNeuronsNumber>
+        <Statistics Index="1">
+            <Minimum>-1.85707</Minimum>
+            <Maximum>1.06749</Maximum>
+            <Mean>-0.000822395</Mean>
+            <StandardDeviation>0.356554</StandardDeviation>
+        </Statistics>
+        <Statistics Index="2">
+            <Minimum>-1.85707</Minimum>
+            <Maximum>1.06749</Maximum>
+            <Mean>-0.00082408</Mean>
+            <StandardDeviation>0.356554</StandardDeviation>
+        </Statistics>
+        <Statistics Index="3">
+            <Minimum>-1.85707</Minimum>
+            <Maximum>1.06749</Maximum>
+            <Mean>-0.000825765</Mean>
+            <StandardDeviation>0.356554</StandardDeviation>
+        </Statistics>
+        <Statistics Index="4">
+            <Minimum>-2.47987</Minimum>
+            <Maximum>3.31936</Maximum>
+            <Mean>-0.00557841</Mean>
+            <StandardDeviation>0.631259</StandardDeviation>
+        </Statistics>
+        <Statistics Index="5">
+            <Minimum>-2.47987</Minimum>
+            <Maximum>3.31936</Maximum>
+            <Mean>-0.00557835</Mean>
+            <StandardDeviation>0.631259</StandardDeviation>
+        </Statistics>
+        <Statistics Index="6">
+            <Minimum>-2.47987</Minimum>
+            <Maximum>3.31936</Maximum>
+            <Mean>-0.00557829</Mean>
+            <StandardDeviation>0.631259</StandardDeviation>
+        </Statistics>
+        <ScalingMethod>MinimumMaximum</ScalingMethod>
+    </ScalingLayer>
+    <MultilayerPerceptron>
+        <Architecture>6 6 5 1</Architecture>
+        <LayersActivationFunction>HyperbolicTangent HyperbolicTangent Linear</LayersActivationFunction>
+        <Parameters>-0.577012 -0.458851 -0.326251 -0.21968 -0.0278152 -0.109926 -0.0350404 0.084294 -0.0831499 -0.270049 -0.196445 -0.467644 -0.448409 -0.536032 -0.872436 0.271533 0.561622 0.149398 0.0489347 0.0332088 0.106366 0.418902 0.229549 0.139647 0.189781 0.405337 0.43397 0.318954 -0.0307389 0.242564 -0.0176169 0.201032 -0.0795213 -0.190394 -0.111312 -0.114722 -0.0496508 -0.321295 -0.0856841 -0.0190655 -0.205348 0.0372447 0.0681149 -0.027143 0.425099 -0.486228 0.606321 0.0659527 0.677597 0.177824 -0.245257 -0.124557 -0.200297 0.310043 -0.0488411 -0.206059 -0.128278 0.0705938 0.156142 -0.102095 -0.461792 0.260161 0.0645885 -0.0616989 0.305031 -0.608726 -0.250132 -0.0477012 -0.16825 0.204244 -0.0712911 -0.19217 -0.106671 -0.14132 0.0219141 -0.383982 -0.424785 0.00958655 -1.06132 0.548739 -0.278589 -0.772879 1.27097</Parameters>
+    </MultilayerPerceptron>
+    <UnscalingLayer>
+        <UnscalingNeuronsNumber>1</UnscalingNeuronsNumber>
+        <Statistics Index="1">
+            <Minimum>-4.11829</Minimum>
+            <Maximum>2.22183</Maximum>
+            <Mean>-0.0339415</Mean>
+            <StandardDeviation>0.696759</StandardDeviation>
+        </Statistics>
+        <UnscalingMethod>MinimumMaximum</UnscalingMethod>
+    </UnscalingLayer>
+    <Outputs>
+        <OutputsNumber>1</OutputsNumber>
+        <Item Index="1">
+            <Name>command_roll</Name>
+            <Units>radiants</Units>
+            <Description></Description>
+        </Item>
+    </Outputs>
+</NeuralNetwork>

@@ -54,7 +54,7 @@ class Controller {
 	private:
 		PID *PIDBoy;
 		State state;
-		Vector3d current_velocity;
+		Velocity current_velocity;
 		ros::NodeHandle handle;
 		ros::Subscriber subHeightSensor;
 		ros::Subscriber subPredictor;
@@ -70,6 +70,7 @@ class Controller {
 		void HeightSensorCallback(const Vector3Ptr &msg);
 		void GatePredictionCallback(const GatePredictionMessage &msg);
 		void CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg);
+		void PublishVelocity(Velocity velocity);
 		void PublishVelocity(Vector3d velocity);
 		void PublishVelocity(float yawVelocity);
 		void DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level);

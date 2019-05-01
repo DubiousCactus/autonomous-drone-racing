@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
-from img_center_alignment.msg import GatePredictionMessage
-from std_msgs.msg import Bool, Empty
+from perception.msg import GatePredictionMessage
 from sensor_msgs.msg import Image, CompressedImage
+from std_msgs.msg import Bool, Empty
 from keras import backend as K
+from cv_bridge import CvBridge
 
+import numpy as np
 import rospy
 import utils
-import numpy as np
 
 
 TEST_PHASE=0
@@ -17,33 +18,26 @@ TEST_PHASE=0
 class Dronet(object):
     def __init__(self,
                  json_model_path,
-                 weights_path, target_size=(340, 255)):
-        self.predictorPublisher = rospy.Publisher("predictor",
+                 weights_path, target_size=(340, 255), filter_size=30):
+        self.bridge = CvBridge()
+        self.filter_size = filter_size
+        self.predictorPublisher = rospy.Publisher("predictor/raw",
                                                   GatePredictionMessage,
                                                   queue_size=5)
-#         self.feedthrough_sub = rospy.Subscriber("state_change", Bool,
-                                                # self.callback_feedthrough,
-#                                                 queue_size=1)
-  #       self.land_sub = rospy.Subscriber("land", Empty, self.callback_land,
-  #                                        queue_size=1)
-        # self.imgs_rootpath = imgs_rootpath
-        # Set keras utils
+        self.filteredPredictorPublisher = rospy.Publisher("predictor/filtered",
+                                                  GatePredictionMessage,
+                                                  queue_size=5)
+        self.visPublisher = rospy.Publisher("predictor/visualize", Image,
+                                            queue_size=5)
         K.set_learning_phase(TEST_PHASE)
-        # Load json and create model
         print("[*] Loading model from {}".format(json_model_path))
         model = utils.jsonToModel(json_model_path)
-        # Load weights
         model.load_weights(weights_path)
         print("Loaded model from {}".format(weights_path))
         model.compile(loss='mse', optimizer='sgd')
         self.model = model
         self.target_size = target_size
-
-    # def callback_feedthrough(self, data):
-        # self.use_network_out = data.data
-
-    # def callback_land(self, data):
-    #     self.use_network_out = False
+        self.previous_predictions = []
 
     def run(self):
         print("[*] Running !")
@@ -57,8 +51,20 @@ class Dronet(object):
                 except:
                     pass
 
-            cv_image = utils.callback_img(data, self.target_size)
-                                          # self.imgs_rootpath)
-            outs = self.model.predict(cv_image)
-            msg.window = np.argmax(outs[0])
+            np_image, cv_image = utils.callback_img(data, self.target_size)
+            prediction = np.argmax(self.model.predict(np_image))
+            msg.window = prediction
             self.predictorPublisher.publish(msg)
+
+            pred_filtered = utils.median_filter(prediction,
+                                                self.previous_predictions,
+                                                self.filter_size)
+            if len(self.previous_predictions) >= self.filter_size:
+                del self.previous_predictions[0]
+            self.previous_predictions.append(prediction)
+            msg.window = pred_filtered
+            self.filteredPredictorPublisher.publish(msg)
+
+            vis = utils.visualize(cv_image, prediction, pred_filtered, self.target_size)
+            self.visPublisher.publish(self.bridge.cv2_to_imgmsg(vis,
+                                                                encoding="rgb8"))

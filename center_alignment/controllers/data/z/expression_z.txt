@@ -1,0 +1,21 @@
+scaled_error_x=2*(error_x+0.879388)/(0.550964+0.879388)-1;
+scaled_error_x_old=2*(error_x_old+0.879388)/(0.550964+0.879388)-1;
+scaled_error_x_old_old=2*(error_x_old_old+0.879388)/(0.550964+0.879388)-1;
+scaled_d_error_x=2*(d_error_x+1.68393)/(1.00038+1.68393)-1;
+scaled_d_error_x_old=2*(d_error_x_old+1.68393)/(1.00038+1.68393)-1;
+scaled_d_error_x_old_old=2*(d_error_x_old_old+1.68393)/(1.00038+1.68393)-1;
+scaled_roll=2*(roll+0.813125)/(0.761562+0.813125)-1;
+scaled_pitch=2*(pitch+0.690898)/(0.560815+0.690898)-1;
+scaled_yaw=2*(yaw+0.184288)/(0.203575+0.184288)-1;
+scaled_command_x=(0.09762382395
+-0.008561187075*scaled_error_x
++0.09263162319*scaled_error_x_old
++0.8636262848*scaled_error_x_old_old
++0.2496878776*scaled_d_error_x
++0.124389071*scaled_d_error_x_old
+-0.1764472676*scaled_d_error_x_old_old
+-8.694981407e-05*scaled_roll
+-0.0009153622641*scaled_pitch
+-0.001752250724*scaled_yaw);
+
+(command_x) = (0.5*(scaled_command_x+1.0)*(1.88463+4.05772)-4.05772);

@@ -8,34 +8,35 @@
 #include "PID.h"
 
 
-PID::PID(gain_param gain_z, gain_param gain_y, double x_velocity, int rate)
+PID::PID(gain_param gain_z, gain_param gain_yaw, double x_velocity, int rate)
 {
 	/* PID parameter maps("proportional", "integral", "derivative") for x, y
  	 * and z */
-	this->SetGainParameters(gain_z, gain_y, x_velocity);
+	this->SetGainParameters(gain_z, gain_yaw, x_velocity);
 	this->rate = rate;
 }
 
 void PID::SetGainParameters(gain_param z, gain_param y, double x_velocity)
 {
 	this->gain_z = z;
-	this->gain_y = y;
+	this->gain_yaw = y;
 	this->x_velocity = x_velocity;
 }
 
-Vector3d PID::Compute(Vector3d err, Vector3d current_velocity)
+Velocity PID::Compute(Vector3d err, Velocity current_velocity)
 {
 	this->err_integral += err * (1./this->rate);
-	Vector3d err_derivative = -current_velocity;
-	double z = this->gain_z.at("p") * err.y
-		+ this->gain_z.at("i") * this->err_integral.y
-		+ this->gain_z.at("d") * err_derivative.y;
+	Vector3d err_derivative = -current_velocity.linear;
+	double z = this->gain_z.at("p") * err.y;
+		/*+ this->gain_z.at("i") * this->err_integral.y
+		+ this->gain_z.at("d") * err_derivative.z;*/
 
-	double y = this->gain_y.at("p") * err.x
-		+ this->gain_y.at("i") * this->err_integral.x
-		+ this->gain_y.at("d") * err_derivative.x;
+	double yaw = this->gain_yaw.at("p") * err.x;
 
-	Vector3d velocity(this->x_velocity, y, z);
+	Vector3d linVel(this->x_velocity, 0, z);
+	Velocity vel;
+	vel.linear = linVel;
+	vel.yaw = yaw;
 
-	return velocity;
+	return vel;
 }

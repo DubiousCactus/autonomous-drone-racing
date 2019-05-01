@@ -1,0 +1,38 @@
+#! /usr/bin/env python
+
+PACKAGE='controllers'
+
+import roslib;
+roslib.load_manifest(PACKAGE)
+
+from dynamic_reconfigure.parameter_generator_catkin import *
+
+gen = ParameterGenerator()
+
+trajectory_enum = gen.enum([	gen.const("user", 	int_t, 	0, 	"Defined by used with (x_d, y_d, z_d)"),
+				gen.const("hover", 	int_t, 	1, 	"Hover in (0, 0, 1)"),
+				gen.const("circle", 	int_t, 	2, 	"Circular trajectory"),
+				gen.const("eight", 	int_t, 	3, 	"8-trajectory"),
+				gen.const("square", 	int_t, 	4, 	"Square trajectoty")],
+				"Trajectory type")
+
+#       	Name				Type      	Level	Description				Default 	Min	Max 	Values
+gen.add(	"trajectory",			int_t,		0,	"Trajectory type",			0,		0,	4,	edit_method=trajectory_enum)
+gen.add(	"x_d",   			double_t,	0,    	"Desired x position",			0,		-10,	10)
+gen.add(	"y_d",   			double_t,    	0,    	"Desired y position",			0,		-10,	10)
+gen.add(	"z_d", 				double_t,    	0,    	"Desired z position",			1,		0,	10)
+
+gen.add( 	"k_p",				double_t, 	0, 	"Proportional gain", 			0.2, 		0, 	10) 
+gen.add( 	"k_i",				double_t, 	0, 	"Integral gain", 			0.0, 		0, 	10)
+gen.add( 	"k_d",				double_t, 	0, 	"Derivative gain", 			0.1, 		0, 	10)
+
+gen.add( 	"alpha_p",			double_t, 	0, 	"Proportional FOU", 			0.1, 		0, 	1) 
+gen.add( 	"alpha_i",			double_t, 	0, 	"Integral FOU", 			0.9, 		0, 	1)
+gen.add( 	"alpha_d",			double_t, 	0, 	"Derivative FOU", 			0.7, 		0, 	1)
+
+gen.add( 	"noise_position",		double_t, 	1, 	"Position noise level", 		0.00, 		0, 	10) 
+gen.add(	"noise_velocity",		double_t, 	1, 	"Velocity noise level", 		0.1, 		0, 	1)
+gen.add(	"noise_attitude", 		double_t, 	1, 	"Attitude noise level",  		0.1, 		0, 	2)
+gen.add(	"noise_angular_velocity", 	double_t, 	1, 	"Angular velocity noise level", 	0.1, 		0, 	20) 
+
+exit(gen.generate(PACKAGE, "controllers", "setSIT2FLC"))
