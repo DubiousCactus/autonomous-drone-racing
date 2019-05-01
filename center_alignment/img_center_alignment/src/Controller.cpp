@@ -12,6 +12,7 @@
 
 Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 {
+	this->ready = true;
 	this->rate = 100;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
 	this->state = LANDED;
@@ -51,6 +52,7 @@ void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 
 void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
 {
+	this->ready = true;
 	this->gate_region = msg.window;
 	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT) {
 		this->previous_predictions.pop_back();
@@ -207,6 +209,11 @@ void Controller::Run()
 				}
 			case REFINING:
 				{
+					if (!this->ready) {
+						this->state = WAITING;
+						break;
+					}
+
 					bool crossing = this->CrossingCondition();
 					if (crossing) {
 						std::cout << "[*] Crossing the gate, watch out !" << std::endl;
@@ -272,6 +279,13 @@ void Controller::Run()
 				{
 					// TODO: Land
 					 break;
+				}
+			case WAITING:
+				{
+					if (this->ready) {
+						this->state = REFINING;
+						this->ready = false;
+					}
 				}
 		}
 		tick++;

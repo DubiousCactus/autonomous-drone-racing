@@ -38,7 +38,8 @@ typedef enum {
 	FLYING,
 	CROSSING,
 	LEAVING,
-	LANDING
+	LANDING,
+	WAITING
 } State;
 
 typedef int* Vector3Ptr;
@@ -60,6 +61,7 @@ class Controller {
 		ros::Subscriber subVelocity;
 		ros::Publisher pubVelocity;
 		dynamic_reconfigure::Server<PIDConfig> dynRcfgServer;
+		bool ready;
 		float altitude;
 		int gate_region;
 		int rate;
