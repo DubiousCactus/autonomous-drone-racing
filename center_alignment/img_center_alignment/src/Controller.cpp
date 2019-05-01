@@ -20,9 +20,9 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 	this->subVelocity = this->handle.subscribe("/mavros/local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
-		this->handle.advertise<geometry_msgs::Quaternion>("/IntelDrone/command_velocity_body",
-				100);
-	this->subPredictor = this->handle.subscribe("/predictor/filtered", 100,
+		this->handle.advertise<geometry_msgs::Quaternion>(
+				"/IntelDrone/command_velocity_body", 100);
+	this->subPredictor = this->handle.subscribe("/predictor/filtered", 1000,
 			&Controller::GatePredictionCallback, this);
 
 	this->dynRcfgServer.setCallback(
@@ -131,11 +131,6 @@ bool Controller::CrossingCondition()
 {
 	bool crossing = false;
 	std::list<int> acceptable_regions = {8, 12, 13, 14};
-	//std::cout << "[*] Checking crossing condition:\t" << std::endl;
-	/*for (auto p = this->previous_predictions.begin(); p !=
-			this->previous_predictions.end(); p++)
-		std::cout << *p << " ";
-	std::cout << std::endl;*/
 
 	if (this->previous_predictions.size() >=
 			PREVIOUS_PREDICTIONS_CNT && (std::find(acceptable_regions.begin(),
@@ -147,7 +142,6 @@ bool Controller::CrossingCondition()
 				!= this->previous_predictions.end(); windowIt++ ) {
 			if (std::find(acceptable_regions.begin(), acceptable_regions.end(),
 						*windowIt) == acceptable_regions.end()) {
-				//std::cout << "\t\tNOT CROSSING!" << std::endl;
 				crossing = false;
 				break;
 			}
@@ -291,15 +285,15 @@ int main(int argc, char **argv)
 
 	// TODO: Read from config
 	gain_param k_x, k_y;
-	k_x.insert(std::pair<std::string, float>("p", 0.2));
-	k_x.insert(std::pair<std::string, float>("i", 0.5));
-	k_x.insert(std::pair<std::string, float>("d", 0.5));
+	k_x.insert(std::pair<std::string, float>("p", 0.5));
+	k_x.insert(std::pair<std::string, float>("i", 0.1));
+	k_x.insert(std::pair<std::string, float>("d", 0.2));
 
-	k_y.insert(std::pair<std::string, float>("p", 0.5));
-	k_y.insert(std::pair<std::string, float>("i", 0.5));
-	k_y.insert(std::pair<std::string, float>("d", 0.5));
+	k_y.insert(std::pair<std::string, float>("p", 0.2));
+	k_y.insert(std::pair<std::string, float>("i", 0.0));
+	k_y.insert(std::pair<std::string, float>("d", 0.0));
 
-	Controller controller(k_x, k_y, 0.1);
+	Controller controller(k_x, k_y, 0.5);
 	controller.Run();
 
 	ros::shutdown();
