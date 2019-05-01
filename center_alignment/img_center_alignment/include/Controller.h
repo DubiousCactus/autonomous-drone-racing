@@ -22,7 +22,7 @@
 
 
 // TODO: Read from config
-#define DETECTION_RATE 10 // 100 / 10 = 10Hz
+#define DETECTION_RATE 2 // 100Hz / 2
 #define IMG_WIDTH 340
 #define IMG_HEIGHT 255
 #define NB_WINDOWS 25

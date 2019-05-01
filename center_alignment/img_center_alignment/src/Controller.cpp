@@ -130,7 +130,7 @@ Vector3d Controller::ComputeGateCenter()
 bool Controller::CrossingCondition()
 {
 	bool crossing = false;
-	std::list<int> acceptable_regions = {8, 12, 13, 14, 18};
+	std::list<int> acceptable_regions = {8, 12, 13, 14};
 	//std::cout << "[*] Checking crossing condition:\t" << std::endl;
 	/*for (auto p = this->previous_predictions.begin(); p !=
 			this->previous_predictions.end(); p++)
@@ -221,8 +221,8 @@ void Controller::Run()
 					} else if (this->gate_region != 0) {
 						this->PublishVelocity(Vector3d(0, 0, 0));
 						gate_center = this->ComputeGateCenter();
-						/*std::cout << "[*] Flying towards window " <<
-							this->gate_region << std::endl;*/
+						std::cout << "[*] Flying towards window " <<
+							this->gate_region << std::endl;
 						this->state = FLYING;
 					} else {
 						std::cout << "[*] Gate lost! Re-targetting..." << std::endl;
@@ -245,7 +245,7 @@ void Controller::Run()
 					if (tick >= DETECTION_RATE) {
 						tick = 0;
 						this->PublishVelocity(Vector3d(0, 0, 0));
-						//std::cout << "[*] Correcting course..." << std::endl;
+						std::cout << "[*] Correcting course..." << std::endl;
 						this->state = REFINING;
 					}
 					break;
