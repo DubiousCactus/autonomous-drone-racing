@@ -12,7 +12,7 @@
 
 Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 {
-	this->ready = true;
+	this->ready = false;
 	this->rate = 100;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
 	this->state = LANDED;
@@ -214,13 +214,13 @@ void Controller::Run()
 						break;
 					}
 
+					this->ready = false;
 					bool crossing = this->CrossingCondition();
 					if (crossing) {
 						std::cout << "[*] Crossing the gate, watch out !" << std::endl;
 						startCrossingTime = ros::Time::now();
 						this->state = CROSSING;
 					} else if (this->gate_region != 0) {
-						this->PublishVelocity(Vector3d(0, 0, 0));
 						gate_center = this->ComputeGateCenter();
 						std::cout << "[*] Flying towards window " <<
 							this->gate_region << std::endl;
@@ -242,10 +242,10 @@ void Controller::Run()
 
 					/* Apply the velocity or send it to the drone */
 					this->PublishVelocity(velocity);
+					std::cout << "[*] Aligning" << std::endl;
 
-					if (tick >= DETECTION_RATE) {
+					if (++tick >= DETECTION_RATE) {
 						tick = 0;
-						this->PublishVelocity(Vector3d(0, 0, 0));
 						std::cout << "[*] Correcting course..." << std::endl;
 						this->state = REFINING;
 					}
@@ -267,7 +267,7 @@ void Controller::Run()
 			case LEAVING:
 				{
 					ros::Duration timeElapsed = ros::Time::now() - startLeavingTime;
-					if (timeElapsed.toSec() < CROSSING_TIME) {
+					if (timeElapsed.toSec() < LEAVING_TIME) {
 						this->PublishVelocity(Vector3d(0.5, 0, 0));
 					} else {
 						std::cout << "[*] Targetting new gate" << std::endl;
@@ -282,13 +282,11 @@ void Controller::Run()
 				}
 			case WAITING:
 				{
-					if (this->ready) {
+					this->PublishVelocity(Vector3d(0, 0, 0));
+					if (this->ready)
 						this->state = REFINING;
-						this->ready = false;
-					}
 				}
 		}
-		tick++;
 	}
 }
 
