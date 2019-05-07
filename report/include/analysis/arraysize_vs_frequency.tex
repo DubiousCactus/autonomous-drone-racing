@@ -1,0 +1,76 @@
+\begin{tikzpicture}
+\pgfplotsset{
+    scale only axis,
+    xtick = {2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19},
+    xticklabels={2x2, 3x3, 4x4, 5x5, 6x6, 7x7, 8x8, 9x9, 10x10, 11x11, 12x12, 13x13, 14x14, 15x15, 16x16, 17x17, 18x18, 19x19},
+    x=0.7cm,
+    xmin=2, xmax=19,
+    legend pos=south east,
+    grid style={dotted,gray,line width=.1pt}
+}
+
+\begin{axis}[
+    axis y line*=left,
+    ylabel={Frequency [GHz]},
+    ymin=0, ymax=30,
+    y=0.18cm,
+    ytick = {2,6,10,14,18,22,26,30},
+    x tick label style={rotate=45,anchor=east,yshift=-5pt},
+    grid=both
+    ] 
+
+    \addplot[draw=blue2,mark=*,mark options={blue2},dashed,smooth] 
+    coordinates {
+    (2,2.99792458)
+    (3,4.49688687)
+    (4,5.99584916)
+    (5,7.49481145)
+    (6,8.99377374)
+    (7,10.49273603)
+    (8,11.99169832)
+    (9,13.49066061)
+    (10,14.9896229)
+    (11,16.48858519)
+    (12,17.98754748)
+    (13,19.48650977)
+    (14,20.98547206)
+    (15,22.48443435)
+    (16,23.98339664)
+    (17,25.48235893)
+    (18,26.98132122)
+    (19,28.48028351)};
+    \label{frequency}
+
+\end{axis}
+\begin{axis}[
+    axis y line*=right,
+    axis x line=none,
+    ymin=0, ymax=30,
+    y=0.18cm,
+    ylabel={Approx. Increase in Gain [dBi]},
+    ytick = {2,6,10,14,18,22,26,30}
+    ] 
+    \addlegendimage{/pgfplots/refstyle=frequency}\addlegendentry{Frequency}
+    \addplot[draw=grey4, mark=square*, mark options={grey4},dashed] 
+    coordinates {
+    (2,6.020599913279624)
+    (3,9.542425094393248)
+    (4,12.041199826559248)
+    (5,13.979400086720377)
+    (6,15.563025007672874)
+    (7,16.901960800285135)
+    (8,18.06179973983887)
+    (9,19.084850188786497)
+    (10,20.0)
+    (11,20.827853703164504)
+    (12,21.5836249209525)
+    (13,22.278867046136735)
+    (14,22.92256071356476)
+    (15,23.521825181113627)
+    (16,24.082399653118497)
+    (17,24.60897842756548)
+    (18,25.105450102066122)
+    (19,25.575072019056577)};
+    \addlegendentry{Gain Increase}
+\end{axis}
+\end{tikzpicture}

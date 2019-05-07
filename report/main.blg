@@ -1,0 +1,18 @@
+[0] Config.pm:304> INFO - This is Biber 2.12
+[0] Config.pm:307> INFO - Logfile is 'main.blg'
+[21] biber:315> INFO - === Mon May  6, 2019, 18:24:18
+[36] Biber.pm:371> INFO - Reading 'main.bcf'
+[88] Biber.pm:889> INFO - Found 1 citekeys in bib section 0
+[99] Biber.pm:4093> INFO - Processing section 0
+[108] Biber.pm:4254> INFO - Looking for bibtex format file 'include/backmatter/references.bib' for section 0
+[109] bibtex.pm:1523> INFO - LaTeX decoding ...
+[149] bibtex.pm:1340> INFO - Found BibTeX data source 'include/backmatter/references.bib'
+[152] Utils.pm:193> WARN - BibTeX subsystem: /tmp/np0DRClZRy/references.bib_5120.utf8, line 187, warning: 182 characters of junk seen at toplevel
+[152] Utils.pm:193> WARN - I didn't find a database entry for 'https://thedroneracingleague.com/learn-more/' (section 0)
+[159] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[159] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[159] Biber.pm:3921> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
+[159] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
+[160] bbl.pm:636> INFO - Writing 'main.bbl' with encoding 'UTF-8'
+[160] bbl.pm:739> INFO - Output to main.bbl
+[160] Biber.pm:110> INFO - WARNINGS: 2

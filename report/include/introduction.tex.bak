@@ -1,0 +1,34 @@
+\chapter{Introduction}
+\lipsum 
+\begin{figure}[ht!]
+	\centering
+	\captionsetup{justification=centering,margin=2cm}
+	\input{include/introduction/spaceworks_forecast_total_sats.tex}	
+	\caption[Nano and Micro Satellite (1-50 kg) Launch History and Forecast]{Nano and Micro Satellite (1-50 kg) Launch History and Forecast \cite{SpaceWorksForecast}} 	
+	\label{fig:spaceworkstotal}
+\end{figure}
+
+\begin{figure}[ht!]
+    \captionsetup{justification=centering,margin=2cm}
+	\centering
+	\input{include/introduction/spaceworks_forecast_app.tex}	
+	\caption{Small Satellite Trends by Application \cite{SpaceWorksForecast}} 	
+	\label{fig:spaceworksapp}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \captionsetup{justification=centering,margin=2cm}
+    \caption{Applications of small satellite communication systems}
+    \begin{tabularx}{0.9\textwidth}{llXXl}
+        \toprule
+        Application & Frequency & Major Challenges & Antenna Types & Examples \\
+        \midrule
+        \gls{TTC} & \acrshort{VHF}/\acrshort{UHF} & Isotropic pattern,\newline High reliability,\newline Compact size & Monopole,\newline Helical,\newline Turnstile & \cite{isis_turnstile}, \cite{clyde_uhf}, \cite{gomspace_ax100}\\\addlinespace[1em]
+       \acrshort{HSD} & S/X/K & High Gain, \newline Beam Steering, \newline \acrshort{S/C} Attitude ,\newline Compact Size& Horn,\newline Planar Array, \newline Parabolic& \cite{Cao2019}, \cite{Luo2015}, \cite{Hodges2015}\\\addlinespace[1em]
+       \acrshort{SAR} & L/S/X/K & Multiple Bands,\newline Dual polarization, \newline Beam-Shaping, \newline Compact Size, \newline Low Power& Planar Array,\newline Parabolic Array& \cite{Iervolino2013}, \cite{Mao2017}\\\addlinespace[1em]
+       \acrshort{ISL} &S/X/K & High Gain, \newline \acrshort{S/C} Attitude, \newline Beam-Steering,\newline Compact Size & Planar Array & \cite{Vourch2014}, \cite{Iwami2017} \\
+        \bottomrule
+    \end{tabularx}
+    \label{tab:smallsat_comsys}
+\end{table}

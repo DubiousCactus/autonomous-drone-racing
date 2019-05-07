@@ -1,0 +1,59 @@
+
+\pgfmathsetmacro{\viewtheta}{60}
+\pgfmathsetmacro{\viewphi}{140}
+\pgfmathsetmacro{\rvec}{0}
+\pgfmathsetmacro{\thetavec}{60}
+\pgfmathsetmacro{\phivec}{100}
+\pgfmathsetmacro{\rvectarget}{5}
+\pgfmathsetmacro{\thetavectarget}{0}
+\pgfmathsetmacro{\phivectarget}{250}
+\pgfmathsetmacro{\cubex}{1}
+\pgfmathsetmacro{\cubey}{2}
+\pgfmathsetmacro{\cubez}{3}
+
+\pgfmathsetmacro{\paawidth}{1}
+\pgfmathsetmacro{\paalength}{1}
+
+\tdplotsetmaincoords{\viewtheta}{\viewphi}
+
+\begin{tikzpicture}[scale=1.3,tdplot_main_coords]
+
+
+
+% Draw Cubesat Outline
+\draw[fill=black!50,opacity=0.7] (\cubex/2,-\cubey/2,-\cubez/2) -- ++(0,0,\cubez) -- ++(0,\cubey,0) -- ++(0,0,-\cubez)  -- cycle;
+\draw[fill=black!50,opacity=0.7] (\cubex/2,-\cubey/2,\cubez/2) -- ++(-\cubex,0,0) -- ++(0,\cubey,0) -- ++(\cubex,0,0)  -- cycle;
+\draw[fill=black!50,opacity=0.7] (\cubex/2,\cubey/2,-\cubez/2) -- ++(0,0,\cubez) -- ++(-\cubex,0,0) -- ++(0,0,-\cubez)  -- cycle;
+
+
+\draw[dashed] (\cubex/2,0,-\cubez/2) -- ++(0,0,\cubez) -- ++(-\cubex,0,0);
+\draw[dashed] (\cubex/2,-\cubey/2,0) -- ++(0,\cubey,0) -- ++(-\cubex,0,0);
+\draw[dashed] (0,-\cubey/2,\cubez/2) -- ++(0,\cubey,0) -- ++(0,0,-\cubez);
+
+% Base Coordinate System
+\tdplotsetthetaplanecoords{0}
+\draw[thick,dashed] (0,0,0) -- (\cubex/2,0,0);
+\draw[thick,dashed] (0,0,0) -- (0,\cubey/2,0);
+\draw[thick,dashed] (0,0,0) -- (0,0,\cubez/2);
+\draw[thick,->] (\cubex/2,0,0) -- (4,0,0) node[anchor=north east]{$x_{B}$};
+\draw[thick,->] (0,\cubey/2,0) -- (0,4,0) node[anchor=north west]{$y_{B}$};
+\draw[thick,->] (0,0,\cubez/2) -- (0,0,4) node[anchor=south]{$z_{B}$};
+
+% Draw Phased Array Antenna
+\tdplotsetrotatedcoords{0}{90}{0}
+\coordinate (Shift) at (\cubex/2,\cubey/4,-\cubez/4);
+\tdplotsetrotatedcoordsorigin{(Shift)}
+
+\draw[fill=red!50,tdplot_rotated_coords] (-\paawidth/2,-\paalength/2,0) -- ++(\paawidth,0,0) -- ++(0,\paalength,0) -- ++(-\paawidth,0,0)  -- cycle;
+
+\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (1.5,0,0) node[anchor=west]{$x_{A}$};
+\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,1.5,0) node[anchor=north west]{$y_{A}$};
+\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,0,1.5) node[anchor=north]{$z_{A}$};
+
+% Target Vector
+\tdplotsetcoord{Q}{\rvectarget}{\thetavectarget}{\phivectarget}
+\draw[-stealth,thick,dashed,tdplot_rotated_coords] (0,0,0) -- (-1.099231552,-3.020113868,3.830222216) node[midway,anchor=south]{$\mathbf{t}_{A}$};;
+
+
+
+\end{tikzpicture}

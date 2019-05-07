@@ -1,0 +1,48 @@
+\begin{tikzpicture}[scale=0.75]
+\pgfplotsset{
+    scale only axis,
+    xtick = {0,1,2,3},
+    xticklabels={2x2, 3x3, 4x4, 5x5},
+    height=5cm,
+    width=\textwidth,
+    legend pos=south west,
+    grid style={dotted,gray,line width=.1pt},
+    ylabel={Min. \acrshort{HPBW} [\si{\degree}]}
+    }
+
+\begin{axis}[
+    legend style={nodes={scale=0.8, transform shape}},
+    mark size=3pt,
+    grid=both
+    ] 
+
+    \addplot+[draw=blue2,mark=triangle*,mark options={blue2},dashed,smooth] 
+    coordinates {
+(0,45.195999)
+(1,32.883023)
+(2,25.060636)
+(3,19.99145)
+};
+    \addlegendentry{Uniform}
+    
+    \addplot+[draw=blue3,mark=*,mark options={blue3},dashed,smooth] 
+    coordinates {
+(0,45.195999)
+(1,39.293622)
+(2,33.301616)
+(3,29.332328)
+};
+    \addlegendentry{Binomial}
+
+    \addplot+[draw=blue4,mark=square*,mark options={blue4},dashed,smooth] 
+    coordinates {
+(0,45.195999)
+(1,38.51571)
+(2,31.059231)
+(3,25.548448)};
+    \addlegendentry{Chebychev}
+
+
+\end{axis}
+
+\end{tikzpicture}
