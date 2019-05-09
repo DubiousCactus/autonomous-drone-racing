@@ -1,4 +1,6 @@
 compile_commands.json
+build/
+*/build/*
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
