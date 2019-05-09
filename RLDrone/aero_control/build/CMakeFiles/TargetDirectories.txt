@@ -1,0 +1,3 @@
+/Users/theomorales/Code/racing-drone-vision/RLDrone/aero_control/build/CMakeFiles/rebuild_cache.dir
+/Users/theomorales/Code/racing-drone-vision/RLDrone/aero_control/build/CMakeFiles/edit_cache.dir
+/Users/theomorales/Code/racing-drone-vision/RLDrone/aero_control/build/CMakeFiles/aero_control.dir

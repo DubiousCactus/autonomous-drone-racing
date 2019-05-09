@@ -1,0 +1,46 @@
+\section{The modern approach}
+
+\todo{Talk about why CNNs are used more and more in drone racing, and basically
+why it is the chosen approach, which leads to tackling the dataset generation
+problem.}
+
+As Deep Learning has known an exponential growth during the past decade,
+computer vision applications tend to exploit the power of convolutional neural
+networks more and more. Thanks to their impressive accuracy in specific problem
+solving, CNNs are becoming the main choice for tasks such as: object detection,
+object segmentation, object recognition, \emph{etc}\ldots
+
+In drone racing, the latest works, which are often the best performing, tend to
+employ CNNs for the sensing part, or even as an all-in-one solution (refer to
+\todo{refer to litterature review}).\\
+
+
+\section{The chosen approach}
+
+
+The solution will be implemented iteratively, by gradually increasing the
+complexity of the vision algorithms, such that progress can be made even if the
+end goal is too difficult to achieve.\\
+
+The project should attempt to fulfill the following goals:
+
+\begin{itemize}
+	\item{Recognize gates in the input image}
+	\item{Detect and localize the closest gate's center}
+	\item{Evaluate the closest gate's orientation and distance}
+	\item{Plan a trajectory for the drone to fly across the gate center}
+	\item{Refine the trajectory in real time, for an optimal flight time}
+	\item{Make the drone follow that trajectory while adjusting in real time}
+\end{itemize}
+~\\
+However, the following functionalities are out of the scope and will be
+discarded:
+
+\begin{itemize}
+	\item{Detect any other obstacles in the input image}
+	\item{Avoid obstacles that are on the drone's trajectory}
+	\item{Map and localize the detected gates in world frame}
+	\item{Plan a trajectory of a sequence of gates}
+	\item{Apply online learning for adaptive racing}
+\end{itemize}
+
