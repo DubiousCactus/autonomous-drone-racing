@@ -35,12 +35,12 @@ class Annotator():
                 self.camera_parameters = yaml.safe_load(cam_param)
             except yaml.YAMLError as exc:
                 raise Exception(exc)
-        self.base_dataset = Dataset(base_dataset)
+        self.base_dataset = Dataset(os.path.join(base_dataset, "images"))
         self.base_dataset.load(annotations_path=os.path.join(base_dataset, "annotations.csv"),
                                randomize=False)
         self.width = self.base_dataset.width
         self.height = self.base_dataset.height
-        self.annotated_dataset = Dataset(dest)
+        self.annotated_dataset = Dataset(dest, max=150)
         self.__compute_camera_matrix()
 
     def __compute_camera_matrix(self):
@@ -68,7 +68,8 @@ class Annotator():
                       unit="img", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}"):
             self.__generate(i)
 
-        self.generated_dataset.data.put(None)
+        print("[*] Saving...")
+        self.annotated_dataset.data.put(None)
         save_thread.join()
         print("[*] Saved to {}".format(self.annotated_dataset.path))
 
@@ -76,15 +77,14 @@ class Annotator():
         baseImage = self.base_dataset.get()
         annotations = []
         for gate in self.gates_config:
-            pose = self.gates_config[gate]['pose']
-            orientation = self.gates_config[gate]['orientation']
+            pose = self.gates_config[gate]['translation']
+            orientation = self.gates_config[gate]['rotation']
             view = self.__compute_view_matrix(baseImage.annotations)
             gate_coord_img_frame = self.__back_project(pose, orientation, view)
             annotations.append(TestAnnotations(gate_coord_img_frame,
                                                Quaternion(),
                                               0.0, True))
-        self.annotated_dataset.put(AnnotatedImage(baseImage.image(), index, annotations))
-
+        self.annotated_dataset.put(AnnotatedImage(baseImage.image_path(), index, annotations))
 
     def __compute_view_matrix(self, drone_pose):
         # Camera view matrix

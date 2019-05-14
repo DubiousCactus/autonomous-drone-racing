@@ -34,8 +34,8 @@ class BaseImage:
         self.file = image_path
         self.annotations = annotations
 
-    def image(self):
-        return Image.open(self.file)
+    def image_path(self):
+        return self.file
 
 
 class TestAnnotations:
@@ -50,8 +50,8 @@ class TestAnnotations:
 Holds a test image along with its annotations
 '''
 class AnnotatedImage:
-    def __init__(self, image: Image, id, annotations: [TestAnnotations]):
-        self.image = image
+    def __init__(self, image_path: str, id, annotations: [TestAnnotations]):
+        self.image_path = image_path
         self.id = id
         self.candidates = annotations
 
@@ -142,7 +142,7 @@ class Dataset:
 
         for annotatedImage in iter(self.data.get, None):
             name = "%06d.png" % annotatedImage.id
-            annotatedImage.image.save(
+            Image.open(annotatedImage.image_path).save(
                 os.path.join(self.path, 'images', name)
             )
             for candidate in annotatedImage.candidates:
