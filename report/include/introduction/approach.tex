@@ -49,7 +49,40 @@ lower-level controller implemented by the manufacturer on the UAV.\\
 \end{figure}
 
 
-As for the drone itself, 
+As for the drone itself, the model used to conduct real flight tests is an Intel
+Aero, a customizable platform built for developers. It is ready to fly, and
+comprises several sensors, namely:
+
+\begin{itemize}
+	\item{Intel Atom® x7-Z8750 processor}
+	\item{4 GB LPDDR3-1600}
+	\item{32 GB eMMC}
+	\item{Intel® RealSense™ R200 camera}
+		\begin{itemize}
+			\item{Depth/infrared: 640x480 resolution at 60FPS}
+			\item{RGB: 1080p at 30FPS}
+		\end{itemize}
+	\item{OmniVision OV8858 8 MP RGB camera (front facing)}
+		\begin{itemize}
+			\item{3264x2448 at 30FPS}
+			\item{1080p at 60FPS}
+			\item{720p at 90FPS}
+			\item{Electronic Image Stabilization}
+		\end{itemize}
+	\item{OmniVision OV7251 VGA camera, global shutter, monochrome (down facing)}
+	\item{GPS and compass}
+	\item{Intel® Aero Flight Controller with Dronecode PX4 Autopilot}
+\end{itemize}
+
+~\\Since it comes with the Yocto Project~\cite{Yocto} Linux distribution preinstalled, Ubuntu
+16.04 had to be setup first before installing ROS Kinetic. Unfortunately, the
+OmniVision OV8858 front facing camera is not supported on Linux distributions
+other than the Yocto Project, which means its high speed video recording feature
+couldn't be taken advantage of to elimintate as much motion blur as possible,
+and instead, the RealSense™ R200 camera is used. Having a high resolution would
+be of no interest, since it would only make the CNN run slower in despite of a
+neglectable gain in accuracy.\\
+
 
 The solution will be implemented iteratively, by gradually increasing the
 complexity of the vision algorithms, such that progress can be made even if the
@@ -76,6 +109,3 @@ discarded:
 	\item{Plan a trajectory of a sequence of gates}
 	\item{Apply online learning for adaptive racing}
 \end{itemize}
-
-
-\todo{System diagram, framework, ROS and all the shit}
