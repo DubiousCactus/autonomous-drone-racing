@@ -23,44 +23,40 @@ import os
 
 def load_dataset(path, nsamples):
     files = []
+    samples = []
     for file in os.listdir(path):
         if os.path.isfile(os.path.join(path, file)):
             files.append(os.path.join(path, file))
+    for i, file in enumerate(random.sample(files, nsamples)):
+        img = np.asarray(Image.open(file).convert("RGB"), dtype=np.uint8)
+        samples.append(img.flatten())
 
-    samples = np.array([])
-    for file in random.sample(files, nsamples):
-        img = np.asarray(Image.open(file), dtype=np.uint8)
-        samples = np.vstack(samples, img)
-
-    return samples
+    return np.array(samples)
 
 def compute(args):
     synthetic_gates = load_dataset(args.synthetic, args.nsamples)
     real_gates = load_dataset(args.real, args.nsamples)
 
-	synthetic_embeddings = TSNE(n_jobs=4).fit_transform(synthetic_gates)
+    synthetic_embeddings = TSNE(n_jobs=4).fit_transform(synthetic_gates)
     synthetic_vis_x = synthetic_embeddings[:, 0]
     synthetic_vis_y = synthetic_embeddings[:, 1]
-    plt.scatter(synthetic_vis_x, synthetic_vis_y, c=digits.target,
-                cmap=plt.cm.get_cmap("jet", 10), marker='.')
+    plt.scatter(synthetic_vis_x, synthetic_vis_y, c="red", marker='.')
 
-	real_embeddings = TSNE(n_jobs=4).fit_transform(real_gates)
+    real_embeddings = TSNE(n_jobs=4).fit_transform(real_gates)
     real_vis_x = real_embeddings[:, 0]
     real_vis_y = real_embeddings[:, 1]
-    plt.scatter(real_vis_x, synthetic_vis_y, c=digits.target,
-                cmap=plt.cm.get_cmap("jet", 10), marker='+')
+    plt.scatter(real_vis_x, synthetic_vis_y, c="blue", marker='+')
 
-    plt.colorbar(ticks=range(10))
+    # plt.colorbar(ticks=range(10))
+    print("Showing the plot!")
     plt.clim(-0.5, 9.5)
     plt.show()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    K:wq
-
-    parser.add_argument('synthetic', description="Synthetic gates dataset path")
-    parser.add_argument('real', description="Real gates dataset path")
-    parser.add_argument('nsamples', description="Number of samples to plot")
+    parser.add_argument('synthetic', help="Synthetic gates dataset path")
+    parser.add_argument('real', help="Real gates dataset path")
+    parser.add_argument('nsamples', type=int, help="Number of samples to plot")
     compute(parser.parse_args())
 
