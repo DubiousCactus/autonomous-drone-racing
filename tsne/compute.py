@@ -36,7 +36,7 @@ def load_dataset(path, nsamples):
 
     return np.array(samples)
 
-def compute(args):
+def compute_3d(args):
     synthetic_gates = load_dataset(args.synthetic, args.nsamples)
     real_gates = load_dataset(args.real, args.nsamples)
 
@@ -58,11 +58,29 @@ def compute(args):
     real_vis_z = real_embeddings[:, 2]
     ax.scatter(real_vis_x, real_vis_y, real_vis_z, c="blue", marker='+')
 
-    # plt.colorbar(ticks=range(10))
-    print("Showing the plot!")
-    # plt.clim(-0.5, 9.5)
-    # plt.show()
-    plt.savefig('pca_t-sne.png')
+    plt.savefig('pca_t-sne_3d.png')
+
+def compute_2d(args):
+    synthetic_gates = load_dataset(args.synthetic, args.nsamples)
+    real_gates = load_dataset(args.real, args.nsamples)
+
+    fig = plt.figure()
+
+    synthetic_pca = PCA(n_components=50).fit_transform(synthetic_gates)
+    synthetic_embeddings = TSNE(n_components=2).fit_transform(synthetic_pca)
+    synthetic_vis_x = synthetic_embeddings[:, 0]
+    synthetic_vis_y = synthetic_embeddings[:, 1]
+    plt.scatter(synthetic_vis_x, synthetic_vis_y, c="red", marker='o')
+
+    real_pca = PCA(n_components=50).fit_transform(real_gates)
+    real_embeddings = TSNE(n_components=2).fit_transform(real_pca)
+    real_vis_x = real_embeddings[:, 0]
+    real_vis_y = real_embeddings[:, 1]
+    plt.scatter(real_vis_x, real_vis_y, c="blue", marker='+')
+
+    plt.savefig('pca_t-sne_2d.png')
+
+
 
 
 if __name__ == "__main__":
@@ -70,5 +88,5 @@ if __name__ == "__main__":
     parser.add_argument('synthetic', help="Synthetic gates dataset path")
     parser.add_argument('real', help="Real gates dataset path")
     parser.add_argument('nsamples', type=int, help="Number of samples to plot")
-    compute(parser.parse_args())
+    compute_2d(parser.parse_args())
 
