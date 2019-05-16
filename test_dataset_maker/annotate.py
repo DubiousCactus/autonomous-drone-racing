@@ -24,7 +24,7 @@ import os
 
 class Annotator():
     def __init__(self, base_dataset: str, dest: str, config: str,
-                 camera_parameters: str):
+                 camera_parameters: str, resolution: str):
         with open(config, 'r') as conf:
             try:
                 self.gates_config = yaml.safe_load(conf)
@@ -38,8 +38,12 @@ class Annotator():
         self.base_dataset = Dataset(os.path.join(base_dataset, "images"))
         self.base_dataset.load(annotations_path=os.path.join(base_dataset, "annotations.csv"),
                                randomize=False)
-        self.width = self.base_dataset.width
-        self.height = self.base_dataset.height
+        if not resolution:
+            self.width = self.base_dataset.width
+            self.height = self.base_dataset.height
+        else:
+            self.width, self.height = int(resolution.split('x')[0]), int(resolution.split('x')[1])
+        print("[*] Using {}x{} target resolution".format(self.width, self.height))
         self.annotated_dataset = Dataset(dest, max=150)
         self.__compute_camera_matrix()
 
@@ -79,15 +83,14 @@ class Annotator():
         for gate in self.gates_config:
             pose = self.gates_config[gate]['translation']
             orientation = self.gates_config[gate]['rotation']
-            print("[*] Pose: ", pose)
-            print("[*] Orientation: ", orientation)
-            input("")
             view = self.__compute_view_matrix(baseImage.annotations)
-            gate_coord_img_frame = self.__back_project(pose, orientation, view)
+            gate_coord_img_frame = self.__back_project(pose, orientation, view,
+                                                      baseImage.annotations)
             annotations.append(TestAnnotations(gate_coord_img_frame,
                                                Quaternion(),
                                               0.0, True))
-        self.annotated_dataset.put(AnnotatedImage(baseImage.image_path(), index, annotations))
+        self.annotated_dataset.put(AnnotatedImage(baseImage.image_path(), index,
+                                         annotations, (self.width, self.height)))
 
     def __compute_view_matrix(self, drone_pose):
         # Camera view matrix
@@ -101,10 +104,10 @@ class Annotator():
             drone_pose.orientation * Vector3([0.0, 0.0, 1.0]),
         )
 
-    def __back_project(self, position, orientation, view):
+    def __back_project(self, position, orientation, view, drone_pose):
         # Return if the camera is within 50cm of the gate, because it's not
         # visible
-        if np.linalg.norm(position - self.drone_pose.translation) <= 0.3:
+        if np.linalg.norm(position - drone_pose.translation) <= 0.3:
             return [-1, -1]
 
         clip_space_gate_center = self.projection * (view *
@@ -144,8 +147,9 @@ if __name__ == "__main__":
                         help='the path to the camera parameters YAML file\
                         (output of OpenCV\'s calibration)',
                         required=True)
+    parser.add_argument('--res', dest='resolution', type=str, help='destination resolution')
 
     args = parser.parse_args()
     annotator = Annotator(args.base_dataset, args.destination, args.config,
-                          args.camera_parameters)
+                          args.camera_parameters, args.resolution)
     annotator.run()
