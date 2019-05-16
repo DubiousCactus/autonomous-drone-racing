@@ -79,6 +79,9 @@ class Annotator():
         for gate in self.gates_config:
             pose = self.gates_config[gate]['translation']
             orientation = self.gates_config[gate]['rotation']
+            print("[*] Pose: ", pose)
+            print("[*] Orientation: ", orientation)
+            input("")
             view = self.__compute_view_matrix(baseImage.annotations)
             gate_coord_img_frame = self.__back_project(pose, orientation, view)
             annotations.append(TestAnnotations(gate_coord_img_frame,
@@ -99,6 +102,11 @@ class Annotator():
         )
 
     def __back_project(self, position, orientation, view):
+        # Return if the camera is within 50cm of the gate, because it's not
+        # visible
+        if np.linalg.norm(position - self.drone_pose.translation) <= 0.3:
+            return [-1, -1]
+
         clip_space_gate_center = self.projection * (view *
                                                     Vector4.from_vector3(position,
                                                                          w=1.0))
