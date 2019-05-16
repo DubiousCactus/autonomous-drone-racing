@@ -1,3 +1,41 @@
 \subsection{Advantages and applications}
 
+Neural netowrks have known a rapid increase in their performance in the last
+decades, which allowed them to finally be used in real world scenarios, such as
+hand-written digits recognition, a solution used by banks and developed by Yann
+LeCun using a multi-layer perceptron~\cite{41400}.\\
 
+However, most computer vision tasks, such as object detection or scene
+recognition, are far above in terms of complexity. Indeed, the yearly
+\emph{Large Scale Visual Recognition Challenge} organized by
+\emph{ImageNet}~\cite{ILSVRC} quickly pointed out the limitations of the
+perceptron, and undirectly gave birth to the so-called \emph{convolutional
+neural networks}.
+
+This type of artificial neural networks attempt to mimic the visual cortex in
+the mamal brain, by applying a long sequence of small filters to an input
+image, in order to compute the latent space of an image: a dense representation
+of the features with much less dimensions.
+
+The power of a CNN over the traditional way of computing image features (e.g.
+SIFT: \emph{Scale-Invariant Feature Transform}) lies in its ability to adapt to
+any objective through machine learning. Where a generic feature detection
+algorithm would fail, a CNN would learn how to recognize the features needed to
+minimize an objective function. It can be seen as a black box, where the
+filters do not actually matter, because they are computed and adjusted over a
+dataset, as to feed the fully connected layers at the end of a CNN with the
+relevant features.\\
+
+To this day, convolutional neural networks are being used more and more, and
+quite often without being ackowledged by the end user, in tasks ranging from
+face recognition to pedestrian detection in autonomous vehicles.\\
+
+In this work, the imense advantages of using a deep convolutional neural network
+against a traditional geometry-based detection algorithm, are its robustness and
+ability to adapt to change in color, shape, lighting conditions, as well as
+overcoming motion blur and noise caused by fast movements of the camera.
+
+Furthermore, a multi-layer perceptron can easily be connected to the last layer
+of a CNN (as it is often the case), which leverages the learning ability and
+offers the possibility to do more than just recognizing obstacles, but even
+compute steering commands, as it was done in A. Loquercio et. al~\cite{dronet}.
