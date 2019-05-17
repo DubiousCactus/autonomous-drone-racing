@@ -1,0 +1,13 @@
+\chapter{Future improvements}
+
+In the future I want to train the network to segmentate the gates in the
+picture instead of outputing a region preposal. I can very easily generate a
+mask for the gates in the image, and use that as a ground truth.
+
+The network would probably learn much better since it is way more correlated
+than regions in the image, and then I could apply a simple geometric center
+detection algorithm, as it has been seen recently in drone racing.
+
+
+This would combine the power and robustness of a CNN with the simplicity and
+efficiency of a rule-based algorithm.

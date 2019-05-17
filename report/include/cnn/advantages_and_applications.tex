@@ -3,7 +3,7 @@
 Neural netowrks have known a rapid increase in their performance in the last
 decades, which allowed them to finally be used in real world scenarios, such as
 hand-written digits recognition, a solution used by banks and developed by Yann
-LeCun using a multi-layer perceptron~\cite{41400}.\\
+LeCun \etal~\cite{41400} using a multi-layer perceptron.\\
 
 However, most computer vision tasks, such as object detection or scene
 recognition, are far above in terms of complexity. Indeed, the yearly
@@ -18,12 +18,12 @@ image, in order to compute the latent space of an image: a dense representation
 of the features with much less dimensions.
 
 The power of a CNN over the traditional way of computing image features (e.g.
-SIFT: \emph{Scale-Invariant Feature Transform}) lies in its ability to adapt to
-any objective through machine learning. Where a generic feature detection
-algorithm would fail, a CNN would learn how to recognize the features needed to
-minimize an objective function. It can be seen as a black box, where the
-filters do not actually matter, because they are computed and adjusted over a
-dataset, as to feed the fully connected layers at the end of a CNN with the
+SIFT: \emph{Scale-Invariant Feature Transform}~\cite{SIFT}) lies in its ability
+to adapt to any objective through machine learning. Where a generic feature
+detection algorithm would fail, a CNN would learn how to recognize the features
+needed to minimize an objective function. It can be seen as a black box, where
+the filters do not actually matter, because they are computed and adjusted over
+a dataset, as to feed the fully connected layers at the end of a CNN with the
 relevant features.\\
 
 To this day, convolutional neural networks are being used more and more, and

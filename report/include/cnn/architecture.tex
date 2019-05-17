@@ -1,3 +1,66 @@
 \subsection{Architecture}
+
+The building blocks of any convolutional neural network are convolution layers,
+which, as stated previously, are small-sized learnable filters that are
+convolved across an input tensor, and output a visual stimuli under the form of
+another tensor, then fed into the next layer.
+
+\begin{figure}[h]
+	\center
+	\resizebox{480pt}{!}{
+		\input{plots/vgg16.tex}
+	}
+	\caption{The famous VGG-16 architecture.}
+	\label{fig:vgg16}
+\end{figure}
+
 	\subsubsection{Typical inputs and ouptputs}
+In a typical CNN, input and output layers are of a fixed size corresponding to
+the problem formulation. The input tensor representing an image can be of any
+dimensions, usually with the shape $(H,W,C)$ for $H$ rows corresponding to the
+image's height, $W$ columns for its width, and of third axis size $C$ for its
+channels (usually 1 for grayscale images and 3 for RGB images). However this
+common input shape is not a restriction, and it usually depends on the approach
+to the problem: it might be wiser to use square images of cropped grayscale
+portraits for face recognition, for instance.\\
+
+\todo{Add tikz image for input and output tensors/vectors}
+
+As for the output, the shape is entirely dependent on the problem and the
+desired output of the network. In common image classification implementations,
+a one-hot (or multi-hot) encoded vector is usually used as ground truth label,
+meaning that the expected output of the network is a vector of size $N$ for $N$
+classes.
+
+\begin{wrapfigure}{r}{0.4\textwidth}
+	\begin{center}
+		\includegraphics[width=0.24\textwidth]{figure/one_hot.png}
+	\end{center}
+	\label{fig:onehot}
+	\caption{One-hot encoding of 3 classes.}
+\end{wrapfigure}
+
+
+A one-hot encoded vector is a simple representation of the class to which a
+given image belongs, where every value is either 0 for the indices corresponding
+to the classes which the image does not belong to, or 1 otherwise (see
+Figure~\ref{fig:onehot}).\\
+
+Nevertheless, there are many other possible output formats for convolutional
+neural networks, such as an other image for the case of auto-encoders or image
+segmentation networks. One strong limitation of CNNs is their fixed-sized
+input and output layers, which enforces them to be fed with strictly
+constrainde data. To bypass this constraint, another kind of neural network
+must be used, such as recurrent neural netowrks.
+
 	\subsubsection{Layer types}
+
+talk about convolution layers
+
+talk about pooling
+
+talk about activation layers, relu, softmax
+
+talk about FLCs briefly
+
+talk about additional layers like noise, batch normalization...

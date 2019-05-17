@@ -2,6 +2,18 @@
 \input{include/settings/settings.tex}
 \setcounter{tocdepth}{5}
 
+% PlotNeuralNet
+\subimport{plotneuralnet/}{init}
+\usetikzlibrary{positioning}
+
+\def\ConvColor{rgb:yellow,5;red,2.5;white,5}
+\def\ConvReluColor{rgb:yellow,5;red,5;white,5}
+\def\PoolColor{rgb:red,1;black,0.3}
+\def\FcColor{rgb:blue,5;red,2.5;white,5}
+\def\FcReluColor{rgb:blue,5;red,5;white,4}
+\def\SoftmaxColor{rgb:magenta,5;black,7}
+
+
 \begin{document} 
 
 \pagenumbering{Roman}			 
@@ -42,6 +54,7 @@
 \input{include/control.tex}
 \input{include/discussion_of_results.tex}
 \input{include/conclusion.tex}
+\input{include/future_improvements.tex}
 
 \cleardoublepage
 \pagenumbering{Roman}
