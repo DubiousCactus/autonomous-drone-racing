@@ -50,17 +50,58 @@ Nevertheless, there are many other possible output formats for convolutional
 neural networks, such as an other image for the case of auto-encoders or image
 segmentation networks. One strong limitation of CNNs is their fixed-sized
 input and output layers, which enforces them to be fed with strictly
-constrainde data. To bypass this constraint, another kind of neural network
+constrained data. To bypass this constraint, another kind of neural network
 must be used, such as recurrent neural netowrks.
 
 	\subsubsection{Layer types}
 
-talk about convolution layers
+The pecularities of convolutional neural networks are mainly in the typical
+kinds of layers that were not seen in the original perceptron. As it can be seen
+on Figure~\ref{fig:vgg16}, convolution layers are usually put in sequence, each
+being smaller than the preceiding, as to filter images in a coarse to fine
+fashion.\\
 
-talk about pooling
+The convolution layer owns its naming to the convolution operator, which
+consists of summing up the element-wise multiplication between two matrices. In
+the case of a CNN, the input layer -- either the input image, or an activation
+map produced by a convolution layer -- is convolved with a relatively small
+feature detection matrix, called a kernel or filter. The former is learnt by the
+network during the training phase, and can be very different from layer to
+layer, providing different features detection such as edges, contours, curves,
+colors, shapes \emph{etc}\ldots
+
+The kernel is slid over the convolved tensor by $N$ pixels (usually 1), called
+the stride, and this dot-product is then appended to the output tensor named
+the activation map, or feature map.
+
+The result is a reduced tensor containing the relevant features in the image,
+which preserves the spatial relationship between pixels. Having more convolution
+layers, and thus more kernels or feature detectors, obviously results in more
+features being extracted from the image, and therefore yielding more information
+to be used in the final stage of the network, which can make the model more
+accurate and more generalized.
+
+Note that convolution layers can also be used in a reversed fashion, to achieve
+deconvolution as to upsample an input and generate a higher-resolution tensor.
+This practice can be seen in the auto-encoder model, where the goal is to
+reconstruct an image from little information of an input.
+
+\todo{Insert convolution picture here}
+\begin{figure}[h]
+	\center
+	\includegraphics[width=0.4\textwidth]{figure/300x300.png}
+	\label{fig:convolution}
+	\caption{Convolution of a tensor by a kernel.}
+\end{figure}
+
+
+~\\It is very common to see pooling or sub-sampling layers in-between two
+successive convolution layers. The role of the former is to reduce the
+dimensionality of the feature map, while preserving the relevant information.
+
 
 talk about activation layers, relu, softmax
-
+INTRODUCE NON-LINEARITY WITH RELU OR OTHERS
 talk about FLCs briefly
 
 talk about additional layers like noise, batch normalization...
