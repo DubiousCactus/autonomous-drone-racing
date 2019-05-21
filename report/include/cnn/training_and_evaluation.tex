@@ -1,5 +1,31 @@
 \subsection{Training and evaluation}
+
+The consensus in the field of deep learning is that properly training a network
+is a much less trivial task than choosing the right topology. In fact, this
+process is considered by some a science on its own, and requires coalescing
+knowledge and experimentation through trial and error.
+
 	\subsubsection{Dataset choice}
+
+The most crucial part in training a deep learning model is the collection of a
+proper dataset. Ideally, the dataset used in the training phase should be an
+exact representation of the data targetted for the model, such that the
+aggregated knowledge does not differ from the intended application.\\
+
+Moreover, an important factor in the creation of a dataset is its statistical
+equilibrium. By having balanced samples, meaning an even amount of each
+category for instance, the network's probability of prioritizing one prediction
+over the others is lessened, thus making it less biased and more accurate.\\
+
+Finally, the size of the dataset has a lot of importance, especially in the
+field of computer vision, where two images of the same object can look
+drastically different. For the model to learn a generalized representation of
+the target data, it needs \emph{at the very least} as many different samples as
+there are ways of representing one possible category (for the case of image
+classification or object recognition). Since it is not feasible in practice,
+one should aim for the broadest and largest dataset that can be obtained, or
+by incrementally collecting data after repetitive testing, until satisfaction.
+
 	\subsubsection{Hyperparameter tuning}
 	\subsubsection{Regularization}
 
