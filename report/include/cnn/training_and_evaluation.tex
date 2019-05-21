@@ -17,16 +17,44 @@ equilibrium. By having balanced samples, meaning an even amount of each
 category for instance, the network's probability of prioritizing one prediction
 over the others is lessened, thus making it less biased and more accurate.\\
 
-Finally, the size of the dataset has a lot of importance, especially in the
+The size of the dataset has a lot of importance, especially in the
 field of computer vision, where two images of the same object can look
 drastically different. For the model to learn a generalized representation of
 the target data, it needs \emph{at the very least} as many different samples as
 there are ways of representing one possible category (for the case of image
 classification or object recognition). Since it is not feasible in practice,
 one should aim for the broadest and largest dataset that can be obtained, or
-by incrementally collecting data after repetitive testing, until satisfaction.
+by incrementally collecting data after repetitive testing, until
+satisfaction.\\
+
+On a final note, one must adopt a dataset split with care: the proportion of
+training, validation and test samples can have a negative impact on the 
+model's learning. As a general rule, it is reasonable to use one base dataset
+and to use $100-X\%$ for the validation set, where $X$ is the percentage of the
+training set (as proposed in \emph{``About Train, Validation and Test Sets in Machine
+Learning''}~\cite{DatasetSplitting}). The test dataset, however, should be
+extracted from another source, as to remain unseen from the model during the
+training phase.
+
+The validation set is commonly used to evaluate the model at the end of each
+iteration over the full training set, but another alternative is to apply the
+famous cross validation method~\cite{CrossVal} in cases where it cannot be
+afforded to sacrifice training data for the validation step.
 
 	\subsubsection{Hyperparameter tuning}
+
+During the training phase, a lot of time and effort can be spent on choosing
+the right hyperparameters, as to maximize the model accuracy while minimizing
+its training time.
+
+The number of epochs, the batch size, the learning rate or even the optimizer
+are all subject to experimentation, even though intuitive reasoning can be
+followed based on the dataset and the problem to be sovled.
+
+It is usually safe to start training with the default hyperparameters -- either
+the ones mentioned in the original paper, or the default values if a framework
+is used -- as to have a baseline to experiment with.
+
 	\subsubsection{Regularization}
 
 Talk about the use of L1 or L2 regularization to avoid the exploding gradient
