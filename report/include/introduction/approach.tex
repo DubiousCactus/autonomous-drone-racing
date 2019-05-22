@@ -16,9 +16,9 @@ other, namely:
 	}
 \end{enumerate}
 
-\begin{figure}[h]
+\begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.5\textwidth]{figure/300x300.png}
+	\includegraphics[width=0.4\textwidth]{figure/300x300.png}
 	\caption{System diagram.}
 	\label{fig:system}
 \end{figure}
@@ -42,7 +42,7 @@ infinite amount of circuit combinations to train the gate recognition network
 In order to detect the closest gate's center, which is the point where the
 drone will have to fly through, the problem is simplified so that the output of
 the CNN can be directly used by the control logic, without any processing,
-except filtering. As shown on Figure~\ref{fig:regionproposal}, the input image
+except filtering. As shown on figure~\ref{fig:regionproposal}, the input image
 is treated as a grid of $N$ windows, numbered from $1$ to $N$, where the
 closest gate's center is either inside, or outside. The reason for the indexing
 to start at $1$ is justified by the presence of a ``virtual'' window, numbered

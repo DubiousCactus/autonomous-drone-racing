@@ -4,7 +4,7 @@ In their paper, Loquercio \etal~\cite{dronet}~propose a ResNet with only 8
 layers, with an average accuracy only 1\% below ResNet-50 for the same
 regression task. The objective function is in fact a combination of two
 regressions allowing a drone to navigate in urban environments. Their network,
-as seen on Figure~\ref{fig:dronetoriginal}, contains two fully connected
+as seen on figure~\ref{fig:dronetoriginal}, contains two fully connected
 layers: one for the steering commands of the drone, one for the collision
 detection probability.
 
@@ -27,5 +27,34 @@ the original image, annotated with steering angles and binary collision labels.
 
 \subsubsection{Modifications}
 
-\todo{Define the objective/solution much better before that.}
-In order to use this model for detecting the center of a racing gate, 
+\todo{Talk about the code being given maybe?}
+In order to use this model for detecting the center of a racing gate, its fully
+connected layers had to be removed and replaced with one of size $N$
+corresponding to the number of region proposal windows, as explained on
+page~\pageref{fig:regionproposal}. 
+
+The softmax activation function~\ref{equ:softmax} is used for this last layer,
+since it tranforms the activations of each output neuron into a probability,
+where the sum of each output probability equals to one. It is defined as:
+
+\begin{equation}
+	\label{equ:softmax}
+	f(s)_i=\frac{e^{s_i}}{\sum_j^C e^{s_j}}
+\end{equation}
+
+where $C$ corresponds to the amount of classes ($N+1$ windows in this
+instance), $s$ are the prediction scores inferred by the network, and $s_i$ is
+the evaluated prediction probability.\\
+
+As for the loss function, it is the categorical cross-entropy, also referred to
+as softmax loss, and is defined as:
+
+\begin{equation}
+	\label{equ:catcrossentr}
+	CE=\displaystyle-\sum_i^C t_i log(f(s)_i)
+\end{equation}
+
+with $t_i$ being the groundtruth for class $i$: either 0 or 1, since $t$ is a
+one-hot encoded vector.
+
+% Help from here: https://gombru.github.io/2018/05/23/cross_entropy_loss/
