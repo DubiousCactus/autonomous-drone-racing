@@ -63,5 +63,29 @@ might learn faster than the other, thus resulting in a biased analysis.
 
 	\subsubsection{Regularization}
 
-Talk about the use of L1 or L2 regularization to avoid the exploding gradient
-problem, or even dropout for overfitting, or batch normalization...
+As defined in \emph{Deep Learning}~\cite{Goodfellow-et-al-2016}, regularization
+is ``any modification we make to a learning algorithm that is intended to
+reduce its generalization error but not its training error''.
+
+It can be seen as an ensemble of constraints and penalties applied to a model,
+an objective function, a training strategy, or any part of the learning that
+can be bent as to achieve the expected learning, to some extent.\\
+
+In effect, a model can sometimes be given too much capacity, meaning too many
+parameters, which can result in the network learning a perfect mapping between
+the training set's inputs and outputs, therefore having absolutely no general
+knowledge of the target data relationship. As the ``Occam's razor'' principle
+states, \emph{``pluralitas non est ponenda sine necessitate''}, which can be
+transcribed as ``simpler solutions are more likely to be correct than complex
+ones''. This hypothesis is often used in the field of deep learning, where it
+has been observed that simpler networks with fewer parameters have a lesser
+tendency to overfit on the training data, and overall generalize better.\\
+
+Regularization methods can range from weight penalties, using the L1- or
+L2-norm (also known as Least Absolute Deviation and Lest Squares regressions),
+to more stochastic techniques such as dropout~\cite{Dropout} or
+cutout~\cite{Cutout} (which is intended for CNNs). In the same way as
+hyperparameter tuning, proper regularization is often found through trial and
+error, even though some methods can be considered as a generally effective
+practices for most deep learning models.
+
