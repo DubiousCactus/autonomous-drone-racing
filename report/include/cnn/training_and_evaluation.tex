@@ -20,7 +20,7 @@ over the others is lessened, thus making it less biased and more accurate.\\
 The size of the dataset has a lot of importance, especially in the
 field of computer vision, where two images of the same object can look
 drastically different. For the model to learn a generalized representation of
-the target data, it needs \emph{at the very least} as many different samples as
+the target data, it needs \emph{at the very least} as many samples as
 there are ways of representing one possible category (for the case of image
 classification or object recognition). Since it is not feasible in practice,
 one should aim for the broadest and largest dataset that can be obtained, or
@@ -53,7 +53,13 @@ followed based on the dataset and the problem to be sovled.
 
 It is usually safe to start training with the default hyperparameters -- either
 the ones mentioned in the original paper, or the default values if a framework
-is used -- as to have a baseline to experiment with.
+is used -- as to have a baseline to experiment with.\\
+
+With riguor and consistency, several hyperparameter configurations can be
+evaluated, as long as they are still comparable: comparing two training phases
+with different dataset sizes is a good idea, but if the learning rate is
+different for both of them, it becomes irrelevent and uncomparable, since one
+might learn faster than the other, thus resulting in a biased analysis.
 
 	\subsubsection{Regularization}
 
