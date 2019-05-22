@@ -1,9 +1,22 @@
 \section{The chosen approach}
 
 \todo{Talk about SLAM and why it's not good for this case}
+
 In order to make things easier and to be able to set tangible milestones, the
 challenge is split in two logical problems to be solved, one after the
-other. The problem is not solved as a whole race, but rather as a trajectory
+other, namely:
+\begin{enumerate}
+	\item{\textbf{Gate center detection:\\}
+			The geometric center of the nearest gate in the field of view of the
+			drone is to be recognized in real time.
+	}
+	\item{\textbf{Trajectory planning:\\}
+			A trajectory between the current drone position, and the targetted gate
+			center is to be generated in real time.
+	}
+\end{enumerate}
+
+~\\The problem is not solved as a whole race, but rather as a trajectory
 between a starting point and a gate. This choice of approach is motivated by
 the fact that admitedly, if the nearest gate detection is quick and precise,
 considering a race as a succession of independent targets to be reached is
@@ -18,13 +31,36 @@ obstacles, and of any length.\\
 \end{figure}
 
 Firstly, the perception logic is solved with a deep learning algorithm, most
-precisely with a convolutional neural network. However, it has been seen from
+precisely a convolutional neural network. However, it has been seen from
 the literature review that collecting a dataset for drone racing can be
 tedious, and is rarely variate enough to allow for good generalization of the
 learning and application in any given environment. In this work, a
 semi-synthetic dataset is generated from background images, to provide an
 infinite amount of circuit combinations to train the gate recognition network
 (more on that in the following chapter).
+
+In order to detect the closest gate's center, which is the point where the
+drone will have to fly through, the problem is simplified so that the output of
+the CNN can be directly used by the control logic, without any processing,
+except filtering. As shown on Figure~\ref{fig:regionproposal}, the input image
+is treated as a grid of $N$ windows, numbered from $1$ to $N$, where the
+closest gate's center is either inside, or outside. The reason for the indexing
+to start at $1$ is justified by the presence of a ``virtual'' window, numbered
+$0$, which represents the absence of any gate center in the image.
+
+\begin{figure}[h]
+	\center
+	\includegraphics[width=0.8\textwidth]{figure/region_proposal.png}
+	\caption{A visual representation of the region proposal for the closest
+			gate's center, where the ground truth is annotated in green, and
+			the gate center in red.}
+	\label{fig:regionproposal}
+\end{figure}
+
+The amount of windows for the region proposal of the closest gate's center can
+be adjusted for a more precise trajectory, but must be a perfect square number
+to work with the current implementation, as it greatly simplifies the
+computation of the ground truth.
 
 Being the main research topic of this thesis, this part is given more time and
 focus to deliver a more rigourous and in-depth work.\\
@@ -63,7 +99,7 @@ comprises several sensors, namely:
 			\item{Depth/infrared: 640x480 resolution at 60FPS}
 			\item{RGB: 1080p at 30FPS}
 		\end{itemize}
-	\item{OmniVision OV8858 8 MP RGB camera (front facing)}
+	\item{OmniVision OV8858 8MP RGB camera (front facing)}
 		\begin{itemize}
 			\item{3264x2448 at 30FPS}
 			\item{1080p at 60FPS}
