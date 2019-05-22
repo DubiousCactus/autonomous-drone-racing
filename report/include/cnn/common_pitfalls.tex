@@ -7,7 +7,7 @@ networks deal with high dimensional data.
 
 	\subsubsection{Underfitting}
 The very first challenge to overcome when training a neural network, is its
-unability to optimize its objective function, or minimize its cost function,
+inability to optimize its objective function, or minimize its cost function,
 often called \emph{underfitting}.
 
 Even before evaluating a model to a validation set, it is primordial to obtain
@@ -38,7 +38,32 @@ or even errors in the ground truth. To eliminate most likely causes, it is
 reasonable to try and solve the same problem, in the same conditions, with a
 different model, preferably known to have good performances.\\
 
-Once this issue has been dealt with, it lays a good fundation to start
+Once this issue has been dealt with, a good fundation is laid to start
 evaluating the performance of the model on data it has not seen before.
 
 	\subsubsection{Overfitting}
+
+A much more difficult pitfall to overcome is the ineptitude of a model to learn
+a generalized representation of the data, also known as \emph{overfitting}.
+
+Even though the training loss of a network is converging, and its accuracy
+measure is following, the model might have learnt a perfect mapping of the
+training data only, and therefore unable to provide accurate predictions on
+previously unseen data. The validation dataset is specificaly used to verify
+this assumption, by evaluating the model at the end of each iteration, and
+expecting an overall decrease of the cost function.
+
+Nevertheless, it is often the case that a gap is observed between the training
+and validation metrics, simply because of the dataset size difference and also
+the fact that the network will obviously perform better on the data it has been
+learning with. However, if that gap is widening over significant amount of
+training iterations, one can consider the case of overfitting, and conclude
+that the model is not generalizing its learning.\\
+
+Naturally, overfitting can be -- in most cases -- sovled by feeding more
+training samples to the network, if that is an available option. On the other
+hand, if the dataset is limited in size, data augmentation techniques can be
+employed to artificially enlarge the training set, and provide modified
+samples, usually based on channel shifts and image distortions. The
+afformentioned regularization methods are also common solutions to overfit
+models.
