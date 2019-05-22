@@ -16,19 +16,19 @@ other, namely:
 	}
 \end{enumerate}
 
-~\\The problem is not solved as a whole race, but rather as a trajectory
-between a starting point and a gate. This choice of approach is motivated by
-the fact that admitedly, if the nearest gate detection is quick and precise,
-considering a race as a succession of independent targets to be reached is
-theoreticaly a robust solution that can be applied to any environment, with any
-obstacles, and of any length.\\
-
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\textwidth]{figure/300x300.png}
 	\caption{System diagram.}
 	\label{fig:system}
 \end{figure}
+
+~\\The problem is not solved as a whole race, but rather as a trajectory
+between a starting point and a gate. This choice of approach is motivated by
+the fact that admitedly, if the nearest gate detection is quick and precise,
+considering a race as a succession of independent targets to be reached is
+theoreticaly a robust solution that can be applied to any environment, with any
+obstacles, and of any length.\\
 
 Firstly, the perception logic is solved with a deep learning algorithm, most
 precisely a convolutional neural network. However, it has been seen from
@@ -48,12 +48,12 @@ closest gate's center is either inside, or outside. The reason for the indexing
 to start at $1$ is justified by the presence of a ``virtual'' window, numbered
 $0$, which represents the absence of any gate center in the image.
 
-\begin{figure}[h]
+\begin{figure}[h!]
 	\center
-	\includegraphics[width=0.8\textwidth]{figure/region_proposal.png}
+	\includegraphics[width=0.7\textwidth]{figure/region_proposal.png}
 	\caption{A visual representation of the region proposal for the closest
-			gate's center, where the ground truth is annotated in green, and
-			the gate center in red.}
+		gate's center, with $N=25$, where the ground truth is annotated in red
+		(window 17), and the gate center as the green cross.}
 	\label{fig:regionproposal}
 \end{figure}
 
@@ -84,7 +84,6 @@ lower-level controller implemented by the manufacturer on the UAV.\\
 	\caption{Block diagram of the control logic.}
 	\label{fig:control-block}
 \end{figure}
-
 
 As for the drone itself, the model used to conduct real flight tests is an Intel
 Aero, a customizable platform built for developers. It is ready to fly, and
