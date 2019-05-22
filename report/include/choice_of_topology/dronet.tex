@@ -55,6 +55,16 @@ as softmax loss, and is defined as:
 \end{equation}
 
 with $t_i$ being the groundtruth for class $i$: either 0 or 1, since $t$ is a
-one-hot encoded vector.
+one-hot encoded vector.\\
 
 % Help from here: https://gombru.github.io/2018/05/23/cross_entropy_loss/
+
+Furthermore, the input layer has been adapted to be used for this application,
+by resizing it to $255\times340\timesC$, corresponding to $255$ rows of the
+input tensor for the image height, $340$ for the columns of the tensor and the
+image with, and lastly $C$ channels to be set wether a grayscale or an RGB
+input image is used.\\
+
+Apart from those topography-related modifications, the parameters used for
+training, such as the optimizer and the learning rate, were left identical: the
+Adam optimizer is used with its default hyperparameters.
