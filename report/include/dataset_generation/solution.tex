@@ -1,4 +1,50 @@
 \subsection{Proposed solution}
 
+With the aim of providing a way for researchers to focus on the developement of
+their solution, rather than the collection of a dataset, and to produce a
+theoretically infinite amount of possible circuit configurations, a
+semi-synthetic dataset generation is proposed, and further put to the test.\\
+
+The idea proposed for the afformentioned solution is to generate a virtual
+scene representing randomly positioned virtual gates that a drone would
+potentially have to fly through in the real world. A rendered image of the said
+scene is then overlaid onto a real image, taken from the drone's camera, as to
+represent a random portion of a racing circuit, as seen from the drone's field
+of view. 
+
+\begin{figure}[h]
+	\center
+	\includegraphics[width=\textwidth]{figure/dataset_solution.png}
+	\caption[The steps of a semi-synthetic image generation.]{A decomposition
+	of the making of a semi-synthetic image, representing randomly positioned
+	3D models of randomly selected gates overlaid on top of a randomly selected
+	background image. The virtual scene's camera is positioned and oriented
+	using the exact configuration of the background image, so that both
+	perspectives match. The perspective grid is kept for visualization
+	purposes.}
+\end{figure}
+
+In order to do so, several requirements have to be met.\\
+
+Firstly, a motion capture system, such as the ones used in the movie production
+industry, is used to record the position and orientation of the drone in 3D
+space, also known as the extrinsic parameters of the camera. This is crucial
+for the generation of a virtual scene whose perspective matches to the
+perfection the perspective of the drone, so that the generated scene can later
+be overlaid onto the real scene.
+
+Secondly, the virtual camera must be a perfect model of the actual camera used
+to capture the background images, since the perspective calculation is derived
+from its intrinsic parameters. Therefore, the drone camera needs to be
+calibrated in order to estimate its parameters, before being able to apply
+them to the virtual camera.
+
+Finally, the dimensions of the virtual scene must be in accordance with the
+actual dimensions of the physical space where the dataset of background images
+was recorded, otherwise unwanted artefacts such as gates being visible outside
+the confinment of the real scene could be produced. The same reasoning can be
+applied to the 3D models of gates or obstacles, since their scale most likely
+matters for the usage of the generated imasges.\\
+
 	\subsubsection{Advantages}
 	\subsubsection{Limitations}
