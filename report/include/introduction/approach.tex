@@ -11,7 +11,7 @@ other, namely:
 			drone is to be recognized in real time.
 	}
 	\item{\textbf{Trajectory planning:\\}
-			A trajectory between the current drone position, and the targetted gate
+			A trajectory between the current drone position, and the targeted gate
 			center is to be generated in real time.
 	}
 \end{enumerate}
@@ -25,9 +25,9 @@ other, namely:
 
 ~\\The problem is not solved as a whole race, but rather as a trajectory
 between a starting point and a gate. This choice of approach is motivated by
-the fact that admitedly, if the nearest gate detection is quick and precise,
+the fact that admittedly, if the nearest gate detection is quick and precise,
 considering a race as a succession of independent targets to be reached is
-theoreticaly a robust solution that can be applied to any environment, with any
+theoretically a robust solution that can be applied to any environment, with any
 obstacles, and of any length.\\
 
 Firstly, the perception logic is solved with a deep learning algorithm, most
@@ -67,7 +67,7 @@ implementation, as it greatly simplifies the computation of the ground truth
 labels.
 
 Being the main research topic of this thesis, this part is given more time and
-focus to deliver a more rigourous and in-depth work.\\
+focus to deliver a more rigorous and in-depth work.\\
 
 \begin{figure}[h]
 	\centering
@@ -114,14 +114,14 @@ comprises several sensors, namely:
 	\item{Intel® Aero Flight Controller with Dronecode PX4 Autopilot}
 \end{itemize}
 
-~\\Since it comes with the Yocto Project~\cite{Yocto} Linux distribution preinstalled, Ubuntu
-16.04 had to be setup first before installing ROS Kinetic. Unfortunately, the
-OmniVision OV8858 front facing camera is not supported on Linux distributions
-other than the Yocto Project, which means its high speed video recording feature
-couldn't be taken advantage of to elimintate as much motion blur as possible,
-and instead, the RealSense™ R200 camera is used. Having a high resolution would
-be of no interest, since it would only make the CNN run slower in despite of a
-neglectable gain in accuracy.\\
+~\\Since it comes with the Yocto Project~\cite{Yocto} Linux distribution
+pre-installed, Ubuntu 16.04 had to be setup first before installing ROS
+Kinetic. Unfortunately, the OmniVision OV8858 front facing camera is not
+supported on Linux distributions other than the Yocto Project, which means its
+high speed video recording feature couldn't be taken advantage of to eliminate
+as much motion blur as possible, and instead, the RealSense™ R200 camera is
+used. Having a high resolution would be of no interest, since it would only
+make the CNN run slower in despite of a negligible gain in accuracy.\\
 
 
 The solution will be implemented iteratively, by gradually increasing the

@@ -14,7 +14,7 @@ another tensor, then fed into the next layer.
 	\label{fig:vgg16}
 \end{figure}
 
-	\subsubsection{Typical inputs and ouptputs}
+	\subsubsection{Typical inputs and outputs}
 In a typical CNN, input and output layers are of a fixed size corresponding to
 the problem formulation. The input tensor representing an image can be of any
 dimensions, usually with the shape $(H, W, C)$ for $H$ rows corresponding to the
@@ -42,23 +42,23 @@ classes.
 
 
 A one-hot encoded vector is a simple representation of the class to which a
-given image belongs, where every value is either 0 for the indices corresponding
-to the classes which the image does not belong to, or 1 otherwise (see
-figure~\ref{fig:onehot}).\\
+given image belongs, where every value is either 0 for the indices
+corresponding to the classes which the image does not belong to, or 1 otherwise
+(see figure~\ref{fig:onehot}).\\
 
 Nevertheless, there are many other possible output formats for convolutional
 neural networks, such as another image for the case of auto-encoders or image
 segmentation networks. One strong limitation of CNNs is their fixed-sized
 input and output layers, which enforces them to be fed with strictly
 constrained data. To bypass this constraint, another kind of neural network
-must be used, such as recurrent neural netowrks.
+must be used, such as recurrent neural networks.
 
 	\subsubsection{Layer types}
 
-The pecularities of convolutional neural networks are mainly in the typical
+The peculiarities of convolutional neural networks are mainly in the typical
 kinds of layers that were not seen in the original perceptron. As it can be seen
 on figure~\ref{fig:vgg16}, convolution layers are usually put in sequence, each
-being smaller than the preceiding, as to filter images in a coarse to fine
+being smaller than the preceding, as to filter images in a coarse to fine
 fashion.\\
 
 The convolution layer owns its naming to the convolution operator, which
@@ -148,7 +148,7 @@ Rectified Linear Units) defined as:
 
 The reason why ReLU and its variants are so widely used in the state-of-the-art
 neural networks over others such as Sigmoid or TanH, is mainly for its
-efficient computation (both for the forward pass and the backpropagation), and
+efficient computation (both for the forward pass and the back-propagation), and
 its sparse activation in randomly initialized networks.
 
 \begin{figure}[h]
@@ -182,22 +182,22 @@ filters.
 
 However, it has been observed that simply stacking up layers presents a severe
 issue: the gradients are \emph{vanishing or exploding} during the
-backpropagation of the error. This can be explained by the way gradients are
+back-propagation of the error. This can be explained by the way gradients are
 computed and propagated backwards to every layer: since they are calculated by
 the chain rule, and in the case of activation functions squeezing the outputs
 in the $[0,1]$ range, the gradients arriving at the top layers of a network end
 up being too small to have any impact on the learning of the corresponding
 filters, thus the appellation ``vanishing'' gradients. On the other hand,
-``exploding'' gradients are the result of the backpropagation of gradients
+``exploding'' gradients are the result of the back-propagation of gradients
 with an activation function that can produce larger values, such as ReLU.\\
 
 The idea introduced with residual networks, is to pass information from
 higher-level layers in the hierarchy to layers further down, as to provide
 additional information on the input. In truth, the deeper layers of a CNN can
 lack of context over their given activation map, and by preserving information
-accross the network, results have shown that it not only performs better, but
+across the network, results have shown that it not only performs better, but
 as Veit \etal~\cite{ResnetBehavior} have pointed out, the performance of the
-network is more evenly spread accross its layers than regular networks like
+network is more evenly spread across its layers than regular networks like
 VGG-16, where removing one layer can cause a drastic decrease in accuracy.
 
 \begin{figure}[h]

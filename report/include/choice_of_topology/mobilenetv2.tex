@@ -20,8 +20,8 @@ feature extraction, but rather in their astounding efficiency, reducing
 computation by a factor of almost $k^2$~\cite{MobileNetV2}.
 
 Furthermore, the model is easily adaptable to multiple problems, and offers
-serveral choices for any application's needs in terms of accuracy versus
-performance ratio, by providing a width multipler parameter, $\alpha$, which
+several choices for any application's needs in terms of accuracy versus
+performance ratio, by providing a width multiplier parameter, $\alpha$, which
 reduces or enlarges the input and output channels of each layer by a factor of
 $\alpha$ (except for the last convolution layer for the case of MobileNetV2).
 This has the potential to greatly reduce the amount of trainable parameters,
@@ -36,7 +36,7 @@ on the COCO dataset~\cite{MobileNetV2}.\\
 
 Similarly to DroNet, the output layer uses the softmax activation function, as
 well as a categorical cross-entropy loss function along with the Adam optimizer
-with its default hyperparameters.
+with its default hyper parameters.
 
 As for the input layer, since MobileNetV2 was originally trained on the
 ImageNet dataset, it was intended to use $224\times224\times3$ images. However,

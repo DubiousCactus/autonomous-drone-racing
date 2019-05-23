@@ -29,7 +29,7 @@ over a given objective function, its accuracy should converge to 100\%, given
 that no data augmentation is applied, and that the problem is solvable. In
 practice however, a model can have difficulties minimizing its cost function,
 due to an unbalanced dataset or a highly complex objective function to fit for
-instance, but should still be able to converge to a satisfyable accuracy.\\
+instance, but should still be able to converge to a satisfiable accuracy.\\
 
 In order to solve the overfitting impasse, it is important to verify the
 possible presence of problems specified above. Most of the time, if a network
@@ -38,7 +38,7 @@ or even errors in the ground truth. To eliminate most likely causes, it is
 reasonable to try and solve the same problem, in the same conditions, with a
 different model, preferably known to have good performances.\\
 
-Once this issue has been dealt with, a good fundation is laid to start
+Once this issue has been dealt with, a good foundation is laid to start
 evaluating the performance of the model on data it has not seen before.
 
 	\subsubsection{Overfitting}
@@ -49,7 +49,7 @@ a generalized representation of the data, also known as \emph{overfitting}.
 Even though the training loss of a network is converging, and its accuracy
 measure is following, the model might have learnt a perfect mapping of the
 training data only, and therefore unable to provide accurate predictions on
-previously unseen data. The validation dataset is specificaly used to verify
+previously unseen data. The validation dataset is specifically used to verify
 this assumption, by evaluating the model at the end of each iteration, and
 expecting an overall decrease of the cost function.
 
@@ -60,10 +60,10 @@ learning with. However, if that gap is widening over significant amount of
 training iterations, one can consider the case of overfitting, and conclude
 that the model is not generalizing its learning.\\
 
-Naturally, overfitting can be -- in most cases -- sovled by feeding more
+Naturally, overfitting can be -- in most cases -- solved by feeding more
 training samples to the network, if that is an available option. On the other
 hand, if the dataset is limited in size, data augmentation techniques can be
 employed to artificially enlarge the training set, and provide modified
 samples, usually based on channel shifts and image distortions, as long as the
-ground truth remains valid. The afformentioned regularization methods are also
+ground truth remains valid. The aforementioned regularization methods are also
 common solutions to overfit models.
