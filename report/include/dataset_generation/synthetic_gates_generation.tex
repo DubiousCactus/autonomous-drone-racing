@@ -11,7 +11,9 @@ scene, with random translations and rotations.
 
 The final step is to compute the closest gate to the camera being in its field
 of view, and back-project its center coordinates onto the image, so that a
-ground truth label can be inferred.
+ground truth label can be inferred.\\
+
+\todo{Insert pseudo code of the algorithm}.
 
 	\subsubsection{OpenGL scene}
 
@@ -92,7 +94,7 @@ the world moves around it. The complete transformation which moves the objects
 around, and virtually moves the camera around, is expressed as follows:
 
 \begin{equation} \label{equ:opengltransform}
-	M_{modelViewProjection} = M_{projection} M_{view} M_{model}
+	M_{ModelViewProjection} = M_{projection} M_{view} M_{model}
 \end{equation}
 
 ~\\In this section, the $M_{view}$ and $M_{projection}$ matrix are defined.
@@ -102,20 +104,23 @@ function commonly available in OpenGL wrappers and other computer graphics math
 libraries, such as \pyth{look_at(eye, target, up)} from the Python library
 \emph{Pyrr}~\cite{Pyrr}.
 
-\begin{python}
-	# Camera view matrix
-	view = Matrix44.look_at(
-		# eye: position of the camera in world coordinates
-		self.drone_pose.translation,
-		# target: position in world coordinates where the camera is looking at
-		self.drone_pose.translation + (self.drone_pose.orientation *
-									   Vector3([1.0, 0.0, 0.0])),
-		# up: up vector of the camera.
-		self.drone_pose.orientation * Vector3([0.0, 0.0, 1.0])
-	)
+\begin{figure}[h]
+	\center
+	\begin{python}
+		# Camera view matrix
+		view = Matrix44.look_at(
+			# eye: position of the camera in world coordinates
+			self.drone_pose.translation,
+			# target: position in world coordinates where the camera is looking at
+			self.drone_pose.translation + (self.drone_pose.orientation *
+										   Vector3([1.0, 0.0, 0.0])),
+			# up: up vector of the camera.
+			self.drone_pose.orientation * Vector3([0.0, 0.0, 1.0])
+		)
+	\end{python}
 	\caption[The look_at() function]{Creating the view matrix via the convenience
-	look_at() function.}
-\end{python}
+		\pyth{look_at()} function.}
+\end{figure}
 
 What the \pyth{look_at()} function does, is combining two transformations
 inversely: first the camera is translated from the eye position to the origin,
@@ -171,7 +176,7 @@ as a composition of a translation and a rotation matrix, expressed as such:
 						\end{bmatrix}
 \end{equation}
 
-where $M_T$ is:
+where $M_T$ is
 \begin{equation}
 	M_T = \begin{bmatrix}
 			1 & 0 & 0 & -t_W_x\\
@@ -181,7 +186,7 @@ where $M_T$ is:
 		\end{bmatrix}
 \end{equation}
 
-and $M_R$ is:
+and $M_R$ is
 \begin{equation}
 	M_R = \begin{bmatrix}
 			l_x & u_x & f_x & 0\\
@@ -210,7 +215,7 @@ $-Z$-axis.\\
 
 The only thing left to do is to transform the normalized device coordinates
 into the eye coordinates, also called \emph{frustum}, in order to apply a
-perspective view.
+perspective projection.
 
 The projection matrix, $M_{projection}$, is responsible for the pin-hole
 modeling of the camera (described on figure~\ref{fig:pinholemodel}), and
@@ -246,20 +251,44 @@ projection.
 
 	\subsubsection{Mapping a virtual space}
 
-- Talk about the dimensions of the lab
-- Describe how the gates are spawned in a constrained space of the same
-dimensions
-\begin{equation} \label{equ:modelviewmatrix}
-	M_{modelView} = M_{view} \dot M_{model}
-\end{equation}
+Once the camera is modeled and is located and oriented in the virtual scene so
+that it matches the real world conditions, each randomly picked 3D mesh is
+randomly translated and oriented in the scene. By applying random
+transformations, the algorithm aims to recreate unique combinations of drone
+racing circuits for each frame. As a result, it is possible, and often the
+case, that only a small subset of the originally selected meshes are visible on
+the image frame (depending on the camera pose), or even none at all. For
+instance, if an extracted frame from the base dataset indicates that the drone
+is facing a wall up close, it would make sense not to render any gates at all,
+to preserve coherence.\\
 
-with
+In order to achieve this, the virtual scene is constrained within boundaries
+that match the physical environment in which the background images were
+recorded. The origin of the motion capture system being roughly at the center
+of the premise, it is trivial to set boundaries around the origin of the
+virtual world, that match the boundaries of the physical environment.\\
+
+The model transformation matrix of equation~\refer{equ:opengltransform} is a
+combination of a translation and a rotation (note the importance of the order
+of the transformations), defined as
 
 \begin{equation} \label{equ:modelmatrix}
 	M_{model} = M_R M_T
 \end{equation}
-						
-- Describe how the scale is relative to the unitless OpenGL system
+
+where $M_T$ is a $4 \times 4$ matrix inferred from a 3D vector where the $X$
+and $Y$ components are randomly chosen within the world boundaries, and $Z$ is
+set to 0 as to keep the gate on the ground level. As for $M_R$, it is a $4
+\times 4$ matrix inferred from a quaternion calculated by a rotation
+around the $Z$-axis, as a random factor of Pi, so that it stays vertically
+placed on the ground.
+
+In addition, a constraint is added to the translation vector of each gate, in
+order to ensure that a minimum distance is kept between all of them. This is
+done by re-computing the randomized vector until the Euclidean distance between
+every gate is above a certain threshold.\\
+
+\todo{Describe how the scale is relative to the unitless OpenGL system?}
 
 	\subsubsection{Back-projection onto the image frame}
 
