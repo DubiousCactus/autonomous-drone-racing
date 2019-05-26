@@ -1,17 +1,17 @@
 .SILENT:
 ## Main document
-MAINFILE = Main
+MAINFILE = main
 
 # Build Ordner
-BUILDDIR = build/
+BUILDDIR = ./ # ./build/
 # Latex-Files Ordner
-TEXFILES = src/
+TEXFILES = ./ # src/
 
 
 
 # Commands
 TEX = pdflatex	
-TEXFLAGS =-file-line-error -interaction=batchmode -synctex=1 -output-directory=$(BUILDDIR)
+TEXFLAGS =-file-line-error -interaction=batchmode# -synctex=1 -output-directory=$(BUILDDIR)
 BIB = biber
 INDEX = makeindex
 DEL = rm -rf 

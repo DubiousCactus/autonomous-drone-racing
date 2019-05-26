@@ -18,7 +18,16 @@ dataset. Even though the approach is based on engineered feature detection
 methods (such as HOG -- Histogram Of Gradients), and not deep convolutions, the
 final statement is still valid: there is a noticeable domain shift for
 classifiers trained on virtual-world data, only just as there would be with
-real-world data.\\
+real-world data.
+
+Another work, from Cheung \etal~\cite{CheungWBM17}, introduced a novel method
+for synthetic pedestrians integration on unannotated real-world background
+images. The novelty lies in the fact that since no annotations are used for the
+background dataset, they developed an algorithm to calibrate the virtual
+camera, compute the right pedestrians scale and infer a ``Spawn Probability
+Map'' from features in the image. This method allow them to overlay synthetic
+pedestrians onto any background image, while respecting the scale of the
+environment and the obstacles depicted in the picture.\\
 
 
 For the specific case of autonomous drone racing however, no occurrence of the
