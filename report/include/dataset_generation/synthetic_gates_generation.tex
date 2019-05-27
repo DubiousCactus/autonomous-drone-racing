@@ -10,7 +10,7 @@ In a second time, a random choice of available meshes is spawned in the virtual
 scene, with random translations and rotations.
 
 The final step is to compute the closest gate to the camera being in its field
-of view, and back-project its center coordinates onto the image, so that a
+of view, and project its center coordinates onto the image, so that a
 ground truth label can be inferred.\\
 
 \todo{Insert pseudo code of the algorithm}.
@@ -251,48 +251,105 @@ projection.
 
 	\subsubsection{Mapping a virtual space}
 
-Once the camera is modeled and is located and oriented in the virtual scene so
+Once the camera is modeled and is positioned in the virtual scene so
 that it matches the real world conditions, each randomly picked 3D mesh is
-randomly translated and oriented in the scene. By applying random
-transformations, the algorithm aims to recreate unique combinations of drone
-racing circuits for each frame. As a result, it is possible, and often the
-case, that only a small subset of the originally selected meshes are visible on
-the image frame (depending on the camera pose), or even none at all. For
-instance, if an extracted frame from the base dataset indicates that the drone
-is facing a wall up close, it would make sense not to render any gates at all,
-to preserve coherence.\\
+translated and rotated in the scene. By applying random transformations, the
+algorithm aims to recreate unique combinations of drone racing circuits for
+each frame. As a result, it is possible, and often the case, that only a small
+subset of the originally selected meshes are visible on the image frame
+(depending on the camera pose), or even none at all. For instance, if an
+extracted frame from the base dataset indicates that the drone is facing a wall
+up close, it would make sense not to render any gates at all, to preserve
+coherence.\\
 
 In order to achieve this, the virtual scene is constrained within boundaries
 that match the physical environment in which the background images were
 recorded. The origin of the motion capture system being roughly at the center
 of the premise, it is trivial to set boundaries around the origin of the
-virtual world, that match the boundaries of the physical environment.\\
+virtual world, that match the ones of the physical environment.\\
 
 The model transformation matrix of equation~\refer{equ:opengltransform} is a
 combination of a translation and a rotation (note the importance of the order
-of the transformations), defined as
+of the transformations), defined by the Hamilton product between $M_T$ and $q$
+as
 
 \begin{equation} \label{equ:modelmatrix}
-	M_{model} = M_R M_T
+	M_{model} = M_T q 
 \end{equation}
 
 where $M_T$ is a $4 \times 4$ matrix inferred from a 3D vector where the $X$
 and $Y$ components are randomly chosen within the world boundaries, and $Z$ is
-set to 0 as to keep the gate on the ground level. As for $M_R$, it is a $4
-\times 4$ matrix inferred from a quaternion calculated by a rotation
-around the $Z$-axis, as a random factor of Pi, so that it stays vertically
-placed on the ground.
+set to 0 as to keep the gate on the ground level. As for $q$, it is quaternion
+calculated by a rotation around the $Z$-axis, as a random factor of Pi, so that
+it stays vertically placed on the ground.
 
 In addition, a constraint is added to the translation vector of each gate, in
 order to ensure that a minimum distance is kept between all of them. This is
 done by re-computing the randomized vector until the Euclidean distance between
 every gate is above a certain threshold.\\
 
-\todo{Describe how the scale is relative to the unitless OpenGL system?}
+On a last note, it must be acknowledged that there is no unit of measurement in
+OpenGL. Indeed, it is the programmer's responsibility to define such unit, and
+design a world according to that choice.
 
-	\subsubsection{Back-projection onto the image frame}
+To reproduce the same scale as the real gates and arena, it is necessary to
+model the meshes with a unit that is relative to the one used to position the
+camera in 3D space.
 
-- Describe how the closest gate is computed
-- Describe how it is made sure that it is visible on screen
-- Describe how I add an out-of-screen percentage of tolerance
-- Describe how the back-projection is done to obtain pixel coordinates
+	\subsubsection{Annotating}
+
+The annotations for each image consist mainly of the \textbf{nearest}
+gate's center coordinates in pixels, as well as a boolean for the
+visibility of a gate \textbf{center} in the image frame.
+
+First of all, the closest gate to the camera, that is in the clip space, has to
+be selected. To do so, the Euclidean norm between the camera and the gate
+center is used as a first metric. The gate center coordinates are inferred by
+adding the base mesh translation vector $[x, y, 0]$ to another 3D vector
+representing the center of the gate, and given in a configuration file after
+modeling the mesh.
+
+In addition, the gate center's world coordinates are projected onto the image
+plane (in the clip space) to determine whether the gate is visible or not. This
+is done by applying the $M_{ModelViewProjection}$ transformations matrix to the
+world coordinates, and manually clipping the resulting coordinates if needed.
+
+\todo{Add homogeneous vs orthogonal coordinates in clip space?}
+
+To do so, the resulting 4D vector of homogeneous coordinates is simply divided,
+element-wise, by its last component (usually called $w$) if that one is not
+equal to zero: that operation is called \emph{projection divide}. This results
+in a 3D vector of Cartesian coordinates in the normalized device space (within
+the range $[1.0, 1.0]$).
+
+Finally, a last transformation is needed to obtain image frame coordinates (in
+pixel units), the \emph{viewport transform}:
+
+\begin{equation}
+	\begin{bmatrix}
+		x_w\\y_w
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		\cfrac{w}{2} x_{ndc} + (x + \cfrac{w}{2})\\
+		\cfrac{h}{2} y_{ndc} + (y + \cfrac{h}{2})\\
+	\end{bmatrix}
+\end{equation}
+
+where $x_w$ and $y_w$ are the gate center coordinates in the window
+frame (or image) and $x_{ndc}$ and $y_{ndc}$ in the normalized device
+coordinate system, $w$ and $h$ are the width and height of the view port -- or
+the output image frame -- and $x$ and $y$ correspond to the viewport offset in
+pixels, which are initially set to 0.\\
+
+Furthermore, to improve the correctness of the annotations and follow a human
+logic, an out-of-screen tolerance percentage is added to select a target gate
+even if its center is slightly outside of the viewport. In that way, the
+intuition of targetting a gate which is clearly visible, but whose center does
+not seem to be in the field of view , can be applied to the network.\\
+
+For futur improvements, the gate rotation is also computed, with respect to
+the camera. This is done by rotating the mesh by a factor of Pi when it is
+spawned in the scene, if the cross product between the camera's vector and the
+line crossing the gate in the $X$-axis results in a vector whose $Z$ axis is
+negative.

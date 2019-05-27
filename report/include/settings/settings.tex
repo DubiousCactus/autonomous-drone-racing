@@ -21,6 +21,24 @@
 \usepackage{tikz}
 \usepackage{tikz-3dplot}
 \usepackage{pythonhighlight}
+%\usepackage{pdflscape}
+\usepackage[absolute]{textpos}
+\usepackage{fancyhdr}
+
+\fancypagestyle{lscape}{% 
+\fancyhf{} % clear all header and footer fields 
+\fancyfoot[LE]{%
+\begin{textblock}{20}(1,5){\rotatebox{90}{\leftmark}}\end{textblock}
+\begin{textblock}{1}(13,10.5){\rotatebox{90}{\thepage}}\end{textblock}}
+\fancyfoot[LO] {%
+\begin{textblock}{1}(13,10.5){\rotatebox{90}{\thepage}}\end{textblock}
+\begin{textblock}{20}(1,13.25){\rotatebox{90}{\rightmark}}\end{textblock}}
+\renewcommand{\headrulewidth}{0pt} 
+\renewcommand{\footrulewidth}{0pt}}
+
+\setlength{\TPHorizModule}{1cm}
+\setlength{\TPVertModule}{1cm}
+
 \usetikzlibrary{shapes,
 				arrows,
 				positioning,
