@@ -42,14 +42,14 @@ using a given threshold for the validation loss difference over a certain
 amount of iterations (the patience argument), and to reduce the learning rate
 by a certain factor in consequence.\\
 
-Concerning MobileNetV2, the \alpha parameter mentioned previously, responsible
+Concerning MobileNetV2, the $\alpha$ parameter mentioned previously, responsible
 for setting the size of the depthwise convolution kernels, is set to $0.35$ for
 the entirety of the experiment. This choice is justified by basic trial and
 error of possible values $0.35$, $0.5$ and $1$, which clearly showed that
 values above $0.35$ contributed to overfit the model on synthetic images.
 Effectively, running each trained model on a manually recorded test dataset of
 real gates clearly showed that the network was unable to detect gates for the
-higher \alpha values, even if the validation accuracy was higher.
+higher $\alpha$ values, even if the validation accuracy was higher.
 
 This can intuitively be explained by the feature extraction being too precise
 to generalize the shape of a gate, and as a result, the network could
