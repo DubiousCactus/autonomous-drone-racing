@@ -103,10 +103,11 @@ As it can be observed on figure~\ref{fig:pooling}, the choice between maximum
 pooling and average pooling can have a great impact on the performance of a
 network, depending on the input data and the overall configuration of the
 layers. 
+\newpage
 
 \begin{figure}[h]
-	\center
-	\includegraphics[width=0.6\textwidth]{figure/max_vs_avrg_pooling.png}
+	\centering
+	\includegraphics[width=0.8\textwidth]{figure/max_vs_avrg_pooling.png}
 	\label{fig:pooling}
 	\caption{Max pooling VS average pooling. [temp, will make my own]}
 \end{figure}
@@ -152,9 +153,24 @@ efficient computation (both for the forward pass and the back-propagation), and
 its sparse activation in randomly initialized networks.
 
 \begin{figure}[h]
-	\center
-	\includegraphics[width=0.4\linewidth]{figure/relu.png}
-	\caption{The ReLU activation function. [temp, will make my own]}
+	\centering
+	\begin{tikzpicture}
+		\pgfplotsset{
+			axis lines=middle,
+			grid style={dotted,gray,line width=.1pt}
+		}
+
+		\begin{axis}[
+			xlabel={x},
+			ylabel={y},
+			extra x ticks=0,
+			x label style={at={(current axis.right of origin)},anchor=north west,below=1mm},
+			y label style={at={(current axis.above origin)},anchor=south east},
+			grid=both]
+			\addplot+[domain=-5:4.5,samples=100,thick,mark=none,blue] {(x>=0)*x};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{The ReLU activation function.}
 \end{figure}
 
 By adding non-linear activation functions at the output of every layer in a
@@ -201,13 +217,27 @@ network is more evenly spread across its layers than regular networks like
 VGG-16, where removing one layer can cause a drastic decrease in accuracy.
 
 \begin{figure}[h]
-	\center
-	\includegraphics[width=0.5\textwidth]{figure/resblock.png}
+	\centering
+	\begin{tikzpicture}[node distance=1.5cm,-latex]
+
+		\node[draw, rectangle,minimum width=1cm,minimum height=0.5cm] (layer1) {weight layer};
+		\node[draw, rectangle,minimum width=1cm,minimum height=0.5cm,below of=layer1] (layer2) {weight layer};
+		\node[draw,circle,below of=layer2] (sum) {\Large$+$};
+
+		\draw ($(layer1.north)+(0,1cm)$) -- (layer1) node[anchor=east,midway] {$\mathbf{x}$};
+		\draw (layer1) -- (layer2) node[anchor=east,midway] {relu};
+		\draw (layer2) -- (sum) node[anchor=east,midway] {relu};
+		\draw ($(layer1.north)+(0,0.5cm)$) -- ++(1.5cm,0) |- (sum) node[pos=0.25,anchor=west] {$\mathbf{x}$};
+		\draw (sum) -- ++(0,-1.2cm) node[midway,anchor=east] {relu};
+		\node[anchor=north] (f2) at ($(sum)+(0,-1.2cm)$) {$\mathcal{F}(\mathbf{x}) + \mathbf{x}$};
+
+		\draw [-,decorate,decoration={brace,amplitude=10pt}]
+			($(layer2.south west)+(-0.1cm,0)$) -- ($(layer1.north west)+(-0.1cm,0)$) node [black,midway,anchor=east,xshift=-0.3cm]  {$\mathcal{F}(\mathbf{x})$};
+
+	\end{tikzpicture}
 	\label{fig:resblock}
-	\caption{The building block of deep residual learning. [temp, will make my
-	own]}
+	\caption{The building block of deep residual learning.}
 \end{figure}
-\todo{Make your own diagram loco!}
 
 More precisely, every block of stacked layers is made to fit a residual
 mapping, instead of the desired underlying mapping, expressed as:

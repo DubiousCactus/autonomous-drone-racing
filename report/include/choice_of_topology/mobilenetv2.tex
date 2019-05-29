@@ -30,7 +30,14 @@ and in turn decreases the computational cost, if set to a value below 1.\\
 It goes without saying that such trade-off between accuracy and efficiency is a
 perfect match for an embedded object detection network, aimed to run on a
 drone, since the model still outperforms state-of-the-art Single Shot Detectors
-on the COCO dataset~\cite{MobileNetV2}.\\
+on the COCO dataset~\cite{MobileNetV2}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.45\textwidth]{figure/mobilenetv2.png}
+	\caption{MobileNetV2: Inverted residuals}
+	\label{fig:invertedresiduals}
+\end{figure}
 
 \subsubsection{Modifications}
 
@@ -47,5 +54,3 @@ by transfer learning.
 
 More modifications to the final layers of the network are added later on for
 experimentation, and are explained in due time.
-
-\todo{Add CNN diagram.}

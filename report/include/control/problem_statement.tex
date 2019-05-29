@@ -1,1 +1,30 @@
 \section{Problem statement}
+
+With the perception core component implemented and ready to be tested, the
+remaining part of the autonomous system to be implemented is naturally the
+control logic. Without it, a drone able to detect the center of the nearest
+gate in its field of view is nothing but an inanimate object.
+
+Since this application is for drone racing, the expected flight behavior would
+be aggressive, fast but accurate, and capable of taking sharp turns without
+hitting any obstacles. However, the control and trajectory planning of UAVs can
+be an entire research topic of its own, and therefore cannot be included in the
+scope of this project.\\
+
+Initially, an elaborated control algorithm based on reinforcement learning was
+planned, but since the focus of this work is on the perception, and by lack of
+time, the fallback alternative is a PID-based controller. Naturally, drone
+racing cannot be resumed to flying towards a detected obstacle, and even though
+PID controllers are good at maintaining a desired position, an algorithm on top
+of it is need to supervise the different states and actions present in the
+decision making process.
+
+To do so, a state machine is designed and implemented to run on-board, and to
+take decisions depending on the state the UAV is in, as well as the desired
+outcomes. The simplicity and efficiency of state machines has been proven
+before, notably in autonomous drone racing by TU Delft~\etal~\cite{State
+Machine based High Level Navigation}. \todo{Find the paper}
+Using this approach, coupled with a PID controller to generate velocity
+commands to the lower-level controller, it makes it easy and time effective to
+test the gate center detection models under different conditions.
+

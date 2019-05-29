@@ -39,10 +39,7 @@ depending on the background image.\\
     \begin{python}
         def apply_motion_blur(self, img: Image, amount=0.5):
             cv_img = np.array(img)
-
-            if self.no_blur:
-                return cv_img
-
+            if self.no_blur: return cv_img
             if amount <= 0.3:
                 size = 3
             elif amount <= 0.7:
@@ -51,7 +48,6 @@ depending on the background image.\\
                 size = 9
             kernel = np.identity(size)
             kernel /= size
-
             return cv2.filter2D(cv_img, -1, kernel)
     \end{python}
 \end{figure}
@@ -67,11 +63,9 @@ until the result was satisfying.
     \caption{Gaussian noise added to the generated image.}
     \begin{python}
         def add_noise(self, img):
-            noisy_img = random_noise(img,
-                                     mode='gaussian',
+            noisy_img = random_noise(img, mode='gaussian',
                                      var=self.noise_amount**2)
             noisy_img = (255*noisy_img).astype(np.uint8)
-
             return Image.fromarray(noisy_img)
     \end{python}
 \end{figure}

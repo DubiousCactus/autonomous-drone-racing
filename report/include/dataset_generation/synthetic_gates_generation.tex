@@ -240,7 +240,7 @@ projection.
 
 \begin{figure}[h]
 	\center
-	\resizebox{350pt}{!}{
+	\resizebox{300pt}{!}{
 		\input{include/dataset_generation/pin-hole_model.tex}
 	}
 	\caption[Pin-hole camera model]{The pin-hole camera model. Credits to
@@ -345,7 +345,7 @@ pixels, which are initially set to 0.\\
 Furthermore, to improve the correctness of the annotations and follow a human
 logic, an out-of-screen tolerance percentage is added to select a target gate
 even if its center is slightly outside of the viewport. In that way, the
-intuition of targetting a gate which is clearly visible, but whose center does
+intuition of targeting a gate which is clearly visible, but whose center does
 not seem to be in the field of view , can be applied to the network.\\
 
 For future improvements, the gate rotation is also computed, with respect to

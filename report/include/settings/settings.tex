@@ -41,22 +41,29 @@
 \setlength{\TPHorizModule}{1cm}
 \setlength{\TPVertModule}{1cm}
 
-\usetikzlibrary{shapes,
-				arrows,
-				positioning,
-				fit,
-				calc,
-				automata,
-				intersections,
-				trees,
-				chains,
-				decorations.pathreplacing,
-				decorations.pathmorphing,
-				matrix}
 \usepackage{tkz-euclide}
 \usetkzobj{all}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.15}
+\usepackage[european,siunitx]{circuitikz}
+\usetikzlibrary{shapes,
+  arrows,
+  positioning,
+  fit,
+  calc,
+  automata,
+  intersections,
+  trees,
+  chains,
+  decorations.pathreplacing,
+  decorations.pathmorphing,
+  decorations.text,
+matrix}
+\usepackage{pgfplots, pgfplotstable}
+\usepgfplotslibrary{dateplot,
+                    groupplots,
+                    fillbetween,
+                    polar}
+\pgfplotsset{compat=newest}
+%\pgfplotsset{compat=1.15}
 
 
 %\usepackage{subfig}									% Enables subfigures
