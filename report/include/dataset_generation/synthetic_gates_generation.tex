@@ -44,7 +44,7 @@ It mainly consists of two consecutive actions.
 
 \begin{figure}[h]
 	\center
-	\includegraphics[width=0.8\textwidth]{figure/pipeline.png}
+	\includegraphics[width=0.99\textwidth]{figure/pipeline.png}
 	\caption[OpenGL transformations pipeline]{The OpenGL transformations
 	pipeline. Credits to learnopengl.com~\cite{LearnOpenGL} }
 	\label{fig:openglpipeline}
@@ -79,7 +79,7 @@ with a slight and negligible shift of a few centimeters.\\
 
 \begin{figure}[h]
 	\center
-	\resizebox{240pt}{!}{
+	\resizebox{280pt}{!}{
 		\input{include/dataset_generation/world_body_coordinates_system.tex}
 	}
 	\caption{World frame and body frame camera coordinates.}
@@ -209,7 +209,7 @@ and $M_R$ is
 \end{equation}
 
 \todo{Add derivation in appendix?}
-Note the inverse of $M_R$ in the first step: as state above, the world is
+~\\Note the inverse of $M_R$ in the first step: as state above, the world is
 rotated and translated \emph{around the camera}, while the latter faces the
 $-Z$-axis.\\
 
@@ -230,7 +230,7 @@ creating this perspective illusion rendered on a 2D surface. It is defined as
 		\end{bmatrix}
 \end{equation}
 
-with $f_x$ and $f_y$ being the focal lengths in pixels, $c_x$ and $c_y$ the
+~\\with $f_x$ and $f_y$ being the focal lengths in pixels, $c_x$ and $c_y$ the
 principal point coordinates in pixels (usually at the image center), and
 $z_{far}$ and $z_{near}$ being the clip space distances. Those values are
 obtained by calibrating the drone's camera~\cite{OpenCVCalibration}, which
