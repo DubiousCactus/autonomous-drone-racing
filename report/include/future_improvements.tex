@@ -12,4 +12,13 @@ detection algorithm, as it has been seen recently in drone racing.
 
 
 This would combine the power and robustness of a CNN with the simplicity and
-efficiency of a rule-based algorithm.
+efficiency of a rule-based algorithm.\\
+
+
+Maybe I could even use deep reinforcement learning directly with a CNN input
+(as done by DeepMind) to generate motion primitives at each N frames or
+something. This could be integrated in a simulation environment, but only if
+the gate detection is robust enough to work in simulation.\\
+
+I could also couple a Single Shot Detector like SSDLight or something to the
+CNN. Single Shot Dectectors are probably better than my own FLC.

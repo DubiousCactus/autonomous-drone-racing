@@ -41,21 +41,21 @@ iteration over the full training set, but another alternative is to apply the
 famous cross validation method~\cite{CrossVal} in cases where it cannot be
 afforded to sacrifice training data for the validation step.
 
-	\subsubsection{Hyper parameter tuning}
+	\subsubsection{Hyper-parameter tuning}
 
 During the training phase, a lot of time and effort can be spent on choosing
-the right hyper parameters, as to maximize the model accuracy while minimizing
+the right hyper-parameters, as to maximize the model accuracy while minimizing
 its training time.
 
 The number of epochs, the batch size, the learning rate or even the optimizer
 are all subject to experimentation, even though intuitive reasoning can be
 followed based on the dataset and the problem to be solved.
 
-It is usually safe to start training with the default hyper parameters -- either
+It is usually safe to start training with the default hyper-parameters -- either
 the ones mentioned in the original paper, or the default values if a framework
 is used -- as to have a baseline to experiment with.\\
 
-With rigor and consistency, several hyper parameter configurations can be
+With rigor and consistency, several hyper-parameter configurations can be
 evaluated, as long as they are still comparable: comparing two training phases
 with different dataset sizes is a good idea, but if the learning rate is
 different for both of them, it becomes irrelevant and incomparable, since one
@@ -85,7 +85,7 @@ Regularization methods can range from weight penalties, using the L1- or
 L2-norm (also known as Least Absolute Deviation and Lest Squares regressions),
 to more stochastic techniques such as dropout~\cite{Dropout} or
 cutout~\cite{Cutout} (which is intended for CNNs). In the same way as
-hyper parameter tuning, proper regularization is often found through trial and
+hyper-parameter tuning, proper regularization is often found through trial and
 error, even though some methods can be considered as a generally effective
 practices for most deep learning models.
 
