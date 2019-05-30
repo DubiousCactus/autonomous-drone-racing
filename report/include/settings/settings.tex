@@ -172,8 +172,16 @@ matrix}
 \usepackage{import}
 
 \usepackage{wrapfig}
-\lstset { %
-  language=C++,
-  backgroundcolor=\color{black!5}, % set backgroundcolor
-  basicstyle=\footnotesize,% basic font setting
+\lstset{language=C++,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  commentstyle=\color{green}\ttfamily,
+  morecomment=[l][\color{magenta}]{\#},
+  directivestyle={\color{black}}
+  emph={int,char,double,float,unsigned,bool},
+  emphstyle={\color{blue}}
 }
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}

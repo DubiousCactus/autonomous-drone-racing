@@ -28,8 +28,61 @@ race.
 \begin{figure}[h]
 	\centering
 	\input{include/control/finite_state_machine.tex}
-	\caption{State diagram of the controller.}
+	\caption{State diagram of the controller. \textcolor{red}{Add the velocity
+	commnands at each state!}}
 	\label{fig:state}
 \end{figure}
 
-The PID controller on the other hand, is only called when needed
+In each of the states depicted in figure~\ref{fig:state}, specific commands are
+issued, and certain conditions are verified. The important part of this logic
+is the \emph{crossing\_condition} which, when met, switches the state from
+REFINING to CROSSING.
+
+In effect, the most difficult challenge to solve in the gate crossing process,
+is to actually decide when it is a good time to engage. As the drone
+approaches the gate, the latter begins to occupy more space on the image, and
+eventually vanishes entirely. Solving this issue is not as simple as detecting
+a falling edge in the gate detection signal, mainly because of the lack of
+precision and robustness of the model. Indeed, as the gate gets closer to the
+camera, the center prediction becomes jittery and unreliable.\\
+
+As an attempt to bypass the problem, a number of past predictions is kept in
+memory (e.g. 10), and a set of acceptable regions is set, which correspond to
+the window predictions that are deemed ``valid'' and are supposedly within the
+center of the gate (e.g. \{8, 12, 13, 14\}). The following pseudo-code evaluates
+the crossing condition:
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+\begin{algorithm}
+	\caption{Crossing condition evaluation}\label{alg:crosscond}
+	\begin{algorithmic}[1]
+		\Procedure{CrossingCondition}{}
+			\State $\textit{acceptableRegions} \gets \{8, 12, 13, 14\}$
+			\State $crossing \gets \texttt{True}$
+			\State $p \gets \text{getPrediction()}$
+			\State $previousPredictionsCount \gets \text{length of }
+				\textit{previousPredictions}$
+			~\\
+			\If {$previousPredictionsCount < 10 \lor p\in acceptableRegions$}
+				\Return \texttt{False}
+			\EndIf
+
+			\ForAll{$\textit{previousPredictions} as \textit{pp}$}
+				\If {$\textit{pp} \notin \textit{acceptableRegions}$}
+					\State $crossing \gets \texttt{False}$
+					\State \textbf{break}
+				\EndIf
+			\EndFor
+
+			\Return $\textit{crossing}$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Obviously, it is not an optimal solution as it requires to manually set the
+valid predictions, which does not scale to different amounts of windows.
+Ideally, the prediction model would be robust enough that with some filtering,
+a simple falling edge could engage the drone to cross the gate.
