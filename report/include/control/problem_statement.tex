@@ -26,5 +26,21 @@ before, notably in autonomous drone racing by TU Delft~\etal~\cite{State
 Machine based High Level Navigation}. \todo{Find the paper}
 Using this approach, coupled with a PID controller to generate velocity
 commands to the lower-level controller, it makes it easy and time effective to
-test the gate center detection models under different conditions.
+test the gate center detection models under different conditions.\\
 
+The controller is implemented in C++ as a ROS node. As such, it can easily be
+interfaced with the perception, which is a Python ROS node, and with the safety
+system which acts as a proxy between this controller and the lower-level
+controller.
+
+As stated previously, the control of the drone is reduced to aligning the image
+center of the camera -- technically the drone itself -- with the center of the
+predicted region window. The PID controller is therefore calculating the error
+as the difference, in pixels , between the image center at $(\frac{W}{2},
+\frac{H}{2})$ (for the width and height of the image) and the center of the
+predicted window.
+
+To make things simpler and more efficient, the UAV's alignment is achieved by
+giving it a constant forward velocity, while the controller sets its upward and
+yaw velocities in real time. By choosing the yaw rotation over a horizontal
+movement, the drone becomes more agile and faster to approach a gate.
