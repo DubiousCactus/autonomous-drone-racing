@@ -1,1 +1,20 @@
 \section{Gate detection}
+
+To reiterate, the evaluation of the models' performance was mainly done by
+judging its accuracy from a test video. To properly compare different
+hyper parameters and fully connected layer configurations, 
+Refer to the training and evaluation sections to clarify.
+
+Present training plots of DroNet and MobileNetV2 without augmentation. 
+
+\begin{figure}[h]
+	\centering
+	\input{plots/dronet_rgb_grayscale.tex}
+	\caption{Grayscale and RGB training of DroNet.}
+\end{figure}
+
+\input{plots/dronet_rgb_base_dropout_l2.tex}
+
+\input{plots/dronet_rgb_l2_l2more.tex}
+
+Present Top-N accuracies for both without augmentation.

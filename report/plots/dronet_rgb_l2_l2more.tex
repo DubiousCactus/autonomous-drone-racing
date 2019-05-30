@@ -1,0 +1,41 @@
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\begin{tikzpicture}
+			\pgfplotsset{
+				scale only axis,
+				legend pos=north east,
+				legend entries={50000 samples, 150000 samples},
+				grid style={dotted,gray,line width=.1pt},
+				grid=both
+			}
+			\begin{axis}[xlabel=Epoch,ylabel=Training loss,width=7cm,height=7cm]
+				\addplot+[mark=none,smooth] table [y=train_loss,col sep=comma]
+				{plots/dronet/dronet_rgb_higher_l2_50000.txt};
+				\addplot+[mark=none,smooth] table [y=train_loss,col sep=comma]
+				{plots/dronet/dronet_rgb_higher_l2_150000.txt};
+			\end{axis}
+		\end{tikzpicture}
+		\caption{Training loss}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\begin{tikzpicture}
+			\pgfplotsset{
+				scale only axis,
+				legend pos=north east,
+				legend entries={50000 samples, 150000 samples},
+				grid style={dotted,gray,line width=.1pt},
+				grid=both
+			}
+			\begin{axis}[xlabel=Epoch,ylabel=Validation loss,width=7cm,height=7cm]
+				\addplot+[mark=none,smooth] table [y=val_loss,col sep=comma]
+				{plots/dronet/dronet_rgb_higher_l2_50000.txt};
+				\addplot+[mark=none,smooth] table [y=val_loss,col sep=comma]
+				{plots/dronet/dronet_rgb_higher_l2_150000.txt};
+			\end{axis}
+		\end{tikzpicture}
+		\caption{Validation loss}
+	\end{subfigure}
+	\caption{Validation loss of DroNet in RGB with a higher L2 regularization
+	factor.}
+\end{figure}
