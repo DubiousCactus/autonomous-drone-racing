@@ -1,0 +1,50 @@
+
+\pgfmathsetmacro{\viewtheta}{60}
+\pgfmathsetmacro{\viewphi}{120}
+\pgfmathsetmacro{\rvec}{5}
+\pgfmathsetmacro{\thetavec}{60}
+\pgfmathsetmacro{\phivec}{100}
+\pgfmathsetmacro{\rvectarget}{5}
+\pgfmathsetmacro{\thetavectarget}{90}
+\pgfmathsetmacro{\phivectarget}{40}
+
+\tdplotsetmaincoords{\viewtheta}{\viewphi}
+
+\begin{tikzpicture}[scale=1,tdplot_main_coords]
+
+% Base Coordinate System
+\tdplotsetcoord{O}{0}{0}{0}
+\tdplotsetthetaplanecoords{0}
+\draw[thick,->] (0,0,0) -- (4,0,0) node[anchor=north east]{$x_{W}$};
+\draw[thick,->] (0,0,0) -- (0,4,0) node[anchor=north west]{$y_{W}$};
+\draw[thick,->] (0,0,0) -- (0,0,4) node[anchor=south]{$z_{W}$};
+
+
+% First Coordinate System
+\tdplotsetcoord{P}{\rvec}{\thetavec}{\phivec}
+\draw[dashed,->,thick] (O) -- (P) node[near end,anchor=south]{$\mathbf{r}_{W}$};
+
+\tdplotsetrotatedcoordsorigin{(P)}
+%\tdplotsetthetaplanecoords{40}
+\tdplotsetrotatedcoords{20}{10}{20}
+\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (1.5,0,0) node[anchor=north
+  west]{$x_{B}$};
+\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,1.5,0) node[anchor=west]{$y_{B}$};
+\draw[thick,tdplot_rotated_coords,->] (0,0,0) -- (0,0,1.5) node[anchor=west]{$z_{B}$};
+%% Draw Up Vector
+\draw[blue,-stealth,dashed,tdplot_rotated_coords] (0,0,0) -- (0,0,3)
+  node[anchor=south]{$\mathbf{u}_{B}$};
+
+
+\tdplotsetcoord{B}{11}{80}{59.5}
+\tdplotsetrotatedcoordsorigin{(B)}
+\shade[ball color=red,tdplot_rotated_coords] (0,0,0) circle (0.1cm);
+
+% Draw Target Vector
+\draw[red,-stealth,dashed,->,thick] (P) -- (B)
+  node[anchor=north west,midway]{$\mathbf{t}_{B}$};
+
+\draw[red,-stealth,dashed,->,thick] (O) -- (B) node[anchor=north,midway]{$\mathbf{t}_{W}$};
+
+
+\end{tikzpicture}

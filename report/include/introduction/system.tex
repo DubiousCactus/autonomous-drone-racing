@@ -1,0 +1,51 @@
+\begin{tikzpicture}[node distance=2cm,-latex]
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+\tikzstyle{sensor}=[node distance=1.5cm,draw, rectangle,fill=blue!20, text width=2cm,text centered,minimum width=2cm, minimum height=1cm]
+\tikzstyle{perc}=[draw, node distance=4cm,draw, rectangle,fill=green!20, text width=2cm,text centered,minimum width=2cm, minimum height=1cm]
+\tikzstyle{control}=[draw, node distance=3cm,draw, rectangle,fill=red!20, text width=2cm,text centered,minimum width=2cm, minimum height=3cm]
+
+%% Sensors Nodes 
+\node[sensor] (cam) {Camera};
+\node[sensor,below of=cam] (imu) {IMU};
+\node[sensor,below of=imu] (lidar) {Lidar};
+\node[node distance=1cm,above= of cam.west,anchor=west] (sensors) {Sensors};
+
+\begin{pgfonlayer}{background}
+    \node[fit=(sensors) (cam) (imu) (lidar), draw,fill=yellow!20] (frame) {}; 
+\end{pgfonlayer}
+
+%% Perception Nodes
+\node[perc,node distance=4cm,right of=cam] (cnn) {CNN};
+\node[perc,right of=cnn] (median) {Median Filter};
+\node[node distance=1cm,above= of cnn.west,anchor=west] (perception) {Perception};
+
+\begin{pgfonlayer}{background}
+    \node[fit=(perception) (cnn) (median), draw,fill=yellow!20] (frame) {}; 
+\end{pgfonlayer}
+
+%% Control Nodes
+\node[control,node distance=4.5cm,below of=cnn] (state) {State Machine};
+\node[control,right of=state,minimum width=2cm,minimum height=1cm,yshift=1cm] (pid) {PID};
+\node[control,right of=pid,minimum width=2cm,minimum height=1cm] (safety) {Safety Mechanism};
+\node[control, node distance=2cm,below of=safety,minimum width=4cm,minimum height=1cm] (low) {Low Level Control};
+\node[node distance=2cm,above= of state.west,anchor=west] (controller) {Control};
+
+\begin{pgfonlayer}{background}
+    \node[fit=(state) (pid) (safety) (low) (controller), draw,fill=yellow!20] (frame) {}; 
+\end{pgfonlayer}
+
+%% Connections
+\draw[thick] (cam) -- (cnn);
+\draw[thick] (cnn) -- (median);
+\draw[thick] (lidar.east) -- ++(1cm,0) |- (state);
+\draw[thick] (imu) -| ($(pid.north west)!0.33!(pid.north east)$);
+\draw[thick] (pid.west) -- ($(state.north east)!0.17!(state.south east)$);
+\draw[thick] ($(state.north east)!0.5!(state.south east)$) -| ($(safety.south west)!0.33!(safety.south east)+(0,-0.5cm)$) -- ($(safety.south west)!0.33!(safety.south east)$);
+\draw[thick] (pid) -- (safety);
+\draw[thick] ($(safety.south west)!0.66!(safety.south east)$) --  ($(low.north west)!0.59!(low.north east)$);
+\draw[thick] (median) -- ++(0,-1.5cm) -|($(pid.north west)!0.66!(pid.north east)$);
+
+\end{tikzpicture}
