@@ -33,6 +33,12 @@ interfaced with the perception, which is a Python ROS node, and with the safety
 system which acts as a proxy between this controller and the lower-level
 controller.
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{figure/300x300.png}
+	\caption{Gate center alginment via PID control.}
+\end{figure}
+
 As stated previously, the control of the drone is reduced to aligning the image
 center of the camera -- technically the drone itself -- with the center of the
 predicted region window. The PID controller is therefore calculating the error
