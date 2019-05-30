@@ -11,6 +11,12 @@ hitting any obstacles. However, the control and trajectory planning of UAVs can
 be an entire research topic of its own, and therefore cannot be included in the
 scope of this project.\\
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figure/300x300.png}
+	\caption{Gate center alginment via PID control.}
+\end{figure}
+
 Initially, an elaborated control algorithm based on reinforcement learning was
 planned, but since the focus of this work is on the perception, and by lack of
 time, the fallback alternative is a PID-based controller. Naturally, drone
@@ -32,12 +38,6 @@ The controller is implemented in C++ as a ROS node. As such, it can easily be
 interfaced with the perception, which is a Python ROS node, and with the safety
 system which acts as a proxy between this controller and the lower-level
 controller.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=\textwidth]{figure/300x300.png}
-	\caption{Gate center alginment via PID control.}
-\end{figure}
 
 As stated previously, the control of the drone is reduced to aligning the image
 center of the camera -- technically the drone itself -- with the center of the

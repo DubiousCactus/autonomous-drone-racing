@@ -11,14 +11,12 @@ scene, with random translations and rotations.
 
 The final step is to compute the closest gate to the camera being in its field
 of view, and project its center coordinates onto the image, so that a
-ground truth label can be inferred.\\
-
-\todo{Insert pseudo code of the algorithm}.
+ground truth label can be inferred.
 
 	\subsubsection{OpenGL scene}
 
 The synthetic scene generation is implemented in OpenGL 3.3~\cite{OpenGL},
-using the Python wrapper ModernGL~\cite{ModernGL}. \todo{Cite python?}
+using the Python wrapper ModernGL~\cite{ModernGL}.
 OpenGL is a cross-platform graphics library that is available in several
 programming languages, and which allows rendering 2D and 3D vector graphics via
 hardware acceleration. To be precise, OpenGL is merely a specification of how
@@ -79,7 +77,7 @@ with a slight and negligible shift of a few centimeters.\\
 
 \begin{figure}[h]
 	\center
-	\resizebox{280pt}{!}{
+	\resizebox{240pt}{!}{
 		\input{include/dataset_generation/world_body_coordinates_system.tex}
 	}
 	\caption{World frame and body frame camera coordinates.}
@@ -107,7 +105,6 @@ libraries, such as \pyth{look_at(eye, target, up)} from the Python library
 \begin{figure}[h]
 	\center
 	\begin{python}
-		# Camera view matrix
 		view = Matrix44.look_at(
 			# eye: position of the camera in world coordinates
 			self.drone_pose.translation,
@@ -125,7 +122,7 @@ libraries, such as \pyth{look_at(eye, target, up)} from the Python library
 What the \pyth{look_at()} function does, is combining two transformations
 inversely: first the camera is translated from the eye position to the origin,
 then it is rotated from its orientation inferred from the target and up vectors
-towards the $-Z$-axis at the origin.\\
+towards the $-Z$-axis at the origin.
 
 It takes three arguments: the eye, the target, and the up vector. The eye is
 basically the position of the camera in the world frame, which corresponds to
@@ -240,7 +237,7 @@ projection.
 
 \begin{figure}[h]
 	\center
-	\resizebox{300pt}{!}{
+	\resizebox{240pt}{!}{
 		\input{include/dataset_generation/pin-hole_model.tex}
 	}
 	\caption[Pin-hole camera model]{The pin-hole camera model. Credits to

@@ -7,7 +7,35 @@ integral and derivative of the error function, thus giving it this name.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.9\textwidth]{figure/pid.png}
+	\tikzstyle{block} = [draw, fill=blue!20, rectangle, 
+	minimum height=1cm, minimum width=3cm,text width=3cm]
+	\tikzstyle{sum} = [draw, fill=yellow!20, circle, node distance=1cm]
+	\tikzstyle{input} = [coordinate]
+	\tikzstyle{output} = [coordinate]
+	\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+	\begin{tikzpicture}[auto, node distance=3cm,>=latex']
+		\node [input, name=input] {};
+		\node [sum, right of=input] (sum) {$\Sigma$};
+		\draw [draw,->] (input) -- node {$r(t)$} (sum);
+		\node [block,node distance=3.5cm, right of=sum] (i) {{\Large I}\hfill $k_i \int_0^te(\tau)d\tau$};
+		\draw [->] (sum) -- node[pos=0.4] {$e(t)$} (i);
+		\node [block,fill=green!20, node distance=1.5cm,above of=i] (p) {{\Large P}\hfill $k_p e(\tau)$};
+		\node [block, fill=red!20,node distance=1.5cm,below of=i] (d) {{\Large D}\hfill $k_d \cfrac{de(\tau)}{d\tau}$};
+		\node [sum, node distance=3cm,right of=i]
+			(sum2) {$\Sigma$};
+		\node[input, name=distancer, node distance=2cm,left of=i] {};
+		\draw [->] (distancer) |-  (p);
+		\draw [->] (distancer) |-  (d);
+		\draw [->] (i) -- node[pos=0.8] {} (sum2);
+		\draw [->] (p) -| node[anchor=east,pos=0.9] {} (sum2);
+		\draw [->] (d) -| node[anchor=east,pos=0.9] {} (sum2);
+		\node [block,fill=black!20, right of=sum2,
+			node distance=3cm] (plant) {Plant/Process};
+		\draw [->] (sum2) -- node {$u(t)$} (plant);
+		\node [output, right of=plant] (output) {};
+		\draw [->] (plant) -- node [name=y] {$y(t)$}(output);
+		\draw[->] ($(plant.east)+(0.5cm,0)$) |- ($(sum)+(0,-3cm)$) -- node[pos=0.9] {$-$} (sum);
+	\end{tikzpicture}  
 	\caption{The feedback loop of a PID controller.}
 	\label{fig:pid-loop}
 \end{figure}

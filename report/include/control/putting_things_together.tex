@@ -1,16 +1,35 @@
 \section{Putting things together}
 
 As stated previously, the controller is implemented as a ROS node, and
-subscribes to several topics
+subscribes to two topics:
+\begin{itemize}
+	\item{\textbf{/mavros/local\_position/velocity}, which is the local velocity
+	of the drone, published by the low-level controller. This information is
+	used to compute the error derivative in the PID controller.}
+	\item{\textbf{/predictor/filtered}, the gate center predictions, to which a
+	median filter is applied in an attempt to get rid of outliers. The output
+	is an integer representing the region proposal window.}
+\end{itemize}
 
-\subsection{Supervision state machine}
+~\\In addition, it publishes the desired velocity to the
+\textbf{/IntelDrone/command\_velocity\_body} ROS topic, where a separated node
+is subscribed. This node is responsible for the safety of the drone during the
+tests: it creates a virtual cage via the motion capture system, and uses a
+closed feedback loop to locate the drone and prevent it from stepping outside
+that cage. Other types of safety features, such as commanded velocity
+thresholding, are implemented.\\
 
-The controller uses a state machine blah blah blah...
+The main function, which runs the state machine itself, is running at 100Hz,
+while the gate center detection is locally refreshed at 33Hz.
+Figure~\ref{fig:state} shows the complete finite state machine responsible for
+coordinating the drone's sensing and planning, in the different stages of the
+race.
 
 \begin{figure}[h]
 	\centering
 	\input{include/control/finite_state_machine.tex}
 	\caption{State diagram of the controller.}
+	\label{fig:state}
 \end{figure}
 
-Wow, what a nice state machine.
+The PID controller on the other hand, is only called when needed

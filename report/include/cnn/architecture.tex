@@ -24,8 +24,6 @@ common input shape is not a restriction, and it usually depends on the approach
 to the problem: it might be wiser to use square images of cropped grayscale
 portraits for face recognition, for instance.\\
 
-\todo{Add tikz image for input and output tensors/vectors}
-
 As for the output, the shape is entirely dependent on the problem and the
 desired output of the network. In common image classification implementations,
 a one-hot (or multi-hot) encoded vector is usually used as ground truth label,
@@ -34,10 +32,29 @@ classes.
 
 \begin{wrapfigure}{r}{0.4\textwidth}
 	\begin{center}
-		\includegraphics[width=0.24\textwidth]{figure/one_hot.png}
+		\begin{tikzpicture}[node distance=1cm,box/.style = {draw,rectangle, minimum width=1cm,minimum height=1cm}]]
+			\node (bird) {Bird};
+			\node[right of=bird,box,xshift=0.2cm] (n1) {0};
+			\node[right of=n1,box] (n2) {0};
+			\node[right of=n2,box] (n3) {1};
+
+			\node[node distance=1.3cm,above of=bird] (cat) {Cat};
+			\node[right of=cat,box,xshift=0.2cm] (n4) {0};
+			\node[right of=n4,box] (n5) {1};
+			\node[right of=n5,box] (n6) {0};
+
+			\node[node distance=1.3cm,above of=cat] (dog) {Dog};
+			\node[right of=dog,box,xshift=0.2cm] (n7) {1};
+			\node[right of=n7,box] (n8) {0};
+			\node[right of=n8,box] (n9) {0};
+
+			\node[above of=n7,rotate=90] (dog2) {Dog};
+			\node[above of=n8,rotate=90] (cat2) {Cat};
+			\node[above of=n9,rotate=90] (bird2) {Bird};
+		\end{tikzpicture}
 	\end{center}
 	\label{fig:onehot}
-	\caption{One-hot encoding of 3 classes. [temp, will make my own]}
+	\caption{One-hot encoding of 3 classes.}
 \end{wrapfigure}
 
 
@@ -107,9 +124,109 @@ layers.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.8\textwidth]{figure/max_vs_avrg_pooling.png}
+	\resizebox{\textwidth}{!}{
+		\begin{tikzpicture}[node distance=1cm,box/.style = {draw,rectangle, minimum width=1cm,minimum height=1cm}]]
+			\node[box,minimum width=4cm,minimum height=4cm] (in) {};
+			\node[draw,rectangle,fill=black,rotate=-45,minimum width=4cm,minimum height=0.2cm] (feature) at (in) {};
+			\node[node distance=2.5cm,below of=in] (inlabel) {Input Feature Map};
+
+			\node[box,minimum width=2cm,minimum height=2cm,right of=in,xshift=4cm,yshift=1.5cm] (out1) {};
+			\node[node distance=1.5cm,below of=out1] (out1label) {After Max Pooling};
+
+			\node[box,,minimum width=2cm,minimum height=2cm,right of=in,xshift=4cm,yshift=-1.5cm] (out2) {};
+			\node[node distance=1.5cm,below of=out2] (out2label) {After Avg Pooling};
+
+			\node[draw,rectangle,fill=black!50,rotate=-45,minimum width=2cm,minimum height=0.15cm,inner sep=0pt] (feature2) at (out2) {};
+
+			\draw[-latex,thick] ($(in.east)+(0,1.5cm)$) -- (out1);
+			\draw[-latex,thick]  ($(in.east)+(0,-1.5cm)$) -- (out2);
+
+			\node[box,fill=blue!50, node distance=9cm,right of=in,yshift=1.5cm] (n1) {0};
+			\node[box,fill=blue!50,right of=n1] (n2) {255};
+			\node[box,fill=yellow!50,right of=n2] (n3) {255};
+			\node[box,fill=yellow!50,right of=n3] (n4) {255};
+
+			\node[box,fill=blue!50,below of=n1] (n5) {255};
+			\node[box,fill=blue!50,right of=n5] (n6) {0};
+			\node[box,fill=yellow!50,right of=n6] (n7) {255};
+			\node[box,fill=yellow!50,right of=n7] (n8) {255};
+
+			\node[box,fill=green!50,below of=n5] (n9) {255};
+			\node[box,fill=green!50,right of=n9] (n10) {255};
+			\node[box,fill=red!50,right of=n10] (n11) {0};
+			\node[box,fill=red!50,right of=n11] (n12) {255};
+
+			\node[box,fill=green!50,below of=n9] (n13) {255};
+			\node[box,fill=green!50,right of=n13] (n14) {255};
+			\node[box,fill=red!50,right of=n14] (n15) {255};
+			\node[box,fill=red!50,right of=n15] (n16) {0};
+
+			\node[box,fill=blue!50,right of=n1,xshift=5cm,yshift=0.5cm] (a1) {255};
+			\node[box,fill=yellow!50,right of=a1] (a2) {255};
+			\node[box,fill=green!50,below of=a1] (a3) {255};
+			\node[box,fill=red!50,below of=a2] (a4) {255};
+
+			\node[box,fill=green!50,right of=n13,xshift=5cm,yshift=-0.5cm] (b1) {128};
+			\node[box,fill=red!50,right of=b1] (b2) {255};
+			\node[box,fill=blue!50,above of=b1] (b3) {255};
+			\node[box,fill=yellow!50,above of=b2] (b4) {128};
+
+			\draw[-latex,thick] ($(n8.south east)+(0,1.5cm)$) -- (a3.north west);
+			\draw[-latex,thick] ($(n8.south east)+(0,-1.5cm)$) -- (b1.north west);
+	\end{tikzpicture}}
+\resizebox{\textwidth}{!}{
+	\begin{tikzpicture}[node distance=1cm,box/.style = {draw,rectangle, minimum width=1cm,minimum height=1cm}]]
+		\node[box,fill=black,minimum width=4cm,minimum height=4cm] (in) {};
+		\node[draw,rectangle,fill=white,rotate=-45,minimum width=4cm,minimum height=0.2cm] (feature) at (in) {};
+		\node[node distance=2.5cm,below of=in] (inlabel) {Input Feature Map};
+
+		\node[box,fill=black,minimum width=2cm,minimum height=2cm,right of=in,xshift=4cm,yshift=1.5cm] (out1) {};
+		\node[draw,rectangle,fill=white,rotate=-45,minimum width=2cm,minimum height=0.15cm,inner sep=0pt] (feature2) at (out1) {};
+		\node[node distance=1.5cm,below of=out1] (out1label) {After Max Pooling};
+
+		\node[box,fill=black,minimum width=2cm,minimum height=2cm,right of=in,xshift=4cm,yshift=-1.5cm] (out2) {};
+		\node[node distance=1.5cm,below of=out2] (out2label) {After Avg Pooling};
+
+		\node[draw,rectangle,fill=black!50,rotate=-45,minimum width=2cm,minimum height=0.15cm,inner sep=0pt] (feature2) at (out2) {};
+
+		\draw[-latex,thick] ($(in.east)+(0,1.5cm)$) -- (out1);
+		\draw[-latex,thick]  ($(in.east)+(0,-1.5cm)$) -- (out2);
+
+		\node[box,fill=blue!50, node distance=9cm,right of=in,yshift=1.5cm] (n1) {255};
+		\node[box,fill=blue!50,right of=n1] (n2) {0};
+		\node[box,fill=yellow!50,right of=n2] (n3) {0};
+		\node[box,fill=yellow!50,right of=n3] (n4) {0};
+
+		\node[box,fill=blue!50,below of=n1] (n5) {0};
+		\node[box,fill=blue!50,right of=n5] (n6) {255};
+		\node[box,fill=yellow!50,right of=n6] (n7) {0};
+		\node[box,fill=yellow!50,right of=n7] (n8) {0};
+
+		\node[box,fill=green!50,below of=n5] (n9) {0};
+		\node[box,fill=green!50,right of=n9] (n10) {0};
+		\node[box,fill=red!50,right of=n10] (n11) {255};
+		\node[box,fill=red!50,right of=n11] (n12) {0};
+
+		\node[box,fill=green!50,below of=n9] (n13) {0};
+		\node[box,fill=green!50,right of=n13] (n14) {0};
+		\node[box,fill=red!50,right of=n14] (n15) {0};
+		\node[box,fill=red!50,right of=n15] (n16) {255};
+
+		\node[box,fill=blue!50,right of=n1,xshift=5cm,yshift=0.5cm] (a1) {255};
+		\node[box,fill=yellow!50,right of=a1] (a2) {0};
+		\node[box,fill=green!50,below of=a1] (a3) {0};
+		\node[box,fill=red!50,below of=a2] (a4) {255};
+
+		\node[box,fill=green!50,right of=n13,xshift=5cm,yshift=-0.5cm] (b1) {0};
+		\node[box,fill=red!50,right of=b1] (b2) {128};
+		\node[box,fill=blue!50,above of=b1] (b3) {128};
+		\node[box,fill=yellow!50,above of=b2] (b4) {0};
+
+		\draw[-latex,thick] ($(n8.south east)+(0,1.5cm)$) -- (a3.north west);
+		\draw[-latex,thick] ($(n8.south east)+(0,-1.5cm)$) -- (b1.north west);
+\end{tikzpicture}}
 	\label{fig:pooling}
-	\caption{Max pooling VS average pooling. [temp, will make my own]}
+	\caption{Max pooling VS average pooling.}
 \end{figure}
 
 The work of Yu \etal~\cite{MixedPooling} introduces a novel pooling
