@@ -90,7 +90,19 @@ test datasets showed that the validation accuracy was somewhat reflected on the
 real gate detection: it performed well enough to fly the drone through
 different types of physical gates, after a succession of trials.\\
 
-\textcolor{red}{Insert top-3 accuracy of test data for this model.}
+\begin{table}[!h]
+    \centering
+    \caption{TODO: add real values}
+    \begin{tabular}{llll}
+        \toprule
+		Dataset & Top 1 [\%] & Top 3 [\%] & Top 5 [\%]\\
+        \midrule         
+		Synthetic & \textbf{70.8} & \textbf{70.8} & \textbf{70.8} \\ 
+        Real & \textbf{99.9} & \textbf{70.8} & \textbf{70.8} \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:my_label}
+\end{table}
 
 \subsubsection{MobileNetV2}
 
@@ -146,6 +158,20 @@ overfitting, but significantly less.
 However, evaluating the model on test data revealed a severe overfitting on the
 synthetic gates. Eventually, the trained model was unable to detect any real
 gate, and all the performance gains brought by this model were starting to fade
-away.
+away.\\
 
-\textcolor{red}{Insert top-3 accuracy of test data for this model.}
+\begin{table}[!h]
+    \centering
+    \caption{TODO: add real values}
+    \begin{tabular}{llll}
+        \toprule
+		Dataset & Top 1 [\%] & Top 3 [\%] & Top 5 [\%]\\
+        \midrule         
+		Synthetic & \textbf{70.8} & \textbf{70.8} & \textbf{70.8} \\ 
+        Real & \textbf{99.9} & \textbf{70.8} & \textbf{70.8} \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:my_label}
+\end{table}
+
+\clearpage

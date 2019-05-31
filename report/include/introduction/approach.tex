@@ -64,17 +64,19 @@ trajectory, but must be a perfect square number to work with the current
 implementation, as it greatly simplifies the computation of the ground truth
 labels.
 
-\textcolor{red}{Talk about the median filter!}
+Finally, a median filter is applied to the predictions, in order to remove the
+outliers. This addition aims to prevent the drone from deviating from the
+optimal path, even though a small delay is introduced in the perception.
 
 Being the main research topic of this thesis, this part is given more time and
 focus to deliver a more rigorous and in-depth work.\\
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\textwidth]{figure/300x300.png}
-	\caption{Block diagram of the perception logic.}
-	\label{fig:perception-block}
-\end{figure}
+%\begin{figure}[h]
+	%\centering
+	%\includegraphics[width=0.5\textwidth]{figure/300x300.png}
+	%\caption{Block diagram of the perception logic.}
+	%\label{fig:perception-block}
+%\end{figure}
 
 Secondly, the control logic is made as simple as can be, since its purpose is
 only to verify the hypothesis proposed for the perception. A state machine is
@@ -82,12 +84,12 @@ supervising the flight between the two gates, and utilizes a
 Proportional-Integral-Derivative controller to output velocity commands to the
 lower-level controller implemented by the manufacturer on the UAV.\\
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\textwidth]{figure/300x300.png}
-	\caption{Block diagram of the control logic.}
-	\label{fig:control-block}
-\end{figure}
+%\begin{figure}[h]
+	%\centering
+	%\includegraphics[width=0.5\textwidth]{figure/300x300.png}
+	%\caption{Block diagram of the control logic.}
+	%\label{fig:control-block}
+%\end{figure}
 
 As for the drone itself, the model used to conduct real flight tests is an Intel
 Aero, a customizable platform built for developers. It is ready to fly, and

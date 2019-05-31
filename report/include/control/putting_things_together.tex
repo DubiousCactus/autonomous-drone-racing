@@ -90,4 +90,11 @@ the crossing condition:
 Obviously, it is not an optimal solution as it requires to manually set the
 valid predictions, which does not scale to different amounts of windows.
 Ideally, the prediction model would be robust enough that with some filtering,
-a simple falling edge could engage the drone to cross the gate.
+a simple falling edge could engage the drone to cross the gate.\\
+
+On a last note, the autonomous system was tested in real conditions, and was
+able to detect, target and successfully cross different gates of different
+shapes and colors, among a few failures. Since the performance of the PID
+controller cannot be evaluated and rigorously tested without spending more time
+and effort on a ground truth trajectory creation pipeline for the autonomous
+flight, the reader must take this subjective conclusion for granted.
