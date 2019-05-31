@@ -4,38 +4,38 @@
 		\begin{tikzpicture}
 			\pgfplotsset{
 				scale only axis,
-				legend pos=north west,
-				legend entries={Training, Validation},
+				legend pos=north east,
+				legend entries={Training,Validation},
 				grid style={dotted,gray,line width=.1pt},
 				grid=both
 			}
 			\begin{axis}[xlabel=Epoch,ylabel=Loss,width=7cm,height=7cm]
 				\addplot+[mark=none,smooth] table [y=train_loss,col sep=comma]
-				{plots/dronet/dronet_rgb_higher_l2_150000.txt};
+				{plots/mobilenetv2/mobilenetv2_rgb_hidden_dropout_avg_pooling_noaug_150000.txt};
 				\addplot+[mark=none,smooth] table [y=val_loss,col sep=comma]
-				{plots/dronet/dronet_rgb_higher_l2_150000.txt};
+				{plots/mobilenetv2/mobilenetv2_rgb_hidden_dropout_avg_pooling_noaug_150000.txt};
 			\end{axis}
 		\end{tikzpicture}
-		\caption{Loss for 150,000 samples.}
+		\caption{Loss}
 	\end{subfigure}
 	\begin{subfigure}{0.49\textwidth}
 		\begin{tikzpicture}
 			\pgfplotsset{
 				scale only axis,
-				legend pos=north west,
-				legend entries={Training, Validation},
+				legend pos=south east,
+				legend entries={Training,Validation},
 				grid style={dotted,gray,line width=.1pt},
 				grid=both
 			}
 			\begin{axis}[xlabel=Epoch,ylabel=Accuracy,width=7cm,height=7cm]
 				\addplot+[mark=none,smooth] table [y=train_accuracy,col sep=comma]
-				{plots/dronet/dronet_rgb_higher_l2_150000.txt};
+				{plots/mobilenetv2/mobilenetv2_rgb_hidden_dropout_avg_pooling_noaug_150000.txt};
 				\addplot+[mark=none,smooth] table [y=val_accuracy,col sep=comma]
-				{plots/dronet/dronet_rgb_higher_l2_150000.txt};
+				{plots/mobilenetv2/mobilenetv2_rgb_hidden_dropout_avg_pooling_noaug_150000.txt};
 			\end{axis}
 		\end{tikzpicture}
-		\caption{Accuracy for 150,000 samples.}
+		\caption{Accuracy}
 	\end{subfigure}
-	\caption{DroNet in RGB with a higher L2 regularization factor.}
-	\label{plot:dronet-l2}
+	\caption{RGB MobileNetV2 with 150,000 samples.}
+	\label{plot:mobilenetv2-hdp}
 \end{figure}

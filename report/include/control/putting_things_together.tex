@@ -34,9 +34,14 @@ race.
 \end{figure}
 
 In each of the states depicted in figure~\ref{fig:state}, specific commands are
-issued, and certain conditions are verified. The important part of this logic
-is the \emph{crossing\_condition} which, when met, switches the state from
-REFINING to CROSSING.
+issued, and certain conditions are verified. The \emph{ready} condition is a
+simple flag that is set to \texttt{True} whenever a new prediction is published
+from the gate center detection node, and reset to \texttt{False} when it is
+used. That way, the drone does not fly blindly and has to wait if the
+perception stops working.
+
+The most important part of the logic is the \emph{crossing\_condition} which,
+when met, switches the state from REFINING to CROSSING.
 
 In effect, the most difficult challenge to solve in the gate crossing process,
 is to actually decide when it is a good time to engage. As the drone
@@ -70,8 +75,8 @@ the crossing condition:
 				\Return \texttt{False}
 			\EndIf
 
-			\ForAll{$\textit{previousPredictions} as \textit{pp}$}
-				\If {$\textit{pp} \notin \textit{acceptableRegions}$}
+			\ForAll{$\textit{previousPredictions} \text{ as } \textit{previous\_p}$}
+				\If {$\textit{previous\_p} \notin \textit{acceptableRegions}$}
 					\State $crossing \gets \texttt{False}$
 					\State \textbf{break}
 				\EndIf

@@ -25,7 +25,7 @@ pictures they have collected for the collision detection. As for the input
 specifications, the format used is a $200\times200$ grayscale center crop of
 the original image, annotated with steering angles and binary collision labels.
 
-\subsubsection{Modifications}
+\subsubsection{Modifications} \label{section:dronet-mods}
 
 In order to use this model for detecting the center of a racing gate, its fully
 connected layers had to be removed and replaced with one of size $N$
@@ -69,3 +69,4 @@ training, such as the optimizer and the learning rate, were left identical: the
 Adam optimizer is used with its default hyper parameters. Additional
 modifications are brought to the fully-connected layers during the experiments,
 which are explained in the corresponding chapter.
+

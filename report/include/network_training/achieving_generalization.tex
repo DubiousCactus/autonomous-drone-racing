@@ -1,11 +1,32 @@
 \subsection{Achieving generalization}
 
-The hardest pitfall to overcome was undeniably the overfitting of the model. 
-
-\todo{Add training plots here?...}
-
 \textcolor{red}{Talk about image augmentation and show the results}
+The intuition that led to finding a viable solution to this hindering issue, is
+that the semi-synthetic images are too sharp and do not mirror the amount of
+blur seen on real images captured from the UAV in flight.\\
 
+To verify this hypothesis, an image augmentation pipeline was added to the
+batch loading process of the network training. In essence, every new batch of
+data samples goes through randomized image transformations, ranging from
+channel shift and gamma contrast shuffling to additive gaussian noise and
+simulated motion blur. Those transformations do not happen in a sequence for
+each image of the batch, but rather have different chances of being applied.
 
-Present training plots with augmentation
-present top-n accuracies with augmentation
+The result is a dataset that is augmented differently at every iteration of the
+training, thus theoretically introducing an infinite amount of image
+variations.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{figure/augmentation.jpg}
+	\caption{Few samples of random image transformations applied to one batch.}
+	\label{fig:augmentation}
+\end{figure}
+
+The effect of applying the said augmentations to the dataset can be seen on
+figure~\ref{plot:mobilenetv2-aug}, where each plot compares the augmentation
+results to their base counterpart.
+
+\input{plots/mobilenetv2_aug.tex}
+
+\textcolor{red}{Present top-n accuracies with augmentation.}

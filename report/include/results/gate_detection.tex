@@ -2,19 +2,150 @@
 
 To reiterate, the evaluation of the models' performance was mainly done by
 judging its accuracy from a test video. To properly compare different
-hyper parameters and fully connected layer configurations, 
-Refer to the training and evaluation sections to clarify.
+hyper parameters and fully connected layer configurations, as explained in
+section~\ref{section:training}, several training sessions were done with a
+relatively small dataset, until the best model topology is found.
 
-Present training plots of DroNet and MobileNetV2 without augmentation. 
+\subsubsection{DroNet}
+
+DroNet~\cite{dronet} is the first choice to be used for the perception. The
+initial question is whether to use grayscale or RGB images. Intuitively,
+grayscale images would be faster to compute but would also provide less
+information for the network to extract features. Having painted the gates in
+bright colors, it makes sense to train the network on RGB images so that it can
+detect them better.
 
 \begin{figure}[h]
 	\centering
 	\input{plots/dronet_rgb_grayscale.tex}
-	\caption{Grayscale and RGB training of DroNet.}
+	\caption{Grayscale and RGB training of DroNet with 50,000 samples.}
+	\label{plot:grayscale-vs-rgb-dronet}
 \end{figure}
+
+Figure~\ref{plot:grayscale-vs-rgb-dronet} shows without a doubt that the
+network is able to learn more from RGB input images, as the categorical
+cross-entropy loss is decreased by a factor of 2 after only 50 iterations,
+compared to grayscale input.
+
+However, during the early experiments, the dataset only contained a few
+textures (or colors) for the synthetic gates, which resulted in a very poor
+performance of the RGB model in real world testing. The first intuition was
+that a grayscale input would reduce the spectrum of colors to be identified,
+which would be more robust to different colors of obstacles. In reality, even
+though this idea turned out to offer promising results, the dataset was simply
+lacking of variety in the color of the gates. Simply adding a lot more texture
+files, to generate synthetic gates with more variation in color, solved the
+issue and made the use of RGB inputs for the model possible and more
+efficient.\\
+
+To push the experiment further, the model is trained with RGB images only, and
+different adjustments in the topology of the network are made. The following
+results depicted in figure~\ref{plot:dronet-base-dropout-l2}, present different
+divergences between the training and validation losses.
 
 \input{plots/dronet_rgb_base_dropout_l2.tex}
 
+The most interesting point to notice is the obvious overfitting of the model
+in the ``base'' configuration, where only the last fully connected layer has
+been changed, as explained in section~\ref{section:dronet-mods}. This issue can
+clearly be seen by the rising of the validation loss around epoch 25, while the
+training loss for that model is still decreasing.
+
+As an attempt to overcome this problem, two commonly used techniques of network
+regularization are tested.
+
+Firstly, a hidden layer of size 100 is added before the last fully connected
+layer, along with a dropout probability of $0.5$. The original model disposes
+of a dropout regularization of $0.5$ directly after the flattened output of the
+last convolution layer, which is already quite heavy. To add more dropout, the
+sensible way is to add one more hidden layer, which increases the capacity of
+the network and therefore adds a risk of overfitting. However, the experiment
+showed that the overfitting point was delayed to epoch 30 or so, and seems to
+globally reduce that effect: the test is promising, but certainly not ideal.
+
+
+As a second attempt, the L2 norm factor responsible for the regularization of
+the network's weights was increased by a factor of 10. The results are clear:
+the training is slower to converge to a minimal loss, since the weight updates
+are constrained by the error receiving a penalty equal to the sum of the
+squared weights, but there is no sign of overfitting during those 50
+iterations. Seeing those conclusive results, a more in-depth experiment on the
+benefits of a stronger L2 regularization is undertaken.\\
+
 \input{plots/dronet_rgb_l2_l2more.tex}
 
-Present Top-N accuracies for both without augmentation.
+What is clear from looking at figure~\ref{plot:dronet-l2}, is that not only is
+the network still overfitting, even though it is happening after 50-60 epochs,
+unlike the base model, but it is getting very sensitive to noise as it keeps
+training. The heavy fluctuations in the validation loss and accuracy show the
+symptoms of a model that is overfitting and predicting random classifications.
+
+The fact that increasing the dataset size by a large amount, in addition to
+trying different regularization techniques, did not seem to help prevent
+overfitting strongly indicates that this particular model is unable to
+learn a general mapping of the data.\\
+
+As for the real world testing of this model, prediction videos generated from
+test datasets showed that the validation accuracy was somewhat reflected on the
+real gate detection: it performed well enough to fly the drone through
+different types of physical gates, after a succession of trials.\\
+
+\textcolor{red}{Insert top-3 accuracy of test data for this model.}
+
+\subsubsection{MobileNetV2}
+
+In the hope of achieving generalization and getting rid of overfitting
+symptoms, the second model, MobileNetV2, is trained in the same conditions and
+on the same dataset. Due to its nature, it is not possible to use grayscale
+images for the input, which is not a problem in itself because it has been
+deducted that RGB images provide more information for the network, and help
+increase its classification performance.\\
+
+To determine the optimal topology adjustments for the fully connected layer,
+and therefore find the configuration yielding the best performance, a series of
+training runs is compared and the results are shown on
+figure~\ref{plot:mobilenetv2-base-comp}.
+
+\input{plots/mobilenetv2_base_dropout_hidden_dropout_avg_pooling.tex}
+
+At first glance, it is surprising to see such perfect straight line for the
+training and validation losses of the model with dropout applied right before
+the output layer. The probability was set to $0.5$, which is heavy but also a
+standard value recommended by Srivastava~\etal~\cite{Dropout} in the original
+paper presenting this regularization technique. The startling result is that
+the model was completely unable to learn with such dropout.
+
+However, adding one hidden layer of size 100 right before the output layer,
+shows interesting results, but clearly performs worse than the baseline on the
+training loss minimization (as shown on
+figure~\ref{plot:mobilenetv2-base-comp-train}).  On the other hand, the base
+model shows early signs of overfitting, as it can be observed that the
+validation loss slowly rises around epoch 35, whereas it keeps decreasing for
+the case where a hidden layer and dropout were added. The observation is that
+this addition has potential benefits, but is slower to train; a longer training
+session is required to draw final conclusions.
+
+
+The last modification to the baseline is the use of average pooling for the
+final convolution layer of MobileNetV2, since the base model does not perform
+any sort of pooling. A direct gain in performance is observed, mainly on the
+validation since it is slightly below the baseline. Unfortunately, it is
+visible on figure~\ref{plot:mobilenetv2-base-comp-val}, that the model starts
+to overfit around epoch 35, similarly to the base model.\\
+
+To take the best of both worlds, one last experiment is performed where a
+hidden layer of a hundred neurons, with a dropout of $0.5$, is added in
+conjunction with average pooling on the last feature extraction layer. The
+results can be seen on figure~\ref{plot:mobilenetv2-hdp}, and show that the
+model converges around 80\% in accuracy, at a loss of 1, whereas it was
+converging closer to a loss of 2 in the previous experiments. It is still
+overfitting, but significantly less.
+
+\input{plots/mobilenetv2_hidden_dropout_avg_pooling.tex}
+
+However, evaluating the model on test data revealed a severe overfitting on the
+synthetic gates. Eventually, the trained model was unable to detect any real
+gate, and all the performance gains brought by this model were starting to fade
+away.
+
+\textcolor{red}{Insert top-3 accuracy of test data for this model.}
