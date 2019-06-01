@@ -1,0 +1,75 @@
+\begin{tikzpicture}[>=stealth',shorten >=1pt,auto]
+	\tikzstyle{state} = [draw, very thick, fill=white, rectangle, minimum
+	height=3em, minimum width=7em, node distance=8em]
+	\tikzstyle{stateEdgePortion} = [black,thick];
+	\tikzstyle{stateEdge} = [stateEdgePortion,->];
+	\tikzstyle{edgeLabel} = [pos=0.5, text centered];
+
+	% Position states
+	\node[initial,state,accepting, name=landed] {LANDED};
+	\node[state, name=takeOff, below of=landed] {TAKE\_OFF};
+	\node[state, name=aiming, left of=takeOff, below of=takeOff, xshift=-8em] {AIMING};
+	\node[state, name=refining, below of=takeOff] {REFINING};
+	\node[state, name=flying, below of=aiming] {FLYING};
+	\node[state, name=waiting, below of=refining, yshift=-5em] {WAITING};
+	\node[state, name=leaving, below of=flying, yshift=-4em] {LEAVING};
+	\node[state, name=crossing, right of=leaving, xshift=16.7em] {CROSSING};
+	%\node[state, name=landing, right of=landed] {LANDING};
+
+	% Connect the states
+	\draw (landed.south)
+		edge[stateEdge] node[edgeLabel, xshift=-6em]{\emph{User input}}
+		(takeOff.north);
+
+	\coordinate (aimingNorth) at ($(aiming.north) + (0, 6.5em)$);
+	\draw (takeOff.west) edge[stateEdgePortion] node[edgeLabel]{\emph{altitude}
+	$\geqslant$ \emph{200cm}} (aimingNorth);
+	\draw (aimingNorth) edge[stateEdge] (aiming.north);
+
+	\draw ($(aiming.south) + (-.2em,0)$)
+		edge[stateEdge] node[edgeLabel, xshift=-6em]{\emph{window $\ne$ 0}}
+		($(flying.north) + (-.3em,0)$);
+	\draw ($(refining.west) + (0,-1em)$)
+		edge[stateEdge, bend right=30] node[edgeLabel, text
+		width=6em]{\emph{$\neg$ crossing $\land$ window $\ne$ 0}}
+		($(flying.north) + (.5em, 0)$);
+	\draw ($(refining.west) + (0, .5em)$)
+		edge[stateEdge] node[edgeLabel, yshift=3em, text
+		width=6em]{\emph{$\neg$ crossing $\land$ window $\equiv$ 0}}
+		($(aiming.east) + (0, .3em)$);
+	\draw ($(flying.south east) + (0, 1em)$)
+		edge[stateEdge, bend right=35] node[edgeLabel,
+		yshift=-2.2em]{\emph{33Hz}}
+		($(refining.south) + (-.3em, -.1em)$);
+	\draw ($(refining.south) + (3em, 0)$)
+		edge[stateEdge] node[edgeLabel]{$\neg$ \emph{ready}}
+		($(waiting.north) + (3em, 0)$);
+	\draw ($(waiting.north) + (1em, 0)$)
+		edge[stateEdge] node[edgeLabel]{\emph{ready}}
+		($(refining.south) + (1em, 0)$);
+
+	\coordinate (refining2ClosedA) at ($(refining.east) + (5.1em, 0)$);
+	\draw (refining.east) edge[stateEdgePortion] (refining2ClosedA);
+	\draw (refining2ClosedA)
+		edge[stateEdge] node[edgeLabel, rotate=-90, xshift=-4em,
+		yshift=1em]{\emph{crossing\_condition}}
+		(crossing.north);
+
+	\draw (crossing.west)
+		edge[stateEdge] node[edgeLabel,
+		yshift=-.5em]{\emph{altitude $\geqslant$ MAX\_GATE\_HEIGHT}}
+		(leaving.east);
+
+	\coordinate (leaving2ClosedA) at ($(leaving.west) + (-5em, 0)$);
+	\coordinate (leaving2ClosedB) at ($(aiming.west) + (-5em, 0)$);
+	\draw (leaving.west) edge[stateEdgePortion] (leaving2ClosedA);
+	\draw (leaving2ClosedA) edge[stateEdgePortion] node[edgeLabel,
+	rotate=90, xshift=5em, yshift=.8em]{\emph{delay > LEAVING\_TIME}} (leaving2ClosedB);
+	\draw (leaving2ClosedB) edge[stateEdge] (aiming.west);
+
+
+	% Add velocity notes
+   % \draw (takeoff.west)
+		%edge[stateEdge, dashed]
+
+\end{tikzpicture}

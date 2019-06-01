@@ -1,7 +1,70 @@
 \subsection{Achieving generalization}
 
-The hardest pitfall to overcome was undeniably the overfitting of the model. 
+The intuition that led to finding a viable solution to this hindering issue, is
+that the semi-synthetic images are too sharp and do not mirror the amount of
+blur seen on real images captured from the UAV in flight.\\
 
-\todo{Add training plots here?...}
-\textcolor{red}{Does this really belong here ?? Shouldn't it be in the results and
-experiments section? Maybe move this sub-section to 4.1 ?...}
+To verify this hypothesis, an image augmentation pipeline was added to the
+batch loading process of the network training. In essence, every new batch of
+data samples goes through randomized image transformations, ranging from
+channel shift and gamma contrast shuffling to additive gaussian noise and
+simulated motion blur. Those transformations do not happen in a sequence for
+each image of the batch, but rather have different chances of being applied.
+
+The result is a dataset that is augmented differently at every iteration of the
+training, thus theoretically introducing an infinite amount of image
+variations.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{figure/augmentation.jpg}
+	\caption{Few samples of random image transformations applied to one batch.}
+	\label{fig:augmentation}
+\end{figure}
+
+The effect of applying the said augmentations to the dataset can be seen on
+figure~\ref{plot:mobilenetv2-aug}, where each plot compares the augmentation
+results to their base counterpart. An interesting phenomenon that is visible on
+every plot, is the drastic reduce in fluctuation of the validation loss and
+accuracy. This can be explained by the fact that the network gets slightly
+altered versions of the input at each iteration, and is therefore able to
+generalize slightly better. As for the performance of the model, it is visible
+that the overfitting is reduced, especially on
+figure~\ref{plot:mobilenetv2-aug-val-large} where the optimal model topology
+minimizes with a constantly positive rate when trained on the augmented
+training set.\\
+
+Providing the network with more data, and most importantly with more noisy
+samples, has led to a more robust model that is able to generalize better, and
+overall give more accurate predictions.
+
+\input{plots/mobilenetv2_aug.tex}
+
+Most importantly, when evaluated on the real test set, the model showed very
+satisfying results that seem to be more accurate than the validation accuracy
+would suggest. This makes perfect sense, as the generated dataset contains very
+intricate gate configurations which do not represent real world scenarios. This
+over-complexification of the problem is an asset that is helpful to train a
+robust model. The end result is an alledged gap between test accuracy and
+validation accuracy, but in the good way: the model performs better on real
+world test data than on synthetic images, supposedly.\\
+
+To confirm this hypothesis, a proper test dataset with correct ground truth is
+needed. For the time being, the best performing model, depicted in
+figure~\ref{plot:mobilenetv2-aug-val-large}, is evaluated on the biased test
+set in table~\ref{table:mobilenetv2-best}.
+
+\begin{table}[!h]
+    \centering
+    \caption{TODO: add real values}
+    \begin{tabular}{llll}
+        \toprule
+		Dataset & Top 1 [\%] & Top 3 [\%] & Top 5 [\%]\\
+        \midrule         
+		Synthetic & \textbf{70.8} & \textbf{70.8} & \textbf{70.8} \\ 
+        Real & \textbf{99.9} & \textbf{70.8} & \textbf{70.8} \\
+        \bottomrule
+    \end{tabular}
+    \label{table:mobilenetv2-best}
+\end{table}
+
