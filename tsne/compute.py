@@ -48,62 +48,66 @@ def compute(args):
     if dims == 3:
         ax = fig.add_subplot(111, projection='3d')
 
-    synthetic_pca = PCA(n_components=50).fit_transform(synthetic_gates)
+    synthetic_pca = PCA(n_components=30).fit_transform(synthetic_gates)
     synthetic_embeddings = TSNE(n_components=dims).fit_transform(synthetic_pca)
     synthetic_vis_x = synthetic_embeddings[:, 0]
     synthetic_vis_y = synthetic_embeddings[:, 1]
 
     if dims == 3:
         synthetic_vis_z = synthetic_embeddings[:, 2]
-        synth_dots = ax.scatter(synthetic_vis_x, synthetic_vis_y, synthetic_vis_z, c="red",
-                    marker='o')
+        synth_dots = ax.scatter(synthetic_vis_x, synthetic_vis_y,
+                                synthetic_vis_z, c="red", marker='o')
     else:
         synth_dots = plt.scatter(synthetic_vis_x, synthetic_vis_y, c="red", marker='o')
 
-    real_pca = PCA(n_components=50).fit_transform(real_gates)
+    real_pca = PCA(n_components=30).fit_transform(real_gates)
     real_embeddings = TSNE(n_components=dims).fit_transform(real_pca)
     real_vis_x = real_embeddings[:, 0]
     real_vis_y = real_embeddings[:, 1]
 
     if dims == 3:
         real_vis_z = real_embeddings[:, 2]
-        real_dots = ax.scatter(real_vis_x, real_vis_y, real_vis_z, c="blue", marker='+')
+        real_dots = ax.scatter(real_vis_x, real_vis_y, real_vis_z, c="blue",
+                               marker='o')
     else:
         real_dots = plt.scatter(real_vis_x, real_vis_y, c="blue", marker='o')
 
     # Clustering
-    if args.c > 8:
-        args.c = 8
-    kmeans = KMeans(n_clusters=args.c).fit(zip(synthetic_vis_x, synthetic_vis_y))
+    if args.c:
+        if args.c > 8:
+            args.c = 8
+        kmeans = KMeans(n_clusters=args.c).fit(zip(synthetic_vis_x, synthetic_vis_y))
 
-    labels = {"A": "blue", "B": "orange", "C": "red", "D": "green", "E":
-              "purple", "F": "black", "G": "pink", "H": "brown"}
-    for label, cluster in zip(labels.keys()[:args.c], kmeans.cluster_centers_):
-        plt.annotate(label,
-                 xy=cluster,
-                 horizontalalignment='center',
-                 verticalalignment='center',
-                 size=20, weight='bold',
-                 color='white',
-                 backgroundcolor=labels[label])
-        cluster_files = []
-        for i, synth_point in enumerate(zip(synthetic_vis_x, synthetic_vis_y)):
-            if kmeans.predict([synth_point]) == labels.keys().index(label):
-                cluster_files.append(synth_keys[i])
+        labels = {"A": "blue", "B": "orange", "C": "red", "D": "green", "E":
+                  "purple", "F": "black", "G": "pink", "H": "brown"}
+        for label, cluster in zip(labels.keys()[:args.c], kmeans.cluster_centers_):
+            plt.annotate(label,
+                     xy=cluster,
+                     horizontalalignment='center',
+                     verticalalignment='center',
+                     size=20, weight='bold',
+                     color='white',
+                     backgroundcolor=labels[label])
+            cluster_files = []
+            for i, synth_point in enumerate(zip(synthetic_vis_x, synthetic_vis_y)):
+                if kmeans.predict([synth_point]) == labels.keys().index(label):
+                    cluster_files.append(synth_keys[i])
 
-        for i, real_point in enumerate(zip(real_vis_x, real_vis_y)):
-            if kmeans.predict([real_point]) == labels.keys().index(label):
-                cluster_files.append(real_keys[i])
+            for i, real_point in enumerate(zip(real_vis_x, real_vis_y)):
+                if kmeans.predict([real_point]) == labels.keys().index(label):
+                    cluster_files.append(real_keys[i])
 
-        if not os.path.exists("cluster_{}".format(label)):
-            os.mkdir("cluster_{}".format(label))
+            if not os.path.exists("cluster_{}".format(label)):
+                os.mkdir("cluster_{}".format(label))
 
-        for i, file in enumerate(random.sample(cluster_files, min(5, len(cluster_files)))):
-            copyfile(file, "cluster_{}/{}.{}".format(label, i,
-                                                     file.split('.')[1]))
+            for i, file in enumerate(random.sample(cluster_files, min(10, len(cluster_files)))):
+                copyfile(file, "cluster_{}/{}.{}".format(label, i,
+                                                         file.split('.')[1]))
 
 
-    plt.legend([synth_dots, real_dots], ["Synthetic", "Real"])
+    if dims == 2:
+        plt.legend([synth_dots, real_dots], ["Synthetic", "Real"])
+
     plt.rc('pgf', rcfonts=False)
     plt.rc('pgf', texsystem='pdflatex')
 
