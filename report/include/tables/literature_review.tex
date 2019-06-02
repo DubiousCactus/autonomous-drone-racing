@@ -1,13 +1,13 @@
 %\newpage
-\addcontentsline{lot}{table}{Literature review}
 \newgeometry{hmargin=2cm,vmargin=0.5cm}
 \thispagestyle{lscape}
 
 \begin{landscape}
 	\centering
-	\caption{Autonomous drone racing articles: chronologically sorted}
-	\label{table:drone-racing-literature}
-	\begin{longtable}{@{} p{5cm} p{4cm} p{1cm} p{10cm} p{5cm} @{}}
+	\begin{longtable}{@{} p{7cm} p{4cm} p{1cm} p{10cm} p{5cm} @{}}
+		\caption[Literature review]{Relevant autonomous drone racing articles: chronologically
+		sorted} \label{table:drone-racing-literature}\\
+		\hline
 		\toprule
 		Article	& University & Year & Description & Dataset\\ 
 		\midrule
@@ -27,14 +27,14 @@
 		Beauty and the Beast: Optimal Methods Meet Learning for Drone Racing
 		& University of Zürich and ETH Zürich \& Intel Labs
 		& Oct. 2018
-		& The method uses a combination of a deep neural network (CNN + 2x MLP)
-		regressing the mean and variance of a multivariate normal distribution
-		describing the estimate of the next gate's pose, and an Extended Kalman
-		Filter that estimates the joint probability distribution of a gate's
-		pose. The perception system is never trained on data from tracks and
-		environments it is later deployed in.
-		& Custom dataset from footage in 5 different environments (45,000
-		images from the front-facing camera) + on-board state estimation.\\
+		& The method uses a combination of a deep neural network (CNN +
+		$2\times$ MLP) regressing the mean and variance of a multivariate
+		normal distribution describing the estimate of the next gate's pose,
+		and an Extended Kalman Filter that estimates the joint probability
+		distribution of a gate's pose. The perception system is never trained
+		on data from tracks and environments it is later deployed in.  & Custom
+		dataset from footage in 5 different environments (45,000 images from
+		the front-facing camera) + on-board state estimation.\\
 		\addlinespace
 		Perception, Guidance, and Navigation for Indoor Autonomous Drone Racing Using
 		Deep Learning

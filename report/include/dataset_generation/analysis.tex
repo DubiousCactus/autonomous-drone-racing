@@ -1,3 +1,4 @@
+\clearpage
 \subsection{Realism analysis}
 
 A t-SNE analysis, for \emph{t-distributed stochastic neighbor embedding}, of
@@ -5,18 +6,15 @@ the generated mixed-reality images and real images captured from the UAV's
 camera, is given as a comparison in figure~\ref{fig:tsne}.
 
 \begin{figure}[h!]
-	\centering
-	\begin{subfigure}[h]{0.49\textwidth}
-		\includegraphics[width=\textwidth]{figure/tsne-2D.png}
-		\caption{2D plot}
-	\end{subfigure}
-	\begin{subfigure}[h]{0.49\textwidth}
-		\includegraphics[width=\textwidth]{figure/tsne-3D.png}
-		\caption{3D plot}
-	\end{subfigure}
-	\caption[T-SNE analysis of synthetic versus real images.]{T-SNE analysis of
-	synthetic versus real images. The red labels represent the synthetic
-	images, while the blue labels show the real ones.} \label{fig:tsne}
+   \centering
+   \scalebox{0.8}{
+      \input{plots/random_tsne_2D.pgf}
+   }
+   \caption[T-SNE analysis of synthetic versus real images.]{T-SNE analysis of
+      synthetic versus real images. K-means clustering is applied, with k=8,
+      where the colored labels represent each cluster center.The red labels
+   represent the synthetic images, while the blue labels show the real ones.}
+   \label{fig:tsne}
 \end{figure}
 
 This dimensionality reduction technique is very useful to visualize high
@@ -26,39 +24,53 @@ needs to be applied first, otherwise the t-SNE algorithm would be too sensitive
 to noise, and the computation of pairwise distances between the samples would
 be too slow.\\
 
-Several small clusters can be observed on the plots, which means there are
-disparities between the real and fake images. To push the analysis further and
-attempt to explain the origin of this clustering, a few samples in those
-regions are shown, and conclusions are drawn.
-
-\textcolor{red}{Add 3x2 matrix of images to compare real vs fake gates.}
-
+Overall, it is not clear whether synthetic images are different than real ones,
+since the plot in figure~\ref{fig:tsne} shows a general confusion in the
+sample distribution. After applying the k-means clustering algorithm (with
+k=8), several small clusters can be observed on the plots, which means there
+are possible disparities between the real and fake images. To push the analysis
+further and attempt to explain the origin of this clustering, a few samples are
+picked from cluster D and F, which are the farest appart. Three samples of each
+cluster are randomly selected from the two clusters, and are compared to each
+other on figure~\ref{fig:clustering}. What stands out is the different view
+angles on the pictures, resulting in very different backgrounds for each
+cluster, and therefore differnt pixel intensities. It is now clear that this
+clustering is the result of the different backgrounds, and seemingly not the
+gates themselves. This conclusion does not come as a surprise, because the
+obstacles are so thin that they are barely visible compared to the rest of the
+image.
 
 \begin{figure}[h!]
-	\centering
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\caption[Synthetic versus real images comparison]{}
+   \centering
+   \begin{subfigure}{0.29\textwidth}
+      \includegraphics[width=\textwidth]{figure/tsne_random/D/8.png}
+      \caption{Cluster D - real}
+   \end{subfigure}
+   \begin{subfigure}{0.29\textwidth}
+      \includegraphics[width=\textwidth]{figure/tsne_random/D/9.png}
+      \caption{Cluster D - synthetic}
+   \end{subfigure}
+   \begin{subfigure}{0.29\textwidth}
+      \includegraphics[width=\textwidth]{figure/tsne_random/D/4.png}
+      \caption{Cluster D - synthetic}
+   \end{subfigure}
+
+   \begin{subfigure}{0.29\textwidth}
+      \includegraphics[width=\textwidth]{figure/tsne_random/F/1.png}
+      \caption{Cluster F - real}
+   \end{subfigure}
+   \begin{subfigure}{0.29\textwidth}
+      \includegraphics[width=\textwidth]{figure/tsne_random/F/9.png}
+      \caption{Cluster F - synthetic}
+   \end{subfigure}
+   \begin{subfigure}{0.29\textwidth}
+      \includegraphics[width=\textwidth]{figure/tsne_random/F/6.png}
+      \caption{Cluster F - real}
+   \end{subfigure}
+   \caption[Synthetic versus real images comparison]{Images from clusters D and
+   F are randomly picked and shown as a comparison.}
+   \label{fig:clustering}
 \end{figure}
-
-\textcolor{red}{Explain why each sample belongs to a different cluster.}
-
 
 Furthermore, this analysis is made on a random selection of samples, which is
 not well balanced due to the fact that each batch of synthetic images shows
@@ -66,17 +78,23 @@ roughly 70\% of gates visibility, while the real test set -- being a lot less
 random -- is probably closer to 100\%. To get rid of these disparities and
 offer a fairer comparison, another t-SNE analysis, this time applied to
 hand-picked samples, is shown in figure~\ref{fig:tsne-manual}. Those manually
-selected samples represent similar configurations of gate placement, and intend
-to eliminate cases where no gates are visible.
+selected samples represent similar configurations of gate placement and
+points of view, and intend to eliminate cases where no gates are visible. In
+the end, 30 samples were manually selected from each dataset, and the result is
+a much more homogeneous plot after the t-SNE analysis.
 
 \begin{figure}[h!]
 	\centering
 	\begin{subfigure}[h]{0.49\textwidth}
-		\includegraphics[width=\textwidth]{figure/tsne-2D.png}
+		\scalebox{0.4}{
+			\input{plots/handpicked_tsne_2d.pgf}
+		}
 		\caption{2D plot}
 	\end{subfigure}
 	\begin{subfigure}[h]{0.49\textwidth}
-		\includegraphics[width=\textwidth]{figure/tsne-3D.png}
+		\scalebox{0.4}{
+			\input{plots/handpicked_tsne_3d.pgf}
+		}
 		\caption{3D plot}
 	\end{subfigure}
 	\caption[T-SNE analysis of hand-picked samples.]{T-SNE analysis of
@@ -85,37 +103,9 @@ to eliminate cases where no gates are visible.
 	\label{fig:tsne-manual}
 \end{figure}
 
-\textcolor{red}{Conclude on this proper analysis, and also add a 3x2 matrix
-of image samples}.
-
-\newpage
-
-\begin{figure}[h!]
-	\centering
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\textwidth}
-		\includegraphics[width=\textwidth]{figure/300x300.png}
-	\end{subfigure}
-	\caption[Synthetic versus real images comparison]{}
-\end{figure}
-
-~\\Overall, the generation of synthetic gates can be considered a success, as
+Overall, the generation of synthetic gates can be considered a success, as
 it is not obvious whether an image comes from the synthetic dataset or the real
 test dataset, in some cases. Naturally, a subjective opinion is not enough to
 confirm the viability of the obtained results, and the t-SNE analysis provides
 the additional arguments to lean on this hypothesis.
-\newpage
+\clearpage

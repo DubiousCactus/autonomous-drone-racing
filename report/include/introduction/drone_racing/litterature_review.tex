@@ -1,8 +1,26 @@
 \section{Literature review}
 
+In a preparation to choosing the right approach for this problem, a research on
+the recent works and advances in autonomous drone racing has been conducted. A
+selective literature review on the topic is given in details on
+table~\ref{table:drone-racing-literature}. To select the most relevant papers related
+to this thesis, whose focus is mainly on the perception and deep learning, most
+papers that treated advanced control solutions were discarded. Using search
+engines and keywords such as ``drone racing'', ``deep learning'', ``IROS'' and
+the like, a dozen of results were found to begin the review. By looking into
+the references of the most interesting papers, and mainly visiting the websites
+of the research groups and authors, more interesting articles were found.
+
+The result of this literature review is a deeper knowledge of how autonomous
+drone racing is approached, and mainly what types of sensors are used to solve
+this challenge efficiently. Surprisingly, only a few articles are accompanied
+with the source code of the solution presented, which greatly narrows the
+options to tackle the problem. The following section sums up the general
+approach chosen by these papers.
+
 \input{include/tables/literature_review.tex}
 
-\subsection{The modern approach}
+\subsection{General approach}
 As it can be seen from the preceding literature review, most robotic systems'
 operation can be modeled by the commonly known \emph{Sense, Plan, Act}
 paradigm:
@@ -42,15 +60,15 @@ Operating System} (ROS), \todo{Add citation} which is a set of ``libraries and
 tools to help software developers create robot applications''. It allows to
 independently run programs as ``nodes'', which can communicate with each other
 using a principle of ``subscription'' and ``publication`` on easily definable
-topics, as represented on Figure~\ref{fig:ros-topics}.
+topics.
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{figure/ros_topics.png}
-	\caption{The ROS topics graph showing inter-node communications for this
-	project. [temp, will make my own]}
-	\label{fig:ros-topics}
-\end{figure}
+%\begin{figure}[h]
+	%\centering
+	%\includegraphics[width=0.7\textwidth]{figure/ros_topics.png}
+	%\caption{The ROS topics graph showing inter-node communications for this
+	%project. [temp, will make my own]}
+	%\label{fig:ros-topics}
+%\end{figure}
 
 ROS makes the transition between the simulated environment and the real world
 seamless, because it can be installed on most Linux systems, and adds a layer
@@ -65,8 +83,7 @@ As deep learning has known an exponential growth during the past decade,
 computer vision applications tend to exploit the power of convolutional neural
 networks more and more. Thanks to their impressive performance in specific
 problem solving, CNNs are becoming the main choice for tasks such as: object
-detection, object segmentation, object recognition, object tracking,
-\emph{etc}\ldots
+detection, object segmentation, object recognition or object tracking.
 
 In drone racing, the latest works, which are often the best performing, tend to
 employ CNNs for the sensing part, or even as an all-in-one solution. It is a

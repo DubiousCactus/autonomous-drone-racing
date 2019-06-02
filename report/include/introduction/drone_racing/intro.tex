@@ -1,4 +1,4 @@
-\section{What is drone racing?}
+\section{Drone racing: definition and implications}
 
 As in any race, competitors measure their skills at maneuvering their vehicle,
 from within or at distance, against the clock or against themselves, in an
@@ -28,13 +28,6 @@ drones for the larger audience. This kind of drones is not made for sportive
 flight, but mostly for an easy hands-on experience, providing a relatively slow
 but stable flight.
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\textwidth]{figure/tiny_me.jpg}
-	\caption{The AiR Lab and the custom-built obstacles around the author in Skejby}
-	\label{fig:mygates}
-\end{figure}
-
 The goal is to complete a given amount of turns as fast as possible, but since
 it is still the early days of drone racing and the costs of a potential crash
 would be too high, each drone races against the clock, one after another.
@@ -42,6 +35,13 @@ Ultimately, autonomous drones will be racing against skilled pilots, as the
 \emph{Drone Racing League} seems to encourage it by giving a total prize of 2
 millions USD for the race of 2019~\cite{LockheedDRL}.
 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{figure/tiny_me.jpg}
+	\caption{The AiR Lab and the custom-built obstacles around the author in Skejby}
+	\label{fig:mygates}
+\end{figure}
 
 \subsubsection{Challenges}
 
@@ -94,7 +94,14 @@ UAVs, is the cumulative complexity of each sub-problem to be solved, namely:
 
 This list is only a gross summary of the main challenges of autonomous drone
 racing, and only scratches the surface of all the issues that must be
-considered. The following section delves deeper into the specific problems
-that are solved in this thesis, after an analysis of the state of the art and
-the methods commonly used to solve those problems.
+considered. One core piece of logic in autonomous drone racing is the decision
+making. This is an entire topic on its own, and it is applied to many other
+areas, ranging from finance to artificial intelligence. In the case of
+autonomous drone racing, decisions have to be made constantly with regards to
+crossing gates, avoiding obstacles, or maintaining a course. A chapter is
+dedicated to this subject, further in this report.
+
+The following section delves deeper into the specific problems that are solved
+in this thesis, after an analysis of the state of the art and the methods
+commonly used to solve those problems.
 

@@ -1,4 +1,4 @@
-\section{The chosen approach}
+\section{Proposed approach}
 
 In order to make things easier and to be able to set tangible milestones, the
 challenge is split in two logical problems to be solved, one after the
@@ -41,12 +41,13 @@ In order to detect the closest gate's center, which is the point where the
 drone will have to fly through, the problem is simplified so that the output of
 the CNN can be directly used by the control logic, without any processing,
 except filtering. As shown on figure~\ref{fig:regionproposal}, the input image
-is treated as a grid of $N$ windows, numbered from $1$ to $N$, where the
-closest gate's center is either inside, or outside. The reason for the indexing
-to start at $1$ is justified by the presence of a ``virtual'' window, numbered
-$0$, which represents the absence of any gate center in the image. In total,
-$N+1$ region proposal windows are considered for the gate center detection
-algorithm, event though only $N$ windows actually split the image in a grid.
+is treated as a grid of $N$ windows, numbered from $1$ to $N$ and left to
+right, where the closest gate's center is either inside, or outside. The reason
+for the indexing to start at $1$ is justified by the presence of a ``virtual''
+window, numbered $0$, which represents the absence of any gate center in the
+image. In total, $N+1$ region proposal windows are considered for the gate
+center detection algorithm, event though only $N$ windows actually split the
+image in a grid.
 
 \begin{figure}[h!]
 	\center
