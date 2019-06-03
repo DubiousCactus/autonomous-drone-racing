@@ -30,7 +30,7 @@ text width=2.5cm,text centered,minimum width=.5cm, minimum height=3cm]
 \end{pgfonlayer}
 
 %% Control Nodes
-\node[control,node distance=5cm, minimum width=2cm,below of=cnn] (state)
+\node[control,node distance=6cm, minimum width=2cm,below of=cnn] (state)
     {State Machine};
 \node[control,right of=state,minimum width=0.5cm,minimum
     height=1cm,yshift=1cm,xshift=-.5cm,text width=1cm]
@@ -52,21 +52,20 @@ text width=2.5cm,text centered,minimum width=.5cm, minimum height=3cm]
 \draw[thick] (cnn) -- node[yshift=1em]{\emph{prediction}} (median);
 \draw[thick] (lidar.east) -- node[yshift=-3em,
     xshift=-0.5em]{\emph{height}} ++(1cm,0) |- (state);
-\draw[thick] (vicon) -| node[yshift=1em,
+\draw[thick] ($(vicon.south east)!0.33!(vicon.north east)$) -| node[yshift=2em,
     xshift=-10.5em]{\emph{pose}} ($(pid.north west)!0.33!(pid.north east)$);
-\draw[thick] (vicon) -| ($(pid.north west)!0.33!(pid.north east)+(0,1.5cm)$) -|
-    (safety.north);
+\draw[thick] ($(vicon.north east)!0.33!(vicon.south east)$) -| (safety.north);
 %\draw[thick] (pid.west) -- ($(state.north east)!0.17!(state.south east)$);
-\draw[thick] ($(state.north east)!0.5!(state.south east)$) -|
+\draw[thick] (state.east) -|
     node[xshift=-9em, yshift=-1em]{\emph{velocity command}}
-    ($(safety.south west)!0.33!(safety.south east)+(0,-0.5cm)$) --
     ($(safety.south west)!0.33!(safety.south east)$);
 \draw[thick] (pid) -- node[text width=2cm,yshift=.5cm]{\emph{velocity command}} (safety);
 \draw[thick] ($(safety.south west)!0.66!(safety.south east)$) |-
     node[xshift=-3em,yshift=-1em]{\emph{velocity command}}
     (low.east);
-\draw[thick] (median) -- node[xshift=5em,
-    yshift=-.5em]{\emph{filtered prediction}} ++(0,-1.5cm) -|($(pid.north
-    west)!0.68!(pid.north east)$);
-
+\draw[thick] ($(median.south east)!0.33!(median.south west)$) --
+    node[xshift=5em, yshift=-.5em]{\emph{filtered prediction}} ++(0,-2cm)
+    -|($(pid.north west)!0.68!(pid.north east)$);
+\draw[thick] ($(median.south west)!0.33!(median.south east)$) -- ++(0,-.5cm) -|
+    ($(state.north west)!0.68!(state.north east)$);
 \end{tikzpicture}
