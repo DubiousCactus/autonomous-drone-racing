@@ -3,15 +3,15 @@
 The process of generating a synthetic scene containing random meshes is done in
 several steps.\\
 
-In a first time, a virtual camera is initialized based on the real camera's intrinsic
+Firstly, a virtual camera is initialized based on the real camera's intrinsic
 parameters, from which a projection matrix can be derived.
 
 In a second time, a random choice of available meshes is spawned in the virtual
 scene, with random translations and rotations.
 
 The final step is to compute the closest gate to the camera being in its field
-of view, and project its center coordinates onto the image, so that a
-ground truth label can be inferred.
+of view, and project its center coordinates onto the image so that a ground
+truth label can be inferred.
 
 	\subsubsection{OpenGL scene}
 
@@ -34,7 +34,7 @@ not handle on-screen rendering. What needs to be understood is that OpenGL only
 ``renders'' things in a buffer, and it is the user's responsibility to
 instantiate a window and draw that buffer's content inside it, so it can be
 visible on a screen. That part is usually handled by other libraries to make
-this task easier, however it is out of scope for this work, where the render
+this task easier, however, it is out of scope for this work, where the render
 only needs to be saved to an image file.\\
 
 The 3D to 2D transformation process is executed by OpenGL's graphics pipeline.
@@ -43,17 +43,17 @@ It mainly consists of two consecutive actions.
 \begin{figure}[h]
 	\center
 	\includegraphics[width=0.99\textwidth]{figure/pipeline.png}
-	\caption[OpenGL transformations pipeline]{The OpenGL transformations
-	pipeline. Credits to learnopengl.com~\cite{LearnOpenGL} }
+	\caption[OpenGL transformations pipeline]{OpenGL transformations
+	pipeline. Credits to learnopengl.com~\cite{LearnOpenGL}.}
 	\label{fig:openglpipeline}
 \end{figure}
 
 For the first step, 3D coordinates are transformed to be in the normalized
 device coordinates space, which is in the [-1.0, 1.0] range and centered at the
-origin. Coordinates that are outside this space will not be visible on screen.
-The camera ``view'' matrix, derived from the extrinsic parameters is then used
-to apply transformations to the world coordinates, so that objects appear to be
-in front of the camera, from a relative point of view.
+origin. Coordinates that are outside this space will not be visible on the
+screen.  The camera ``view'' matrix, derived from the extrinsic parameters is
+then used to apply transformations to the world coordinates, so that objects
+appear to be in front of the camera, from a relative point of view.
 
 As for the second step, the projection matrix, derived from the view matrix and
 the camera intrinsics, applies further transformations to give a sense of
@@ -84,7 +84,7 @@ with a slight and negligible shift of a few centimeters.\\
 	\label{fig:coordinatesystem}
 \end{figure}
 
-As shown on figure~\ref{fig:openglpipeline}, several transformations happen
+As shown in Fig.~\ref{fig:openglpipeline}, several transformations happen
 before objects are rendered with perspective on the image frame. In OpenGL, it
 is important to know that the camera is considered to be the center of the
 world, in a fixed position and looking at the $-Z$-axis, while every object in
@@ -102,26 +102,9 @@ function commonly available in OpenGL wrappers and other computer graphics math
 libraries, such as \pyth{look_at(eye, target, up)} from the Python library
 \emph{Pyrr}~\cite{Pyrr}.
 
-\begin{figure}[h]
-	\center
-	\begin{python}
-		view = Matrix44.look_at(
-			# eye: position of the camera in world coordinates
-			self.drone_pose.translation,
-			# target: position in world coordinates where the camera is looking at
-			self.drone_pose.translation + (self.drone_pose.orientation *
-										   Vector3([1.0, 0.0, 0.0])),
-			# up: up vector of the camera.
-			self.drone_pose.orientation * Vector3([0.0, 0.0, 1.0])
-		)
-	\end{python}
-	\caption[The \pyth{look_at()} function]{Creating the view matrix via the
-	convenience \pyth{look_at()} function.}
-\end{figure}
-
 What the \pyth{look_at()} function does, is combining two transformations
-inversely: first the camera is translated from the eye position to the origin,
-then it is rotated from its orientation inferred from the target and up vectors
+inversely: first, the camera is translated from the eye position to the origin.
+Then, it is rotated from its orientation inferred from the target and up vectors
 towards the $-Z$-axis at the origin.
 
 It takes three arguments: the eye, the target, and the up vector. The eye is
@@ -135,7 +118,7 @@ the drone translation in the world frame.
 
 \begin{equation} \label{equ:targetvector}
 	\mathbf{t}_W = \mathbf{r}_W + \mathbf{q}_B^W\:\mathbf{\hat{x}}_B\:
-	(\mathbf{q}_{B}^{W})^{-1}
+	(\mathbf{q}_{B}^{W})^{-1},
 \end{equation}
 
 Finally, the up vector is a simple unit vector orthogonal to the camera's
@@ -145,7 +128,7 @@ rotation matrix composing the final view matrix, $M_{view}$.
 
 \begin{equation} \label{equ:upvector}
 	\mathbf{u}_W = \mathbf{r}_W + \mathbf{q}_B^W \:\mathbf{\hat{z}}_B\:
-	(\mathbf{q}_B^W)^{-1}
+	(\mathbf{q}_B^W)^{-1},
 \end{equation}
 
 ~\\Under the hood, the \pyth{look_at()} function constructs the view matrix
@@ -170,7 +153,7 @@ as a composition of a translation and a rotation matrix, expressed as such:
 							r_1 & r_5 & r_9 & r_1 t_x + r_5 t_y + r_9 t_z\\
 							r_2 & r_6 & r_10 & r_2 t_x + r_6 t_y + r_10 t_z\\
 							0 & 0 & 0 & 1
-						\end{bmatrix}
+						\end{bmatrix},
 \end{equation}
 
 where $M_T$ is
@@ -202,7 +185,7 @@ and $M_R$ is
 			u_x & u_y & u_z & 0\\
 			f_x & f_y & f_z & 0\\
 			0 & 0 & 0 & 1
-		\end{bmatrix}
+		\end{bmatrix}.
 \end{equation}
 
 \todo{Add derivation in appendix?}
@@ -240,7 +223,7 @@ projection.
 	\resizebox{240pt}{!}{
 		\input{include/dataset_generation/pin-hole_model.tex}
 	}
-	\caption[Pin-hole camera model]{The pin-hole camera model. Credits to
+	\caption[Pin-hole camera model]{Pin-hole camera model. Credits to
 	\cite{cfr}.}
 	\label{fig:pinholemodel}
 \end{figure}
@@ -265,13 +248,13 @@ recorded. The origin of the motion capture system being roughly at the center
 of the premise, it is trivial to set boundaries around the origin of the
 virtual world, that match the ones of the physical environment.\\
 
-The model transformation matrix of equation~\refer{equ:opengltransform} is a
+The model transformation matrix of equation~\ref{equ:opengltransform} is a
 combination of a translation and a rotation (note the importance of the order
 of the transformations), defined by the Hamilton product between $M_T$ and $q$
 as
 
 \begin{equation} \label{equ:modelmatrix}
-	M_{model} = M_T q 
+	M_{model} = M_T q,
 \end{equation}
 
 where $M_T$ is a $4 \times 4$ matrix inferred from a 3D vector where the $X$
@@ -285,7 +268,7 @@ order to ensure that a minimum distance is kept between all of them. This is
 done by re-computing the randomized vector until the Euclidean distance between
 every gate is above a certain threshold.\\
 
-On a last note, it must be acknowledged that there is no unit of measurement in
+Finally, it must be acknowledged that there is no unit of measurement in
 OpenGL. Indeed, it is the programmer's responsibility to define such unit, and
 design a world according to that choice.
 
@@ -319,7 +302,7 @@ equal to zero: that operation is called \emph{projection divide}. This results
 in a 3D vector of Cartesian coordinates in the normalized device space (within
 the range $[1.0, 1.0]$).
 
-Finally, a last transformation is needed to obtain image frame coordinates (in
+Finally, one last transformation is needed to obtain image frame coordinates (in
 pixel units), the \emph{viewport transform}:
 
 \begin{equation}
@@ -330,7 +313,7 @@ pixel units), the \emph{viewport transform}:
 	\begin{bmatrix}
 		\cfrac{w}{2} x_{ndc} + (x + \cfrac{w}{2})\\
 		\cfrac{h}{2} y_{ndc} + (y + \cfrac{h}{2})\\
-	\end{bmatrix}
+	\end{bmatrix},
 \end{equation}
 
 where $x_w$ and $y_w$ are the gate center coordinates in the window
@@ -343,7 +326,7 @@ Furthermore, to improve the correctness of the annotations and follow a human
 logic, an out-of-screen tolerance percentage is added to select a target gate
 even if its center is slightly outside of the viewport. In that way, the
 intuition of targeting a gate which is clearly visible, but whose center does
-not seem to be in the field of view , can be applied to the network.\\
+not seem to be in the field of view, can be applied to the network.\\
 
 For future improvements, the gate rotation is also computed, with respect to
 the camera. This is done by rotating the mesh by a factor of Pi when it is

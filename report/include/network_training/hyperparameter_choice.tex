@@ -13,9 +13,9 @@ stored on an SSD for optimal I/O throughput, is loaded in batches, and the
 images are augmented on the fly. Using a standard batch size of 32, as suggested
 by Loquercio~\etal~\cite{dronet}, the training data is in a different order at
 each iteration, and the image augmentations are randomized and applied on
-different base images at each epoch, thus increasing the amount of samples seen
+different base images at each epoch, thus increasing the number of samples seen
 by the network. The image augmentation process is discussed more thoroughly in
-a chapter 4.\\
+Chapter 4.\\
 
 Concerning the optimization algorithm, Adam~\cite{Adam}, its hyper-parameters
 such as the learning rate and the decay factor were left to their default
@@ -27,15 +27,6 @@ A recurrent issue that was observed was the loss converging too early during
 the training, needing to damper the learning rate every few iterations. To
 automate this, the convenient callback offered by Keras,
 \pyth{ReduceLROnPlateau}, is added to the optimization process.
-
-\begin{figure}[h]
-    \centering
-    \caption{Keras' convenient ReduceLROnPlateau callback function.}
-    \begin{python}
-        reduce_lr = ReduceLROnPlateau(monitor="val_loss",
-            factor=0.9, patience=5, verbose=1)
-    \end{python}
-\end{figure}
 
 Its role is to detect the presence of a ``plateau'' in the learning curve, by
 using a given threshold for the validation loss difference over a certain

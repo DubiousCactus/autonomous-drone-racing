@@ -1,9 +1,10 @@
 \clearpage
-\subsection{Realism analysis}
+\subsection{Realism analysis} \label{section-realism}
 
-A t-SNE analysis, for \emph{t-distributed stochastic neighbor embedding}, of
-the generated mixed-reality images and real images captured from the UAV's
-camera, is given as a comparison in figure~\ref{fig:tsne}.
+A t-SNE analysis, for \emph{t-distributed stochastic neighbor
+embedding}~\cite{TSNE}, of the generated mixed-reality images and real images
+captured from the UAV's camera, is given as a comparison in
+figure~\ref{fig:tsne}.
 
 \begin{figure}[h!]
    \centering
@@ -19,7 +20,7 @@ camera, is given as a comparison in figure~\ref{fig:tsne}.
 
 This dimensionality reduction technique is very useful to visualize high
 dimensional data such as images. The $640 \times 480$ images used for
-comparison are so dimensionaly high that PCA (Principal Component Analysis)
+comparison are so dimensionally high that PCA (Principal Component Analysis)
 needs to be applied first, otherwise the t-SNE algorithm would be too sensitive
 to noise, and the computation of pairwise distances between the samples would
 be too slow.\\
@@ -30,11 +31,11 @@ sample distribution. After applying the k-means clustering algorithm (with
 k=8), several small clusters can be observed on the plots, which means there
 are possible disparities between the real and fake images. To push the analysis
 further and attempt to explain the origin of this clustering, a few samples are
-picked from cluster D and F, which are the farest appart. Three samples of each
+picked from cluster D and F, which are the farthest apart. Three samples of each
 cluster are randomly selected from the two clusters, and are compared to each
 other on figure~\ref{fig:clustering}. What stands out is the different view
 angles on the pictures, resulting in very different backgrounds for each
-cluster, and therefore differnt pixel intensities. It is now clear that this
+cluster, and therefore different pixel intensities. It is now clear that this
 clustering is the result of the different backgrounds, and seemingly not the
 gates themselves. This conclusion does not come as a surprise, because the
 obstacles are so thin that they are barely visible compared to the rest of the
@@ -107,5 +108,5 @@ Overall, the generation of synthetic gates can be considered a success, as
 it is not obvious whether an image comes from the synthetic dataset or the real
 test dataset, in some cases. Naturally, a subjective opinion is not enough to
 confirm the viability of the obtained results, and the t-SNE analysis provides
-the additional arguments to lean on this hypothesis.
+additional arguments to lean on this hypothesis.
 \clearpage

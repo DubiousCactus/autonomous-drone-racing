@@ -25,13 +25,24 @@ represent a random portion of a racing circuit, as seen from the drone's field
 of view. 
 
 \begin{figure}[h]
-	\center
-	\includegraphics[width=\textwidth]{figure/dataset_solution.png}
-	\caption[The steps of a semi-synthetic image generation.]{A decomposition
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{figure/dataset_solution_1.png}
+		\caption{Background only.}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{figure/dataset_solution_2.png}
+		\caption{Projection only.}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{figure/dataset_solution_3.png}
+		\caption{Combined image.}
+	\end{subfigure}
+	\caption[The steps of a semi-synthetic image generation.]{Decomposition
 	of the making of a semi-synthetic image, representing randomly positioned
 	3D models of randomly selected gates overlaid on top of a randomly selected
 	real-world background image. The virtual scene's camera is positioned and
-	oriented using the exact configuration of the background image, so that
+	oriented using the exact configuration of the background image so that
 	both perspectives match. The perspective grid is kept for visualization
 	purposes.}
 \end{figure}
@@ -41,9 +52,9 @@ In order to do so, several requirements have to be met.\\
 Firstly, a motion capture system, such as the ones used in the movie production
 industry, is used to record the position and orientation of the drone in 3D
 space, also known as the extrinsic parameters of the camera. This is crucial
-for the generation of a virtual scene whose perspective matches to the
-perfection the perspective of the drone, so that the generated scene can later
-be overlaid onto the real scene.
+for the generation of a virtual scene whose perspective matches perfectly the
+perspective of the drone so that the generated scene can later be overlaid
+onto the real scene.
 
 Secondly, the virtual camera must be a perfect model of the actual camera used
 to capture the background images, since the perspective calculation is derived
@@ -53,7 +64,7 @@ them to the virtual camera.
 
 Finally, the dimensions of the virtual scene must be in accordance with the
 actual dimensions of the physical space where the dataset of background images
-was recorded, otherwise unwanted artifacts such as gates being visible outside
+was recorded, otherwise, unwanted artifacts such as gates being visible outside
 the confinement of the real scene could be produced. The same reasoning can be
 applied to the 3D models of gates or obstacles, since their scale most likely
 matters for the usage of the generated images.\\

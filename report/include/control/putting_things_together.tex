@@ -1,4 +1,4 @@
-\section{Putting things together}
+\section{Decision making}
 
 As stated previously, the controller is implemented as a ROS node, and
 subscribes to two topics:
@@ -83,6 +83,7 @@ the crossing condition:
 			\EndFor
 
 			\Return $\textit{crossing}$
+
 		\EndProcedure
 	\end{algorithmic}
 \end{algorithm}
@@ -92,7 +93,7 @@ valid predictions, which does not scale to different amounts of windows.
 Ideally, the prediction model would be robust enough that with some filtering,
 a simple falling edge could engage the drone to cross the gate.\\
 
-On a last note, the autonomous system was tested in real conditions, and was
+Finally, the autonomous system was tested in real conditions, and was
 able to detect, target and successfully cross different gates of different
 shapes and colors, among a few failures. Since the performance of the PID
 controller cannot be evaluated and rigorously tested without spending more time

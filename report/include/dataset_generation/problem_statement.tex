@@ -5,7 +5,7 @@ convolutional neural networks.
 \subsection{Problem statement}
 
 To properly train a convolutional neural network, it is crucial to collect a
-balanced dataset representing all possible cases as to produce a robust and
+balanced dataset representing all possible cases to produce a robust and
 stable model. This task can be tedious, especially for the case of supervised
 learning where each sample must be annotated with the desired learned output.\\
 
@@ -13,7 +13,7 @@ The use of synthetic datasets in deep learning, and more specifically in
 computer vision, is not common but neither unheard-of. An early work from
 Vasquez \etal~\cite{PedestrianDetection} presented a study of the use computer
 graphics to render virtual scenes and images of pedestrians, and the potential
-adaptation for real world usage of classifiers trained on such synthetic
+adaptation for real-world usage of classifiers trained on such synthetic
 dataset. Even though the approach is based on engineered feature detection
 methods (such as HOG -- Histogram Of Gradients), and not deep convolutions, the
 final statement is still valid: there is a noticeable domain shift for
@@ -25,7 +25,7 @@ for synthetic pedestrians integration on unannotated real-world background
 images. The novelty lies in the fact that since no annotations are used for the
 background dataset, they developed an algorithm to calibrate the virtual
 camera, compute the right pedestrians scale and infer a ``Spawn Probability
-Map'' from features in the image. This method allow them to overlay synthetic
+Map'' from features in the image. This method allows them to overlay synthetic
 pedestrians onto any background image, while respecting the scale of the
 environment and the obstacles depicted in the picture.\\
 

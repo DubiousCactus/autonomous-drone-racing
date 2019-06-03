@@ -15,14 +15,14 @@ decent performance on the training dataset. A good and objective metric to
 monitor the efficiency of a model is the accuracy percentage, defined as:
 
 \begin{equation}
-	\frac{TP+TN}{TP+TN+FP+FN}
+	\frac{TP+TN}{TP+TN+FP+FN},
 \end{equation}
 
 with $TP$ and $TN$ being the number of \emph{true positives} and \emph{true
-negatives}, and $FP$ and $FN$ being the amount of \emph{false positives} and
+negatives}, and $FP$ and $FN$ being the number of \emph{false positives} and
 \emph{false negatives}.\\
 
-A model that is able to fit to a training set should see its training accuracy
+A model that is able to fit a training set should see its training accuracy
 (measured over the said dataset) progressively rising, and converging to a
 decent value. In theory, if a network has the capacity to learn and optimize
 over a given objective function, its accuracy should converge to 100\%, given
@@ -56,7 +56,7 @@ expecting an overall decrease of the cost function.
 Nevertheless, it is often the case that a gap is observed between the training
 and validation metrics, simply because of the dataset size difference and also
 the fact that the network will obviously perform better on the data it has been
-learning with. However, if that gap is widening over significant amount of
+learning with. However, if that gap is widening over a significant amount of
 training iterations, one can consider the case of overfitting, and conclude
 that the model is not generalizing its learning.\\
 

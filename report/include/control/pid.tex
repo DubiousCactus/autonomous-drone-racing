@@ -43,14 +43,15 @@ integral and derivative of the error function, thus giving it this name.
 The PID controller can be expressed mathematically as
 
 \begin{equation}
-	u(t) = k_p e(t) + k_i \int\limits_0^t e(t^{\prime}) dt^{\prime} + k_d \frac{de(t)}{dt}
+	u(t) = k_p e(t) + k_i \int\limits_0^t e(t^{\prime}) dt^{\prime} + k_d
+	\frac{de(t)}{dt},
 \end{equation}
 
 where $k_p$, $k_i$, and $k_d$ are the coefficients of the proportional,
 integral and derivative terms, respectively, and $e(t)$ is the error at time
 $t$.
 
-The error function is typically the difference between the desired setpoint,
+The error function is typically the difference between the desired setpoint
 and the current setpoint. The three terms need to be properly weighted, through
 fine-tuning of their respective gains, as to properly minimize the error
 over time.
@@ -74,28 +75,4 @@ of this phenomenon if its coefficient is set too high.\\
 
 For this specific implementation, there are in fact two independent PID
 controllers: one for the $Z$-axis in the body frame and responsible for
-vertical alignment, and a second one for the yaw rotation of the UAV. The
-function responsible for calculating the two velocity components is shown in
-the following listing:
-
-\begin{lstlisting} 
-Velocity PID::Compute(Vector3d err, Velocity current_velocity)
-{
-	this->err_integral += err * (1./this->rate);
-	Vector3d err_derivative = -current_velocity.linear;
-	double z = this->gain_z.at("p") * err.y
-		+ this->gain_z.at("i") * this->err_integral.y
-		+ this->gain_z.at("d") * err_derivative.z;
-
-	double yaw = this->gain_yaw.at("p") * err.x
-		+ this->gain_yaw.at("i") * this->err_integral.x
-		+ this->gain_yaw.at("d") * -current_velocity.yaw;
-
-	Vector3d linVel(this->x_velocity, 0, z);
-	Velocity vel;
-	vel.linear = linVel;
-	vel.yaw = yaw;
-
-	return vel;
-}
-\end{lstlisting}
+vertical alignment, and a second one for the yaw rotation of the UAV.

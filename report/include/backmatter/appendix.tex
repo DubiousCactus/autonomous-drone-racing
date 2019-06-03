@@ -1,1 +1,59 @@
 \chapter{Appendix 1}
+
+\begin{figure}[h]
+	\center
+	\begin{python}
+		view = Matrix44.look_at(
+			# eye: position of the camera in world coordinates
+			self.drone_pose.translation,
+			# target: position in world coordinates where the camera is looking at
+			self.drone_pose.translation + (self.drone_pose.orientation *
+										   Vector3([1.0, 0.0, 0.0])),
+			# up: up vector of the camera.
+			self.drone_pose.orientation * Vector3([0.0, 0.0, 1.0])
+		)
+	\end{python}
+	\caption[The \pyth{look_at()} function]{Creating the view matrix via the
+	convenience \pyth{look_at()} function.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \begin{python}
+        def add_noise(self, img):
+            noisy_img = random_noise(img, mode='gaussian',
+                                     var=self.noise_amount**2)
+            noisy_img = (255*noisy_img).astype(np.uint8)
+            return Image.fromarray(noisy_img)
+    \end{python}
+    \caption{Gaussian noise added to the generated image.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \begin{python}
+        def apply_motion_blur(self, img: Image, amount=0.5):
+            cv_img = np.array(img)
+            if self.no_blur: return cv_img
+            if amount <= 0.3:
+                size = 3
+            elif amount <= 0.7:
+                size = 5
+            else:
+                size = 9
+            kernel = np.identity(size)
+            kernel /= size
+            return cv2.filter2D(cv_img, -1, kernel)
+    \end{python}
+    \caption{Synthetic motion blur applied to the generated image.}
+\end{figure}
+
+
+\begin{figure}[h]
+    \centering
+    \begin{python}
+        reduce_lr = ReduceLROnPlateau(monitor="val_loss",
+            factor=0.9, patience=5, verbose=1)
+    \end{python}
+    \caption{Keras' convenient ReduceLROnPlateau callback function.}
+\end{figure}

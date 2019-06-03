@@ -2,7 +2,7 @@ During the training phase, the model is evaluated at each epoch on the same set
 of validation data. However, this set is made of semi-synthetic image samples,
 generated in the same way as for the training set. Even though they are
 generated independently, and are very unlikely to comprise identical samples,
-they still do not reflect the real target data (as demonstrated in section
+they still do not reflect the real target data (as demonstrated in Section
 \ref{section-realism}).\\
 
 
@@ -43,11 +43,12 @@ the projected gate center coordinates end up being shifted on the image.
 		\caption{Proper ground truth on the test dataset.}
 		\label{fig:good-gt}
 	\end{subfigure}
-	\caption[Shifted and proper ground truth projection]{}
+	\caption[Shifted and proper ground truth projection]{Shifted and proper
+	ground truth projection (find more at https://todo.url/)}
 \end{figure}
 
 This discrepancy can grow big enough, in some cases, that the annotations of
-the test dataset become unusable (see figure~\ref{fig:bad-gt}). To evaluate the
+the test dataset become unusable (see Fig.~\ref{fig:bad-gt}). To evaluate the
 model's performance on images of real gates, a video is generated from the
 ordered sequence of test images where predictions have been annotated as visual
 clues. This method allowed to simply estimate the model accuracy subjectively,
@@ -58,10 +59,10 @@ overfitting problem.\\
 	\centering
 	\includegraphics[width=0.7\textwidth]{figure/window_placement.png}
 	\caption[Window placement and the need for a custom loss function]
-		{The left-to-right window placement prevents the use of a simple
+		{Left-to-right window placement prevents the use of a simple
 		weighted linear loss function. Even though window 19 and 21 are
 		supposedly close to each other, their placement on the image makes it
-		cruicial to set a higher penalty for window 21, than for window 14.}
+		crucial to set a higher penalty for window 21, than for window 14.}
 	\label{fig:window-placement}
 \end{figure}
 
@@ -71,7 +72,7 @@ the amount of region proposal windows, an exponential penalty would be applied
 to the prediction via a set of rules, such that windows adjacent to the ground
 truth carry lower penalties than windows further apart. Obviously, this depends
 on the window placement, since these are numbered from left to right, as
-depicted on figure~\ref{fig:window-placement}.
+depicted in Fig.~\ref{fig:window-placement}.
 
 Such loss function is not currently implemented in this work, but it would be a
 valuable addition for future improvements. Not only would it improve the

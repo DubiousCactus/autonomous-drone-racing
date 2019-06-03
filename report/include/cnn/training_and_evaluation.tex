@@ -7,14 +7,14 @@ knowledge and experimentation through trial and error.
 
 	\subsubsection{Dataset choice}
 
-The most crucial part in training a deep learning model is the collection of a
+The most crucial part of training a deep learning model is the collection of a
 proper dataset. Ideally, the dataset used in the training phase should be an
 exact representation of the data targeted for the model, such that the
 aggregated knowledge does not differ from the intended application.\\
 
 Moreover, an important factor in the creation of a dataset is its statistical
 equilibrium. By having balanced samples, meaning an even amount of each
-category for instance, the network's probability of prioritizing one prediction
+category, for instance, the network's probability of prioritizing one prediction
 over the others is lessened, thus making it less biased and more accurate.\\
 
 The size of the dataset has a lot of importance, especially in the
@@ -41,10 +41,10 @@ iteration over the full training set, but another alternative is to apply the
 famous cross validation method~\cite{CrossVal} in cases where it cannot be
 afforded to sacrifice training data for the validation step.
 
-	\subsubsection{Hyper-parameter tuning}
+	\subsubsection{Hyperparameter tuning}
 
 During the training phase, a lot of time and effort can be spent on choosing
-the right hyper-parameters, as to maximize the model accuracy while minimizing
+the right hyperparameters, as to maximize the model accuracy while minimizing
 its training time.
 
 The number of epochs, the batch size, the learning rate or even the optimizer
@@ -79,10 +79,10 @@ states, \emph{``pluralitas non est ponenda sine necessitate''}, which can be
 transcribed as ``simpler solutions are more likely to be correct than complex
 ones''. This hypothesis is often used in the field of deep learning, where it
 has been observed that simpler networks with fewer parameters have a lesser
-tendency to over fit on the training data, and overall generalize better.\\
+tendency to overfit on the training data, and overall generalize better.\\
 
 Regularization methods can range from weight penalties, using the L1- or
-L2-norm (also known as Least Absolute Deviation and Lest Squares regressions),
+L2-norm (also known as Least Absolute Deviation and Least Squares regressions),
 to more stochastic techniques such as dropout~\cite{Dropout} or
 cutout~\cite{Cutout} (which is intended for CNNs). In the same way as
 hyper-parameter tuning, proper regularization is often found through trial and

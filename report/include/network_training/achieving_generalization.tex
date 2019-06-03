@@ -7,30 +7,30 @@ blur seen on real images captured from the UAV in flight.\\
 To verify this hypothesis, an image augmentation pipeline was added to the
 batch loading process of the network training. In essence, every new batch of
 data samples goes through randomized image transformations, ranging from
-channel shift and gamma contrast shuffling to additive gaussian noise and
+channel shift and gamma contrast shuffling to additive Gaussian noise and
 simulated motion blur. Those transformations do not happen in a sequence for
 each image of the batch, but rather have different chances of being applied.
 
 The result is a dataset that is augmented differently at every iteration of the
-training (as depicted on figure~\ref{fig:augmentation}), thus theoretically
+training (as depicted in Fig.~\ref{fig:augmentation}), thus theoretically
 introducing an infinite amount of image variations.
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=\textwidth]{figure/grid_aug6.jpg}
-	\caption{Few samples of random image transformations applied to one batch.}
-	\label{fig:augmentation}
+    \centering
+    \includegraphics[width=\textwidth]{figure/augmentation.jpg}
+    \caption{Few samples of random image transformations applied to one batch.}
+    \label{fig:augmentation}
 \end{figure}
 
-The effect of applying the said augmentations to the dataset can be seen on
-figure~\ref{plot:mobilenetv2-aug}, where each plot compares the augmentation
+The effect of applying the said augmentations to the dataset can be seen in
+Fig.~\ref{plot:mobilenetv2-aug}, where each plot compares the augmentation
 results to their base counterpart. An interesting phenomenon that is visible on
-every plot, is the drastic reduce in fluctuation of the validation loss and
+every plot, is the drastic reduction in fluctuation of the validation loss and
 accuracy. This can be explained by the fact that the network gets slightly
 altered versions of the input at each iteration, and is therefore able to
 generalize slightly better. As for the performance of the model, it is visible
-that the overfitting is reduced, especially on
-figure~\ref{plot:mobilenetv2-aug-val-large} where the optimal model topology
+that the overfitting is reduced, especially in
+Fig.~\ref{plot:mobilenetv2-aug-val-large} where the optimal model topology
 minimizes with a constantly positive rate when trained on the augmented
 training set.\\
 
@@ -46,7 +46,7 @@ would suggest. This makes perfect sense, as the generated dataset contains very
 intricate gate configurations which do not represent real world scenarios. This
 over-complexification of the problem is an asset that is helpful to train a
 robust model. The end result is an alleged gap between test accuracy and
-validation accuracy, but in the good way: the model performs better on real
+validation accuracy, but in a good way: the model performs better on real
 world test data than on synthetic images, supposedly.\\
 
 To confirm this hypothesis, a proper test dataset with correct ground truth is

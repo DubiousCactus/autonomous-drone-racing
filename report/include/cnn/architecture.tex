@@ -30,38 +30,36 @@ a one-hot (or multi-hot) encoded vector is usually used as ground truth label,
 meaning that the expected output of the network is a vector of size $N$ for $N$
 classes.
 
-\begin{wrapfigure}{r}{0.4\textwidth}
-	\begin{center}
-		\begin{tikzpicture}[node distance=1cm,box/.style = {draw,rectangle, minimum width=1cm,minimum height=1cm}]]
-			\node (bird) {Bird};
-			\node[right of=bird,box,xshift=0.2cm] (n1) {0};
-			\node[right of=n1,box] (n2) {0};
-			\node[right of=n2,box] (n3) {1};
-
-			\node[node distance=1.3cm,above of=bird] (cat) {Cat};
-			\node[right of=cat,box,xshift=0.2cm] (n4) {0};
-			\node[right of=n4,box] (n5) {1};
-			\node[right of=n5,box] (n6) {0};
-
-			\node[node distance=1.3cm,above of=cat] (dog) {Dog};
-			\node[right of=dog,box,xshift=0.2cm] (n7) {1};
-			\node[right of=n7,box] (n8) {0};
-			\node[right of=n8,box] (n9) {0};
-
-			\node[above of=n7,rotate=90] (dog2) {Dog};
-			\node[above of=n8,rotate=90] (cat2) {Cat};
-			\node[above of=n9,rotate=90] (bird2) {Bird};
-		\end{tikzpicture}
-	\end{center}
-	\caption{One-hot encoding of 3 classes.}
-	\label{fig:onehot}
-\end{wrapfigure}
-
-
 A one-hot encoded vector is a simple representation of the class to which a
 given image belongs, where every value is either 0 for the indices
 corresponding to the classes which the image does not belong to, or 1 otherwise
-(see figure~\ref{fig:onehot}).\\
+(see figure~\ref{fig:onehot}).
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[node distance=1cm,box/.style = {draw,rectangle, minimum width=1cm,minimum height=1cm}]]
+		\node (bird) {Bird};
+		\node[right of=bird,box,xshift=0.2cm] (n1) {0};
+		\node[right of=n1,box] (n2) {0};
+		\node[right of=n2,box] (n3) {1};
+
+		\node[node distance=1.3cm,above of=bird] (cat) {Cat};
+		\node[right of=cat,box,xshift=0.2cm] (n4) {0};
+		\node[right of=n4,box] (n5) {1};
+		\node[right of=n5,box] (n6) {0};
+
+		\node[node distance=1.3cm,above of=cat] (dog) {Dog};
+		\node[right of=dog,box,xshift=0.2cm] (n7) {1};
+		\node[right of=n7,box] (n8) {0};
+		\node[right of=n8,box] (n9) {0};
+
+		\node[above of=n7,rotate=90] (dog2) {Dog};
+		\node[above of=n8,rotate=90] (cat2) {Cat};
+		\node[above of=n9,rotate=90] (bird2) {Bird};
+	\end{tikzpicture}
+	\caption{One-hot encoding of 3 classes.}
+	\label{fig:onehot}
+\end{figure}
 
 Nevertheless, there are many other possible output formats for convolutional
 neural networks, such as another image for the case of auto-encoders or image
@@ -80,12 +78,12 @@ fashion.\\
 
 The convolution layer owns its naming to the convolution operator, which
 consists of summing up the element-wise multiplication between two matrices. In
-the case of a CNN, the input layer -- either the input image, or an activation
+the case of a CNN, the input layer -- either the input image or an activation
 map produced by a convolution layer -- is convolved with a relatively small
 feature detection matrix, called a kernel or filter. The former is learnt by the
 network during the training phase, and can be very different from layer to
 layer, providing different features detection such as edges, contours, curves,
-colors, shapes \emph{etc}\ldots
+colors and shapes.
 
 The kernel is slid over the convolved tensor by $N$ pixels (usually 1), called
 the stride, and this dot-product is then appended to the output tensor named
@@ -124,7 +122,7 @@ layers.
 	\centering
 	\input{include/cnn/pooling_black.tex}
 	\input{include/cnn/pooling_white.tex}
-	\caption{Max pooling VS average pooling.}
+	\caption{Max pooling vs. average pooling.}
 	\label{fig:pooling}
 \end{figure}
 
@@ -139,7 +137,7 @@ explained by how each layer computes its outputs, as in the following naive
 single-layer perceptron (\ref{linear_perceptron}):
 
 \begin{equation} \label{linear_perceptron}
-	f(o_i) = \displaystyle\sum_{j=0}^{N} w_{ij}x_j+\beta_0
+	f(o_i) = \displaystyle\sum_{j=0}^{N} w_{ij}x_j+\beta_0,
 \end{equation}
 
 
@@ -153,14 +151,14 @@ In order to introduce linearity, an activation function is added to the
 equation, as such:
 
 \begin{equation} \label{nonlinear_perceptron}
-	f(o_i) = \phi(\displaystyle\sum_{j=0}^{N} w_{ij}x_j+\beta_0)
+	f(o_i) = \phi(\displaystyle\sum_{j=0}^{N} w_{ij}x_j+\beta_0),
 \end{equation}
 
 There exist different activation functions, such as the commonly used ReLU (for
 Rectified Linear Units) defined as:
 
 \begin{equation} \label{relu}
-	f(x) = max(0, x)
+	f(x) = max(0, x),
 \end{equation}
 
 The reason why ReLU and its variants are so widely used in the state-of-the-art
@@ -186,7 +184,7 @@ its sparse activation in randomly initialized networks.
 			\addplot+[domain=-5:4.5,samples=100,thick,mark=none,blue] {(x>=0)*x};
 		\end{axis}
 	\end{tikzpicture}
-	\caption{The ReLU activation function.}
+	\caption{ReLU activation function.}
 \end{figure}
 
 By adding non-linear activation functions at the output of every layer in a
@@ -202,7 +200,7 @@ activation, fully connected} is being surpassed by more sophisticated
 architectures like \emph{deep residual networks} which outperform most
 convolutional neural networks in the field of image recognition.\\
 
-Originally introduced by He \etal~\cite{He_2016_CVPR}, deep residual networks
+Originally introduced in~\cite{He_2016_CVPR}, deep residual networks
 provide a way of constructing very deep convolutional neural networks, while
 leveraging the power of residual blocks to greatly reduce the number of
 parameters.
@@ -223,11 +221,11 @@ filters, thus the appellation ``vanishing'' gradients. On the other hand,
 ``exploding'' gradients are the result of the back-propagation of gradients
 with an activation function that can produce larger values, such as ReLU.\\
 
-The idea introduced with residual networks, is to pass information from
+The idea introduced with residual networks is to pass information from
 higher-level layers in the hierarchy to layers further down, as to provide
 additional information on the input. In truth, the deeper layers of a CNN can
 lack of context over their given activation map, and by preserving information
-across the network, results have shown that it not only performs better, but
+across the network, results have shown that it not only performs better but
 as Veit \etal~\cite{ResnetBehavior} have pointed out, the performance of the
 network is more evenly spread across its layers than regular networks like
 VGG-16, where removing one layer can cause a drastic decrease in accuracy.
@@ -252,14 +250,14 @@ VGG-16, where removing one layer can cause a drastic decrease in accuracy.
 
 	\end{tikzpicture}
 	\label{fig:resblock}
-	\caption{The building block of deep residual learning.}
+	\caption{Building block of deep residual learning.}
 \end{figure}
 
 More precisely, every block of stacked layers is made to fit a residual
 mapping, instead of the desired underlying mapping, expressed as:
 
 \begin{equation}
-	\mathcal{F}(x):=\mathcal{H}(x)-x
+	\mathcal{F}(x):=\mathcal{H}(x)-x,
 \end{equation}
 
 where $\mathcal{H}(x)$ is the desired function to be fit, and $x$ is the output of a

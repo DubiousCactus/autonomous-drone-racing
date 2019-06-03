@@ -1,0 +1,118 @@
+\section{COAXIAL HEXACOPTER DYNAMICS}
+\label{sec:model}
+
+The global fixed frame is $\mathcal{F}_E = \{\vec{\mathbf{x}}_E, \vec{\mathbf{y}}_E, \vec{\mathbf{z}}_E\}$ and the body frame is $\mathcal{F}_B = \{\vec{\mathbf{x}}_B, \vec{\mathbf{y}}_B, \vec{\mathbf{z}}_B\}$. By assuming UAV as a rigid body, the origin of $\mathcal{F}_B$ is located at the centre of gravity (CG) of UAV. Fig.~\ref{fig:tricopter} illustrates a coaxial hexacopter configuration with its reference frames. The position of UAV is given by 3D Cartesian coordinates $\mathbf{p} = \begin{bmatrix} x & y & z \end{bmatrix}^T \in \mathbb{R}^3$, while the attitude by 3D Euler's angles $\mathbf{o} = \begin{bmatrix} \phi & \theta & \psi\end{bmatrix}^T \in \mathbb{R}^3$. The time derivative of the position gives the velocity $\mathbf{v} = \begin{bmatrix}\dot{x} & \dot{y} & \dot{z}\end{bmatrix}^T = \begin{bmatrix} u & v & w \end{bmatrix}^T \in \mathbb{R}^3$ of UAV in $\mathcal{F}_E$, while $\mathbf{v}_B \in \mathbb{R}^3$ is the velocity of UAV in $\mathcal{F}_B$. The relation between $\mathbf{v}$ and $\mathbf{v}_B$ is given by
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\mathbf{v} = \mathbf{R} \mathbf{v}_B,
+\label{eq:linear_velocity}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+in which $\mathbf{R} \in \mathsf{SO}(3)$ is the rotation matrix from $\mathcal{F}_B$ to $\mathcal{F}_E$:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\mathbf{R} = \begin{bmatrix}c_{\psi} c_{\theta} & c_{\psi} s_{\phi} s_{\theta} - c_{\phi} s_{\psi} & s_{\phi} s_{\psi} + c_{\phi} c_{\psi} s_{\theta} \\ c_{\theta} s_{\psi} & c_{\phi} c_{\psi} + s_{\phi} s_{\psi} s_{\theta} & c_{\phi} s_{\psi} s_{\theta} - c_{\psi} s_{\phi} \\ -s_{\theta} & c_{\theta} s_{\phi} & c_{\phi} c_{\theta}\end{bmatrix},
+\label{eq:rotation_matrix}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+where $c_{\star}$ and $s_{\star}$ are $\cos\star$ and $\sin\star$, respectively. The angular velocities are obtained from the time derivative of the attitude $\boldsymbol{\omega} = \begin{bmatrix}\dot{\phi} & \dot{\theta} & \dot{\psi}\end{bmatrix}^T \in \mathbb{R}^3$ in $\mathcal{F}_W$ and $\boldsymbol{\omega}_B = \begin{bmatrix} p & q & r \end{bmatrix}^{T} \in \mathbb{R}^3$ in $\mathcal{F}_B$, with the following relation:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\boldsymbol{\omega} = \mathbf{T} \boldsymbol{\omega}_B,
+\label{eq:angular_velocity_transformation}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+in which $\mathbf{T}$ is the coordinate transformation matrix:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\mathbf{T} = \begin{bmatrix} 1 & s_{\phi} t_{\theta} & c_{\phi} t_{\theta} \\ 0 & c_{\phi} & -s_{\phi} \\ 0 & \frac{s_{\phi}}{c_{\theta}} & \frac{c_{\phi}}{c_{\theta}} \end{bmatrix},
+\end{equation}
+%%%%%%%%%%%%%%%%%
+where $t_{\star}$ denotes $\tan\star$.
+
+\begin{figure}[!b]
+\centering
+\includegraphics[width=3in]{Tricopter-Y6-cropped_new}
+\caption{The model of Y6 coaxial hexacopter.}
+\label{fig:tricopter}
+\end{figure}
+
+The rigid body dynamic equations are derived using the Newton-Euler formulation in the body
+frame:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\begin{cases}
+m \dot{\mathbf{v}} = \mathbf{F} \\
+\mathbf{I} \dot{\boldsymbol{\omega}}_B = -\boldsymbol{\omega}_B \times \mathbf{I} \boldsymbol{\omega}_B + \boldsymbol{\tau}
+\end{cases},
+\label{eq:dynamic_equations}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+where $m$ is the mass of UAV, $\mathbf{I} = \mathrm{diag}(I_x, I_y, I_z)$ is the matrix of moments of inertia, $\boldsymbol{\tau} = \begin{bmatrix} \tau_p & \tau_q & \tau_r \end{bmatrix}^T$ is the torques vector and $\mathbf{F}$ is the forces vector \cite{Mellinger2011ICRA}:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\mathbf{F} = \begin{bmatrix} -\left( c_{\phi} s_{\theta} c_{\psi} + s_{\phi} s_{\psi} \right) T \\ -\left( c_{\phi} s_{\theta} s_{\psi} - s_{\phi} c_{\psi} \right) T \\ -c_{\phi} c_{\theta} T + mg\end{bmatrix},
+\label{eq:forces}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+where $g$ is the gravitational force. Finally, from the dynamic and kinematic equations (\ref{eq:linear_velocity}), (\ref{eq:angular_velocity_transformation}) and (\ref{eq:dynamic_equations}), the coaxial hexacopter model is derived \cite{Sarabakha2016CDC}:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\begin{cases}
+\dot{x} = u & \dot{u} = -\frac{c_{\phi} c_{\psi} s_{\theta} + s_{\phi} s_{\psi}}{m} T \\
+\dot{y} = v & \dot{v} = -\frac{c_{\phi} s_{\psi} s_{\theta} - c_{\psi} s_{\phi}}{m} T \\
+\dot{z} = w & \dot{w} = -\frac{c_{\phi} c_{\theta}}{m} T + g \\
+\dot{\phi} = p + s_{\phi} t_{\theta} q + c_{\phi} t_{\theta} r & \dot{p} =  \frac{I_y - I_z}{I_x} q r + \frac{1}{I_x} \tau_p \\
+\dot{\theta} = c_{\phi} q - s_{\phi} r & \dot{p} =  \frac{I_z - I_x}{I_y} p r + \frac{1}{I_y} \tau_p \\
+\dot{\psi} = \frac{s_{\phi}}{c_{\theta}} p + \frac{c_{\phi}}{c_{\theta}} r & \dot{r} =  \frac{I_x - I_y}{I_z} q r + \frac{1}{I_z} \tau_r
+\end{cases},
+\label{eq:model}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+
+Coaxial hexacopter has six rotors: the top three of them rotate clockwise, while the bottom three rotate counter-clockwise. The six rotors generate six forces ($F_1$, $F_2$, $F_3$, $F_4$, $F_5$  and $F_6$), directed along $\vec{\mathbf{z}}_B$, and six torques ($\tau_1$, $\tau_2$, $\tau_3$, $\tau_4$, $\tau_5$  and $\tau_6$):
+%%%%%%%%%%%%%%%%
+\begin{equation}
+\begin{cases}
+F_i &= b \Omega_i^2 \\
+\tau_i &= d \Omega_i^2
+\end{cases}
+, \quad i = 1,\ldots, 6,
+\label{eq:motors}
+\end{equation}
+%%%%%%%%%%%%%%%%
+where $b$ and $d$ are force and torque coefficients of the propellers, respectively, and $\Omega_i$ is the angular velocity of the $i^{th}$ propeller.
+
+The vector of virtual control inputs is given by \cite{Mahony2012RAM}:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\mathbf{u} = \begin{bmatrix}T & \tau_p & \tau_q & \tau_r \end{bmatrix}^T,
+\label{eq:inputs}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+in which $T$ is the total thrust along $\vec{\mathbf{z}}_B$:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+T = F_1 + F_2 + F_3 + F_4 + F_5 + F_6,
+\label{eq:T}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+while $\tau_p$, $\tau_q$ and $\tau_r$ are three rotational torques acting around $\vec{\mathbf{x}}_B$, $\vec{\mathbf{y}}_B$ and $\vec{\mathbf{z}}_B$ axes, respectively:
+%%%%%%%%%%%%%%%%%
+\begin{equation}
+\begin{cases}
+\tau_p = l_2 \left( F_5 + F_6 - F_1 - F_2 \right) - l_2 \left( F_1 + F_2 \right) \\
+\tau_q = l_1 \left( F_3 + F_4 \right) - l_3 \left( F_1 + F_2 + F_5 + F_6 \right) \\
+\tau_r = \tau_1 + \tau_3 + \tau_5 - (\tau_2 + \tau_4 + \tau_6)
+\end{cases},
+\label{eq:tau}
+\end{equation}
+%%%%%%%%%%%%%%%%%
+where $l_1 = l$, $l_2 = l \sin{\frac{\pi}{3}}$, $l_3 = l \sin{\frac{\pi}{3}}$ and $l$ is the arm length of UAV. Applying (\ref{eq:motors}) to (\ref{eq:T}) and (\ref{eq:tau}), we obtain a relation between control inputs and motor speeds which is always invertible, when $l \neq 0$, $b \neq 0$ and $d \neq 0$. Therefore, inputs can then be brought back to the speed of the individual propellers using the following inverse transformation:
+%%%%%%%%%%%%%%%%
+\begin{equation}
+\begin{bmatrix} \Omega_1^2 \\ \Omega_2^2 \\ \Omega_3^2 \\ \Omega_4^2 \\ \Omega_5^2 \\ \Omega_6^2 \end{bmatrix} = \frac{1}{6 b d l} \begin{bmatrix} d l & 0 & 2 d & -b l \\ d l & 0 & 2 d & b l \\ d l & -\sqrt{3} d & -d & -b l \\ d l & -\sqrt{3} d & -d & b l \\ d l & \sqrt{3} d & -d & -b l \\ d l & \sqrt{3} d & -d l & b l \end{bmatrix} \begin{bmatrix} T \\ \tau_p \\ \tau_q \\ \tau_r \end{bmatrix}.
+\label{eq:motor_speed}
+\end{equation}
+%%%%%%%%%%%%%%%%
+From (\ref{eq:motor_speed}), it can be seen that the system is redundant with $4$ virtual control inputs and $6$ actuators.

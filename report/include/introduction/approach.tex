@@ -1,7 +1,7 @@
 \section{Proposed approach}
 
 In order to make things easier and to be able to set tangible milestones, the
-challenge is split in two logical problems to be solved, one after the
+challenge is split into two logical problems to be solved, one after the
 other, namely:
 \begin{enumerate}
 	\item{\textbf{Gate center detection:\\}
@@ -17,7 +17,7 @@ other, namely:
 \begin{figure}[h!]
 	\centering
 	\input{include/introduction/system.tex}
-	\caption{Block diagram of the system.}
+	\caption{Block diagram of the proposed architecture.}
 	\label{fig:block-system}
 \end{figure}
 
@@ -52,14 +52,14 @@ image in a grid.
 \begin{figure}[h!]
 	\center
 	\includegraphics[width=0.7\textwidth]{figure/region_proposal.png}
-	\caption[Visual representation of the region proposal grid]{A visual
+	\caption[Visual representation of the region proposal grid]{Visual
 		representation of the region proposal for the closest gate's center, with
 		$N=25$, where the ground truth is annotated in red (window 17), and the gate
 		center as the green cross.}
 	\label{fig:regionproposal}
 \end{figure}
 
-The amount of windows -- minus window $n^{\circ}0$, thus $N$ -- for the region
+The number of windows -- minus window $n^{\circ}0$, thus $N$ -- for the region
 proposal of the closest gate's center can be adjusted for a more precise
 trajectory, but must be a perfect square number to work with the current
 implementation, as it greatly simplifies the computation of the ground truth
@@ -121,10 +121,10 @@ comprises several sensors, namely:
 pre-installed, Ubuntu 16.04 had to be setup first before installing ROS
 Kinetic. Unfortunately, the OmniVision OV8858 front facing camera is not
 supported on Linux distributions other than the Yocto Project, which means its
-high speed video recording feature couldn't be taken advantage of to eliminate
+high-speed video recording feature couldn't be taken advantage of to eliminate
 as much motion blur as possible, and instead, the RealSense™ R200 camera is
 used. Having a high resolution would be of no interest, since it would only
-make the CNN run slower in despite of a negligible gain in accuracy.\\
+make the CNN run slower despite a negligible gain in accuracy.\\
 
 
 The solution will be implemented iteratively, by gradually increasing the
@@ -148,7 +148,7 @@ discarded:
 \begin{itemize}
 	\item{Detect any other obstacles in the input image}
 	\item{Avoid obstacles that are on the drone's trajectory}
-	\item{Map and localize the detected gates in world frame}
+	\item{Map and localize the detected gates in the world frame}
 	\item{Plan a trajectory of a sequence of gates}
 	\item{Apply online learning for adaptive racing}
 \end{itemize}

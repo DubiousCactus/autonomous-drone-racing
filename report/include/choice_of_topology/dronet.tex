@@ -2,9 +2,9 @@
 
 In their paper, Loquercio \etal~\cite{dronet}~propose a ResNet with only 8
 layers, with an average accuracy only 1\% below ResNet-50 for the same
-regression task. The objective function is in fact a combination of two
+regression task. The objective function is, in fact, a combination of two
 regressions allowing a drone to navigate in urban environments. Their network,
-as seen on figure~\ref{fig:dronet}, contains two fully connected
+as seen in figure~\ref{fig:dronet}, contains two fully connected
 layers: one for the steering commands of the drone, one for the collision
 detection probability.
 
@@ -12,7 +12,7 @@ detection probability.
 	\center
 	\includegraphics[width=\textwidth]{figure/dronet.png}
 	\label{fig:dronetoriginal}
-	\caption{The original DroNet model~\cite{dronet}.}
+	\caption{Original DroNet model~\cite{dronet}.}
 \end{figure}
 
 What makes this model an attractive choice is its impressive performance when
@@ -38,12 +38,12 @@ where the sum of each output probability equals to one. It is defined as:
 
 \begin{equation}
 	\label{equ:softmax}
-	f(s)_i=\frac{e^{s_i}}{\sum_j^C e^{s_j}}
+	f(\mathbf{s})_i=\frac{e^{s_i}}{\sum_j^C e^{s_j}},
 \end{equation}
 
-where $C$ corresponds to the amount of classes ($N+1$ windows in this
-instance), $s$ are the prediction scores inferred by the network, and $s_i$ is
-the evaluated prediction probability.\\
+where $C$ corresponds to the number of classes ($N+1$ windows in this
+instance), $\mathbf{s}$ are the prediction scores inferred by the network, and
+$s_i$ is the evaluated prediction probability.\\
 
 As for the loss function, it is the categorical cross-entropy, also referred to
 as softmax loss, and is defined as:
@@ -53,7 +53,7 @@ as softmax loss, and is defined as:
 	CE=\displaystyle-\sum_i^C t_i log(f(s)_i)
 \end{equation}
 
-with $t_i$ being the groundtruth for class $i$: either 0 or 1, since $t$ is a
+with $t_i$ being the ground truth for class $i$: either 0 or 1, since $t$ is a
 one-hot encoded vector.\\
 
 % Help from here: https://gombru.github.io/2018/05/23/cross_entropy_loss/
@@ -66,7 +66,7 @@ input image is used.\\
 
 Apart from those topography-related modifications, the parameters used for
 training, such as the optimizer and the learning rate, were left identical: the
-Adam optimizer is used with its default hyper parameters. Additional
+Adam optimizer is used with its default hyperparameters. Additional
 modifications are brought to the fully-connected layers during the experiments,
 which are explained in the corresponding chapter.
 

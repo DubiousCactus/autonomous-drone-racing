@@ -11,7 +11,7 @@ can provide computer graphics. In particular, the camera used on the UAV
 produces a lot of noise, has a rather low resolution, does not perform well in
 high dynamic range and is highly subject to motion blur.
 
-If the generated image of a still and sharp gate is simmply overlaid on top of
+If the generated image of a still and sharp gate is simply overlaid on top of
 a blurry and noisy background, it will produce an incoherent and un-natural
 result, triggering the signal for a ``fake'' image to anyone with a sense of
 reason.\\
@@ -22,7 +22,7 @@ operator, or the second order partial derivative, defined as
 
 \begin{equation} \label{equ:laplacianoperator}
     \nabla f = \frac{\partial^2 f}{\partial x^2}
-        + \frac{\partial^2 f}{\partial y^2}
+        + \frac{\partial^2 f}{\partial y^2},
 \end{equation}
 
 and which detects high changes in the pixel intensity, or in other words:
@@ -33,39 +33,9 @@ trial and error, to apply a different blur filter accordingly. Each of the
 three blur kernels has different coefficients, meaning that a different amount
 of synthetic motion blur is applied to the generated image by convolution,
 depending on the background image.\\
-\begin{figure}[h!]
-    \centering
-    \caption{Synthetic motion blur applied to the generated image.}
-    \begin{python}
-        def apply_motion_blur(self, img: Image, amount=0.5):
-            cv_img = np.array(img)
-            if self.no_blur: return cv_img
-            if amount <= 0.3:
-                size = 3
-            elif amount <= 0.7:
-                size = 5
-            else:
-                size = 9
-            kernel = np.identity(size)
-            kernel /= size
-            return cv2.filter2D(cv_img, -1, kernel)
-    \end{python}
-\end{figure}
 
 Lastly, a reasonable amount of Gaussian-distributed additive noise is
-incorportated to the generated image, so that it blends even better in the
+incorporated to the generated image, so that it blends even better in the
 background. The mean is left to its default value, 0, while the variance is
 calculated from a configurable standard deviation, found by trial and error
 until the result was satisfying.
-
-\begin{figure}[h!]
-    \centering
-    \caption{Gaussian noise added to the generated image.}
-    \begin{python}
-        def add_noise(self, img):
-            noisy_img = random_noise(img, mode='gaussian',
-                                     var=self.noise_amount**2)
-            noisy_img = (255*noisy_img).astype(np.uint8)
-            return Image.fromarray(noisy_img)
-    \end{python}
-\end{figure}
