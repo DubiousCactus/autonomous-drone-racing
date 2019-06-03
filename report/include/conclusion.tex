@@ -1,32 +1,48 @@
 \chapter{Conclusion}
 
-\textcolor{red}{To be completed.\\}
-
 Over the course of this project, a hypothesis on the use of synthetic images,
 to solve the gate detection challenge in drone racing, was proposed and put
-to the test. A complete semi-synthetic dataset generation pipeline was
-implemented, and the realism of its product was analysed. In order to proceed
-further with the evaluation of this method's viability, a simple yet efficient
-flight controller was designed, based on a PID controller and a supervision
-state machine.\\
+to the test. This idea presented a risk, given the fact that the use of
+mixed-reality images in deep learning for drone racing is unprecedented.
+However, the technique of combining computer generated imagery with real-world
+photographs for the training of deep learning models is not unheard-of and it
+has been applied in several researches, showing promising results.
 
-To begin with, the synthetic gates generation method was tested on a first
-model, DroNet. The results exposed severe symptoms of overfitting, and showed
-the model's unability to learn a generalized objective function for this
-problem.  Several regularization techniques were applied, but only delayed the
-problem and did not actually solved it. In an attempt to bypass this impeding
-issue, a more generalized model, MobileNetV2, was adopted. By using transfer
-learning, different adjustments to the base topology of the network were tested
-and compared against each other. Even though early signs of overfitting were
-still present during the training of this model, the right regularization
-techniques were applied, and the problem was considered solved.
-
-Nevertheless, an even more crippling case of overfitting was encountered: the
-model could categorize inputs to a great extent, but it was unfortunately
+To begin with, a complete semi-synthetic dataset generation pipeline was
+implemented, and the realism of its product was analyzed and discussed.
+This method's results were tested on two different image recognition models for
+embedded applications.
+For both models' experiments, transfer learning was used to try
+different adjustments to the base topology of the network, as to establish a
+benchmark of empirical scores.
+DroNet was the first model to train on this semi-synthetic dataset, as it was
+designed primarily for autonomous drone navigation. Even though the initial
+results proved the method to be functional, they exposed severe symptoms of
+overfitting and showed the model's inability to learn a generalized objective
+function for the problem. Several regularization techniques were applied, but
+only delayed the problem and did not actually solve it. In an attempt to bypass
+this impeding issue, a more generalized model, MobileNetV2, was adopted. Even
+though early signs of overfitting were still present during the training of
+this model, the right regularization techniques were applied, and the problem
+was considered solved. Nevertheless, evaluating the model on real-world test
+images exposed a strong overfitting of the network on another level:
+MobileNetV2 could categorize inputs to a great extent, but it was unfortunately
 unable to detect any physical gates in real conditions. To overcome this
-pitfall, a heavy image augmentation pipeline was set up, as to apply important
-distortions reflecting the poor quality of the captured images from the drone's
-camera.\\
+problem, a heavy image augmentation pipeline was added to the training routine.
+By applying random amounts of motion blur and other image distortions, the
+network was able to learn a generalized representation of the data, and could
+perform significantly better than DroNet on real images.
+
+In order to proceed further with the evaluation of this method's viability, a
+simple yet efficient flight controller was designed, based on a PID controller
+and a supervision state machine to handle the decision-making along the track. 
+Surprisingly, deciding when to cross the targeted gate turned out to be the
+most difficult piece of logic to design for the state machine. This is due to
+the instability of the predictions provided by the perception node when the
+camera becomes too close to the obstacle, and therefore does not perceive it
+clearly. With more time allocated for this research, a proper path planning
+and control scheme for the drone could be designed and implemented, which might
+take better advantage of the proposed solution for the perception.
 
 In the end, the entire autonomous system developed during this work was tested
 in real conditions. It was able to successfully cross several gates of
