@@ -8,7 +8,7 @@ figure~\ref{fig:tsne}.
 
 \begin{figure}[h!]
    \centering
-   \scalebox{0.8}{
+   \scalebox{0.75}{
       \input{plots/random_tsne_2D.pgf}
    }
    \caption[T-SNE analysis of synthetic versus real images.]{T-SNE analysis of
@@ -23,7 +23,7 @@ dimensional data such as images. The $640 \times 480$ images used for
 comparison are so dimensionally high that PCA (Principal Component Analysis)
 needs to be applied first, otherwise the t-SNE algorithm would be too sensitive
 to noise, and the computation of pairwise distances between the samples would
-be too slow.\\
+be too slow.
 
 Overall, it is not clear whether synthetic images are different than real ones,
 since the plot in figure~\ref{fig:tsne} shows a general confusion in the
@@ -43,28 +43,28 @@ image.
 
 \begin{figure}[h!]
    \centering
-   \begin{subfigure}{0.29\textwidth}
+   \begin{subfigure}{0.32\textwidth}
       \includegraphics[width=\textwidth]{figure/tsne_random/D/8.png}
       \caption{Cluster D - real}
    \end{subfigure}
-   \begin{subfigure}{0.29\textwidth}
+   \begin{subfigure}{0.32\textwidth}
       \includegraphics[width=\textwidth]{figure/tsne_random/D/9.png}
       \caption{Cluster D - synthetic}
    \end{subfigure}
-   \begin{subfigure}{0.29\textwidth}
+   \begin{subfigure}{0.32\textwidth}
       \includegraphics[width=\textwidth]{figure/tsne_random/D/4.png}
       \caption{Cluster D - synthetic}
    \end{subfigure}
 
-   \begin{subfigure}{0.29\textwidth}
+   \begin{subfigure}{0.32\textwidth}
       \includegraphics[width=\textwidth]{figure/tsne_random/F/1.png}
       \caption{Cluster F - real}
    \end{subfigure}
-   \begin{subfigure}{0.29\textwidth}
+   \begin{subfigure}{0.32\textwidth}
       \includegraphics[width=\textwidth]{figure/tsne_random/F/9.png}
       \caption{Cluster F - synthetic}
    \end{subfigure}
-   \begin{subfigure}{0.29\textwidth}
+   \begin{subfigure}{0.32\textwidth}
       \includegraphics[width=\textwidth]{figure/tsne_random/F/6.png}
       \caption{Cluster F - real}
    \end{subfigure}
@@ -86,13 +86,13 @@ a much more homogeneous plot after the t-SNE analysis.
 
 \begin{figure}[h!]
 	\centering
-	\begin{subfigure}[h]{0.49\textwidth}
+	\begin{subfigure}[h]{0.45\textwidth}
 		\scalebox{0.4}{
 			\input{plots/handpicked_tsne_2d.pgf}
 		}
 		\caption{2D plot}
 	\end{subfigure}
-	\begin{subfigure}[h]{0.49\textwidth}
+	\begin{subfigure}[h]{0.45\textwidth}
 		\scalebox{0.4}{
 			\input{plots/handpicked_tsne_3d.pgf}
 		}

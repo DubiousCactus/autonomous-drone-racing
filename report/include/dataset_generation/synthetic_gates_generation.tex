@@ -188,7 +188,6 @@ and $M_R$ is
 		\end{bmatrix}.
 \end{equation}
 
-\todo{Add derivation in appendix?}
 ~\\Note the inverse of $M_R$ in the first step: as state above, the world is
 rotated and translated \emph{around the camera}, while the latter faces the
 $-Z$-axis.\\
@@ -293,8 +292,6 @@ In addition, the gate center's world coordinates are projected onto the image
 plane (in the clip space) to determine whether the gate is visible or not. This
 is done by applying the $M_{ModelViewProjection}$ transformations matrix to the
 world coordinates, and manually clipping the resulting coordinates if needed.
-
-\todo{Add homogeneous vs orthogonal coordinates in clip space?}
 
 To do so, the resulting 4D vector of homogeneous coordinates is simply divided,
 element-wise, by its last component (usually called $w$) if that one is not

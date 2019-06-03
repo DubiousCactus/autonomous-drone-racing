@@ -47,7 +47,8 @@ intricate gate configurations which do not represent real world scenarios. This
 over-complexification of the problem is an asset that is helpful to train a
 robust model. The end result is an alleged gap between test accuracy and
 validation accuracy, but in a good way: the model performs better on real
-world test data than on synthetic images, supposedly.\\
+world test data than on synthetic images, supposedly (see
+Fig.~\ref{fig:good-test} for more).
 
 To confirm this hypothesis, a proper test dataset with correct ground truth is
 needed. For the time being, the best performing model, depicted in
@@ -81,3 +82,11 @@ tuning of the network, a close-to-perfect accuracy is considered possible.
 \end{table}
 
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figure/good_test_res.png}
+    \caption[MobileNetV2 showing decent results]{MobileNetV2 showing decent
+    predictions with 49 windows on the real test set (see
+    https://youtu.be/-cDspgkhHe0 for more).}
+    \label{fig:good-test}
+\end{figure}

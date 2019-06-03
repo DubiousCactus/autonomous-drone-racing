@@ -27,8 +27,9 @@ paradigm:
 
 \begin{figure}[h]
 	\centering
-	\begin{tikzpicture}[node distance=2cm,-latex,
-		box/.style = {draw,rectangle, minimum width=2cm}]]
+	\begin{tikzpicture}[node distance=2cm,-latex, scale=1.6, every
+		node/.style={scale=1.6}, box/.style = {draw,rectangle, minimum
+		width=2cm}]
 		\node[draw,rectangle] (sense) {Sense};
 		\node[draw,rectangle,below of=sense,xshift=2cm] (plan) {Plan};
 		\node[draw,rectangle,below of=sense,xshift=-2cm] (act) {Act};
