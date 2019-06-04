@@ -26,7 +26,8 @@ short training phases.
 A recurrent issue that was observed was the loss converging too early during
 the training, needing to damper the learning rate every few iterations. To
 automate this, the convenient callback offered by Keras,
-\pyth{ReduceLROnPlateau}, is added to the optimization process.
+\pyth{ReduceLROnPlateau}, is added to the optimization process (an exampled is
+shown in Fig.~\ref{fig:reducelronplateau}).
 
 Its role is to detect the presence of a ``plateau'' in the learning curve, by
 using a given threshold for the validation loss difference over a certain

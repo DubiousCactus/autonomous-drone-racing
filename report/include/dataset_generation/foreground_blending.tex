@@ -32,10 +32,11 @@ of the Laplacian of the image is used with a set of three thresholds, found by
 trial and error, to apply a different blur filter accordingly. Each of the
 three blur kernels has different coefficients, meaning that a different amount
 of synthetic motion blur is applied to the generated image by convolution,
-depending on the background image.\\
+depending on the background image. An example implemtentation of this
+augmentation process can be seen in Fig.~\ref{fig:motionblur}.\\
 
 Lastly, a reasonable amount of Gaussian-distributed additive noise is
 incorporated to the generated image, so that it blends even better in the
 background. The mean is left to its default value, 0, while the variance is
 calculated from a configurable standard deviation, found by trial and error
-until the result was satisfying.
+until the result was satisfying (see Fig.~\ref{fig:addnoise} for reference).

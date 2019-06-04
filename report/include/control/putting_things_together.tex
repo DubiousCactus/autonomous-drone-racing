@@ -65,7 +65,7 @@ the crossing condition:
 \begin{algorithm}
 	\caption{Crossing condition evaluation}\label{alg:crosscond}
 	\begin{algorithmic}[1]
-		\Procedure{CrossingCondition}{}
+		\Function{CrossingCondition}{}
 			\State $\textit{acceptableRegions} \gets \{8, 12, 13, 14\}$
 			\State $crossing \gets \texttt{True}$
 			\State $p \gets \text{getPrediction()}$
@@ -82,10 +82,8 @@ the crossing condition:
 					\State \textbf{break}
 				\EndIf
 			\EndFor
-
 			\Return $\textit{crossing}$
-
-		\EndProcedure
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 

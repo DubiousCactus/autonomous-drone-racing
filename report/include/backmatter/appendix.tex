@@ -15,6 +15,7 @@
 	\end{python}
 	\caption[The \pyth{look_at()} function]{Creating the view matrix via the
 	convenience \pyth{look_at()} function.}
+        \label{fig:lookup}
 \end{figure}
 \begin{figure}[h!]
     \centering
@@ -25,6 +26,7 @@
             return (255*noisy_img).astype(np.uint8)
     \end{python}
     \caption{Gaussian noise added to the generated image.}
+    \label{fig:addnoise}
 \end{figure}
 \begin{figure}[h!]
     \centering
@@ -41,6 +43,7 @@
             return cv2.filter2D(img, -1, kernel)
     \end{python}
     \caption{Synthetic motion blur applied to the generated image.}
+    \label{fig:motionblur}
 \end{figure}
 \begin{figure}[h!]
     \centering
@@ -48,4 +51,5 @@
 reduce_lr = ReduceLROnPlateau(monitor="val_loss", factor=0.9, patience=5)
     \end{python}
     \caption{Keras' convenient ReduceLROnPlateau callback function.}
+    \label{fig:reducelronplateau}
 \end{figure}

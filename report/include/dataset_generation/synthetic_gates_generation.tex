@@ -37,7 +37,8 @@ visible on a screen. That part is usually handled by other libraries to make
 this task easier, however, it is out of scope for this work, where the render
 only needs to be saved to an image file.\\
 
-The 3D to 2D transformation process is executed by OpenGL's graphics pipeline.
+The 3D to 2D transformation process is executed by OpenGL's graphics pipeline,
+as depicted on Fig.~\ref{fig:openglpipeline}.
 It mainly consists of two consecutive actions.
 
 \begin{figure}[h]
@@ -100,7 +101,8 @@ around, and virtually moves the camera around, is expressed as follows:
 First of all, the way the $M_{view}$ matrix is usually created is by using a
 function commonly available in OpenGL wrappers and other computer graphics math
 libraries, such as \pyth{look_at(eye, target, up)} from the Python library
-\emph{Pyrr}~\cite{Pyrr}.
+\emph{Pyrr}~\cite{Pyrr}, where an example of its usage is shown on
+Fig.~\ref{fig:lookup}.
 
 What the \pyth{look_at()} function does, is combining two transformations
 inversely: first, the camera is translated from the eye position to the origin.
