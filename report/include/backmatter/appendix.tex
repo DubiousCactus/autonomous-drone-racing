@@ -1,6 +1,6 @@
 \chapter{Appendix 1}
 
-\begin{figure}[h]
+\begin{figure}[h - 5em]
 	\center
 	\begin{python}
 		view = Matrix44.look_at(
@@ -16,24 +16,20 @@
 	\caption[The \pyth{look_at()} function]{Creating the view matrix via the
 	convenience \pyth{look_at()} function.}
 \end{figure}
-
 \begin{figure}[h!]
     \centering
     \begin{python}
         def add_noise(self, img):
             noisy_img = random_noise(img, mode='gaussian',
                                      var=self.noise_amount**2)
-            noisy_img = (255*noisy_img).astype(np.uint8)
-            return Image.fromarray(noisy_img)
+            return (255*noisy_img).astype(np.uint8)
     \end{python}
     \caption{Gaussian noise added to the generated image.}
 \end{figure}
-
 \begin{figure}[h!]
     \centering
     \begin{python}
-        def apply_motion_blur(self, img: Image, amount=0.5):
-            cv_img = np.array(img)
+        def apply_motion_blur(self, img, amount=0.5):
             if self.no_blur: return cv_img
             if amount <= 0.3:
                 size = 3
@@ -41,19 +37,15 @@
                 size = 5
             else:
                 size = 9
-            kernel = np.identity(size)
-            kernel /= size
-            return cv2.filter2D(cv_img, -1, kernel)
+            kernel = np.identity(size) / size
+            return cv2.filter2D(img, -1, kernel)
     \end{python}
     \caption{Synthetic motion blur applied to the generated image.}
 \end{figure}
-
-
-\begin{figure}[h]
+\begin{figure}[h!]
     \centering
     \begin{python}
-        reduce_lr = ReduceLROnPlateau(monitor="val_loss",
-            factor=0.9, patience=5, verbose=1)
+reduce_lr = ReduceLROnPlateau(monitor="val_loss", factor=0.9, patience=5)
     \end{python}
     \caption{Keras' convenient ReduceLROnPlateau callback function.}
 \end{figure}

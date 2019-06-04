@@ -12,7 +12,7 @@ $\mathcal{F}_B$ is located at its center of gravity.
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[width=\textwidth]{figure/aero_dynamics.png}
+  \includegraphics[width=0.7\textwidth]{figure/aero_dynamics.pdf}
   \caption{Model of Intel Aero's quadrotor dynamics.}
   \label{fig:aero-dynamics}
 \end{figure}
@@ -244,6 +244,6 @@ following inverse transformation is used:
 
 For the case of ready-to-fly quadcopters such as the Intel Aero, this low-level
 control implementation is provided and preprogrammed on the controller board.
-This means that only desired velocity commands can be sent to this controller,
-which handles the compensation for the current velocity, and lets the user
-focus on the high-level control implementation.
+This means that desired velocity commands can be sent directly to this
+controller, which handles the compensation for the current velocity, and lets
+the user focus on the high-level control implementation.
