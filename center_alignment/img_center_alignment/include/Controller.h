@@ -22,14 +22,14 @@
 
 
 // TODO: Read from config
-#define DETECTION_RATE 3 // 100Hz / 2
+#define DETECTION_RATE 3.3 // 100Hz / 2
 #define IMG_WIDTH 340
 #define IMG_HEIGHT 255
 #define NB_WINDOWS 25
-#define CROSSING_TIME 2
-#define LEAVING_TIME 0.1
+#define CROSSING_TIME 7
+#define LEAVING_TIME 1
 #define MAX_GATE_HEIGHT 100
-#define PREVIOUS_PREDICTIONS_CNT 10
+#define PREVIOUS_PREDICTIONS_CNT 6
 
 typedef enum {
 	LANDED,

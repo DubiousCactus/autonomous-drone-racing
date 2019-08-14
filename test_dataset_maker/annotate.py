@@ -7,7 +7,7 @@
 # Distributed under terms of the MIT license.
 
 """
-Annotate a base dataset of images with camera poses, by retro-projecting the
+Annotate a base dataset of images with camera poses, by projecting the
 given gate position (in the world frame) on the image frame.
 """
 
@@ -79,7 +79,7 @@ class Annotator():
             pose = self.gates_config[gate]['pose']
             orientation = self.gates_config[gate]['orientation']
             view = self.__compute_view_matrix(baseImage.annotations)
-            gate_coord_img_frame = self.__back_project(pose, orientation, view)
+            gate_coord_img_frame = self.__project(pose, orientation, view)
             annotations.append(TestAnnotations(gate_coord_img_frame,
                                                Quaternion(),
                                               0.0, True))
@@ -98,7 +98,7 @@ class Annotator():
             drone_pose.orientation * Vector3([0.0, 0.0, 1.0]),
         )
 
-    def __back_project(self, position, orientation, view):
+    def __project(self, position, orientation, view):
         clip_space_gate_center = self.projection * (view *
                                                     Vector4.from_vector3(position,
                                                                          w=1.0))

@@ -43,7 +43,7 @@ def visualize(img, prediction, filtered_prediction, img_size):
     window_height = img_size[1] / sqrt_win
 
     if filtered_prediction == 0:
-        draw.text(((img.width / 2)-30, (img.height/2)-5), "NO GATE", "red")
+        draw.text(((img.width / 2)-30, (img.height/2)-5), "NO GATE", "green")
     else:
         window_idx = filtered_prediction % sqrt_win
         if window_idx == 0:
@@ -52,20 +52,20 @@ def visualize(img, prediction, filtered_prediction, img_size):
         window_y = window_height * int(filtered_prediction/sqrt_win)
         draw.rectangle([(window_x, window_y),
                        (window_x + window_width, window_y + window_height)],
-                       outline="green")
+                       outline="green", width=7)
 
-    if prediction == 0:
-        draw.text(((img.width / 2)-30, (img.height/2)-5), "NO GATE", "red")
-    else:
-        # Draw a red square at the estimated region
-        window_idx = prediction % sqrt_win
-        if window_idx == 0:
-            window_idx = sqrt_win
-        window_x = (window_idx - 1) * window_width
-        window_y = window_height * int(prediction/sqrt_win)
-        draw.rectangle([(window_x, window_y),
-                       (window_x + window_width, window_y + window_height)],
-                       outline="red")
+    # if prediction == 0:
+        # draw.text(((img.width / 2)-30, (img.height/2)-5), "NO GATE", "red")
+    # else:
+        # # Draw a red square at the estimated region
+        # window_idx = prediction % sqrt_win
+        # if window_idx == 0:
+            # window_idx = sqrt_win
+        # window_x = (window_idx - 1) * window_width
+        # window_y = window_height * int(prediction/sqrt_win)
+        # draw.rectangle([(window_x, window_y),
+                       # (window_x + window_width, window_y + window_height)],
+                       # outline="red")
 
 
     return np.asarray(img, dtype=np.uint8)

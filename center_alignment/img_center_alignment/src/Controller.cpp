@@ -160,6 +160,7 @@ void Controller::Run()
 	ros::Rate rate(this->rate);
 	Vector3d gate_center;
 	Vector3d origin(IMG_WIDTH/2, IMG_HEIGHT/2);
+	origin.x += 10;
 	ros::Time startLeavingTime, startTakeOffTime, startCrossingTime;
 
 	while (ros::ok()) {
