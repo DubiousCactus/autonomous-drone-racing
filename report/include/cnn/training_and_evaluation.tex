@@ -1,0 +1,91 @@
+\subsection{Training and evaluation} \label{section:training}
+
+The consensus in the field of deep learning is that properly training a network
+is a much less trivial task than choosing the right topology. In fact, this
+process is considered by some a science on its own, and requires coalescing
+knowledge and experimentation through trial and error.
+
+	\subsubsection{Dataset choice}
+
+The most crucial part of training a deep learning model is the collection of a
+proper dataset. Ideally, the dataset used in the training phase should be an
+exact representation of the data targeted for the model, such that the
+aggregated knowledge does not differ from the intended application.\\
+
+Moreover, an important factor in the creation of a dataset is its statistical
+equilibrium. By having balanced samples, meaning an even amount of each
+category, for instance, the network's probability of prioritizing one prediction
+over the others is lessened, thus making it less biased and more accurate.\\
+
+The size of the dataset has a lot of importance, especially in the
+field of computer vision, where two images of the same object can look
+drastically different. For the model to learn a generalized representation of
+the target data, it needs \emph{at the very least} as many samples as
+there are ways of representing one possible category (for the case of image
+classification or object recognition). Since it is not feasible in practice,
+one should aim for the broadest and largest dataset that can be obtained, or
+by incrementally collecting data after repetitive testing, until
+satisfaction.\\
+
+On a final note, one must adopt a dataset split with care: the proportion of
+training, validation and test samples can have a negative impact on the 
+model's learning. As a general rule, it is reasonable to use one base dataset
+and to use $100-X\%$ for the validation set, where $X$ is the percentage of the
+training set (as proposed in \emph{``About Train, Validation and Test Sets in Machine
+Learning''}~\cite{DatasetSplitting}). The test dataset, however, should be
+extracted from another source, as to remain unseen from the model during the
+training phase.
+
+The validation set is commonly used to evaluate the model at the end of each
+iteration over the full training set, but another alternative is to apply the
+famous cross validation method~\cite{CrossVal} in cases where it cannot be
+afforded to sacrifice training data for the validation step.
+
+	\subsubsection{Hyperparameter tuning}
+
+During the training phase, a lot of time and effort can be spent on choosing
+the right hyperparameters, as to maximize the model accuracy while minimizing
+its training time.
+
+The number of epochs, the batch size, the learning rate or even the optimizer
+are all subject to experimentation, even though intuitive reasoning can be
+followed based on the dataset and the problem to be solved.
+
+It is usually safe to start training with the default hyper-parameters -- either
+the ones mentioned in the original paper, or the default values if a framework
+is used -- as to have a baseline to experiment with.\\
+
+With rigor and consistency, several hyper-parameter configurations can be
+evaluated, as long as they are still comparable: comparing two training phases
+with different dataset sizes is a good idea, but if the learning rate is
+different for both of them, it becomes irrelevant and incomparable, since one
+might learn faster than the other, thus resulting in a biased analysis.
+
+	\subsubsection{Regularization}
+
+As defined in \emph{Deep Learning}~\cite{Goodfellow-et-al-2016}, regularization
+is ``any modification we make to a learning algorithm that is intended to
+reduce its generalization error but not its training error''.
+
+It can be seen as an ensemble of constraints and penalties applied to a model,
+an objective function, a training strategy, or any part of the learning that
+can be bent as to achieve the expected learning, to some extent.\\
+
+In effect, a model can sometimes be given too much capacity, meaning too many
+parameters, which can result in the network learning a perfect mapping between
+the training set's inputs and outputs, therefore having absolutely no general
+knowledge of the target data relationship. As the ``Occam's razor'' principle
+states, \emph{``pluralitas non est ponenda sine necessitate''}, which can be
+transcribed as ``simpler solutions are more likely to be correct than complex
+ones''. This hypothesis is often used in the field of deep learning, where it
+has been observed that simpler networks with fewer parameters have a lesser
+tendency to overfit on the training data, and overall generalize better.\\
+
+Regularization methods can range from weight penalties, using the L1- or
+L2-norm (also known as Least Absolute Deviation and Least Squares regressions),
+to more stochastic techniques such as dropout~\cite{Dropout} or
+cutout~\cite{Cutout} (which is intended for CNNs). In the same way as
+hyper-parameter tuning, proper regularization is often found through trial and
+error, even though some methods can be considered as a generally effective
+practices for most deep learning models.
+

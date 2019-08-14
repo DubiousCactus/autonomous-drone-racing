@@ -1,0 +1,55 @@
+% CREATED BY DAVID FRISK, 2016
+Synthetic images for convolutional neural networks in autonomous
+drone racing \\
+Transferring knowledge from a semi-synthetic domain into the real world for
+trajectory planning\\
+Théo Morales\\
+Department of Engineering\\
+Aarhus University \setlength{\parskip}{0.5cm}
+
+\thispagestyle{plain}			% Suppress header 
+\setlength{\parskip}{0pt plus 1.0pt}
+\section*{Abstract}
+
+In this work, the efficiency and robustness of tailored dataset generation for
+deep learning-based computer vision algorithms, for the specific case of
+autonomous drone racing, is analyzed and discussed. This particular challenge
+is a perfect opportunity for researchers to stretch the limits of autonomous
+robotic systems, since it combines the sensing, planning and acting phases into
+one complex problem. The proposed solution focuses on the perception of self-flying
+drones using state-of-the-art convolutional neural networks, and also attempts
+to solve the sensing and planning problems as a proof-of-concept for the vision
+algorithm. Effectively,
+this research concentrates on developing a robust and generalized vision
+algorithm for detecting obstacles regardless of their shape and color. In that
+way, the racing gates can be specified prior to the training of the algorithm,
+and thus tailored to the challenge itself. The end goal is to greatly
+facilitate the learning of the vision-based detection model, by automating the
+tedious and long process of collecting and annotating a large dataset required
+to train the object detection algorithm using computer graphics. Indeed, this task
+is often the most time-consuming part of training convolutional neural
+networks, mostly because each image must be annotated to be used in supervised
+learning. By removing this weight off researchers' shoulders, much more time is
+left to focus and experiment on the \emph{planning} and \emph{acting} problems
+of the robotics paradigm. A simple approach to solving the planning and acting
+problems is also undertaken, which supports the praises of the proposed
+solution. Finally, experiments are conducted and promising results are shown,
+which promotes this original idea of using synthetic images to
+train convolutional neural networks for drone racing. The method's advantages
+are discussed, such as its faculty to generate an infinite amount of random
+race circuit configurations, and therefore presenting its beneficial
+scalability and flexibility. Furthermore, two image recognition models are
+trained and compared using the generated dataset, in an attempt to leverage the
+hypothesis made and show concrete results in real time conditions.
+Naturally, the method's drawbacks, such as the limitations in data augmentation
+and constraints of environment, are made clear and exposed for future
+improvements.
+
+% KEYWORDS (MAXIMUM 10 WORDS)
+\vfill
+Keywords: drone racing, deep learning, synthetic images, convolutional neural
+network, autonomous vehicle.
+
+%\newpage				% Create empty back of side
+%\thispagestyle{empty}
+%\mbox{}

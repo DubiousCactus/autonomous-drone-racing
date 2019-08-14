@@ -13,7 +13,7 @@ Dataset class
 import random
 import os
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from tqdm import tqdm
 from queue import Queue
 from threading import Thread
@@ -34,8 +34,8 @@ class BaseImage:
         self.file = image_path
         self.annotations = annotations
 
-    def image(self):
-        return Image.open(self.file)
+    def image_path(self):
+        return self.file
 
 
 class TestAnnotations:
@@ -50,10 +50,12 @@ class TestAnnotations:
 Holds a test image along with its annotations
 '''
 class AnnotatedImage:
-    def __init__(self, image: Image, id, annotations: [TestAnnotations]):
-        self.image = image
+    def __init__(self, image_path: str, id, annotations: [TestAnnotations],
+                 scale: tuple):
+        self.image_path = image_path
         self.id = id
         self.candidates = annotations
+        self.scale = scale
 
 
 class Dataset:
@@ -142,9 +144,9 @@ class Dataset:
 
         for annotatedImage in iter(self.data.get, None):
             name = "%06d.png" % annotatedImage.id
-            annotatedImage.image.save(
-                os.path.join(self.path, 'images', name)
-            )
+            img = Image.open(annotatedImage.image_path)
+            img.thumbnail(annotatedImage.scale, Image.ANTIALIAS)
+            img.save(os.path.join(self.path, 'images', name))
             for candidate in annotatedImage.candidates:
                 self.output_csv.write("{},{},{},{},{},{},{},{},{}\n".format(
                     name,
@@ -158,6 +160,7 @@ class Dataset:
                     candidate.on_screen
                 ))
                 self.output_csv.flush()
+
         self.output_csv.close()
 
     def get_image_size(self):

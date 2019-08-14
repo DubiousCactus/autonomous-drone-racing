@@ -1,0 +1,33 @@
+\subsection{Pretrained models}
+
+The fast growing research in image recognition offers a broad choice of deep
+learning models to be adopted for visual tasks. One can construct a
+convolutional neural network model from the ground up, tailored to a specific
+application, but it has far fewer chances to compete with a full fledged
+general-purpose model developed by an entire team of researchers. This
+reasoning, along with the lack of knowledge and experience in creating
+efficient neural network architectures, is the reason why an already proven
+model is to be used in this research.\\
+
+However, because of the constraints imposed by the relatively poor
+computational powers of the Intel Aero UAV, a small model with preferably few
+parameters must be used, if on-board computation of the gate center detection is
+to be achieved.\\
+
+To begin with, the state-of-the-art models in visual recognition tasks were
+eliminated, as they are out of scope regarding the light computation 
+requirement, namely: ResNet-50 and its deeper variants, VGG-16, AlexNet,
+Inception-v4, Inception-ResNet, \etc \ldots
+
+The first choice is directed towards the model developed and used by Loquercio
+\etal~in \emph{DroNet: Learn to Fly by Driving}~\cite{dronet}, mainly because
+of its praised performance despite its low computational cost, but also because
+its purpose, steering a drone in an urban environment, is in accordance with
+the goals of this work.
+
+As a second option, the state of the art in image recognition for lightweight
+applications is used to compare the first model's performance on the same
+dataset. Designed by Sandler \etal, \emph{MobileNetV2: Inverted Residuals and
+Linear Bottlenecks}~\cite{MobileNetV2}, improves upon its previous iteration
+and offers astounding results: in combination with SSDLite, it is $20\times$ more
+efficient and $10\times$ smaller than YOLOv2 on the COCO dataset~\cite{MobileNetV2}.

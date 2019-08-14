@@ -1,0 +1,40 @@
+\chapter{Future improvements}
+
+First of all, instead of training the network to recognize the center of the
+nearest gate using a grid representation, which is far from being precise, a
+segmentation mask of every gate in the image could be used as ground truth. The
+hypothesis is that the feature extraction process would become more precise,
+since the network would have to recognize an entire gate. Generating
+segmentation masks as ground truth would be trivial, knowing that every gate is
+entirely generated with computer graphics.
+
+A geometrical algorithm could then be used to manually detect every gate
+center. This has been done multiple times in the past research concerning drone
+racing, as briefly explained in Section~\ref{sec:litrev}. Furthermore, the
+nearest gate could be selected by estimating the amount of parallax between
+each gate of the image, using a succession of frames to evaluate the difference
+of motion of each gate relative to the camera. An other option to detect the
+closest gate would be to make use of the depth camera already present on the
+Intel Aero, however that would change the scope of the method entirely.\\
+
+Secondly, the limitations of using a motion capture system are not negligible,
+despite the unmatched precision it provides. Developing an algorithm to
+evaluate the camera orientation in the world frame, using computer vision only,
+would be a great asset to achieve similar results without the physical
+constraints of such system. Such method has been used in~\cite{CheungWBM17} to
+generate a heat map of possible image locations where to incorporate synthetic
+images of pedestrians, by estimating the available space of an environment from
+a simple photograph. However, it is not discussed whether this method is
+rotation invariant, which is a crucial point for drone racing datasets.\\
+
+Finally, the proposed control strategy, which suffers from its simplicity and
+inefficiency, is one of the bottlenecks of this approach. The recent advances
+in artificial intelligence powered by deep reinforcement learning showed the
+strong potential of such algorithm. Using a similar approach as it has been
+done is various autonomous vehicle research works, a simulated environment
+could be utilized to train a deep RL algorithm in generating motion primitives
+for the drone, considering short individual flights of its current position and
+the predicted gate pose in world frame. In most cases, simulation training
+suffers from the domain shift when using an all-in-one deep reinforcement
+learning solution for the perception and control problems. By separating the
+two, this method could show potential improvements.

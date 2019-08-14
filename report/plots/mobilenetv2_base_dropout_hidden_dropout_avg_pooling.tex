@@ -1,0 +1,54 @@
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\begin{tikzpicture}
+			\pgfplotsset{
+				scale only axis,
+				legend entries={Base,Dropout,Hidden dropout,Average pooling},
+				grid style={dotted,gray,line width=.1pt},
+				grid=both
+			}
+			\begin{axis}[xlabel=Epoch,ylabel=Training
+				loss,width=7cm,height=7cm,legend
+				style={at={(0.96,0.88)},anchor=north east}]
+				\addplot+[mark=none,smooth] table [y=train_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_base_50000.txt};
+				\addplot+[mark=none,smooth] table [y=train_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_dropout_50000.txt};
+				\addplot+[mark=none,smooth] table [y=train_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_hidden_dropout_50000.txt};
+				\addplot+[mark=none,smooth] table [y=train_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_avg_pooling_50000.txt};
+			\end{axis}
+		\end{tikzpicture}
+		\caption{Training loss for 50,000 samples.}
+		\label{plot:mobilenetv2-base-comp-train}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\begin{tikzpicture}
+			\pgfplotsset{
+				scale only axis,
+				legend entries={Base,Dropout,Hidden dropout,Average pooling},
+				grid style={dotted,gray,line width=.1pt},
+				grid=both
+			}
+			\begin{axis}[xlabel=Epoch,ylabel=Validation
+				loss,width=7cm,height=7cm,legend
+				style={at={(0.96,0.88)},anchor=north east}]
+				\addplot+[mark=none,smooth] table [y=val_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_base_50000.txt};
+				\addplot+[mark=none,smooth] table [y=val_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_dropout_50000.txt};
+				\addplot+[mark=none,smooth] table [y=val_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_hidden_dropout_50000.txt};
+				\addplot+[mark=none,smooth] table [y=val_loss,col sep=comma]
+				{plots/mobilenetv2/mobilenetv2_rgb_avg_pooling_50000.txt};
+			\end{axis}
+		\end{tikzpicture}
+		\caption{Validation loss for 50,000 samples.}
+		\label{plot:mobilenetv2-base-comp-val}
+	\end{subfigure}
+	\caption{Different topology adjustments in comparison with the baseline for
+	MobileNetV2.}
+	\label{plot:mobilenetv2-base-comp}
+\end{figure}

@@ -1,0 +1,56 @@
+\section{Problem statement}
+
+With the perception core component implemented and ready to be tested, the
+remaining part of the autonomous system to be implemented is naturally the
+control logic. Without it, a drone able to detect the center of the nearest
+gate in its field of view is nothing but an inanimate object.
+
+Since this application is for drone racing, the expected flight behavior would
+be aggressive, fast but accurate, and capable of taking sharp turns without
+hitting any obstacles. However, the control and trajectory planning of UAVs can
+be an entire research topic of its own, and therefore cannot be included in the
+scope of this project.\\
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figure/center_alignment.png}
+	\caption[Gate center alignment via PID control.]{Gate center alignment via
+	PID control. The error, e, is reported to the Z-axis and yaw through a PID
+	controller, while the X-axis's thrust is a constant velocity, c.}
+\end{figure}
+
+Initially, an elaborated control algorithm based on reinforcement learning was
+planned, but since the focus of this work is on the perception, and by lack of
+time, the fallback alternative is a PID-based controller. Naturally, drone
+racing cannot be resumed to flying towards a detected obstacle, and even though
+PID controllers are good at maintaining a desired position, an algorithm on top
+of it is needed to supervise the different states and actions present in the
+decision making process.
+
+To do so, a state machine is designed and implemented to run on-board, and to
+take decisions depending on the state the UAV is in, as well as the desired
+outcomes. The simplicity and efficiency of state machines has been proven
+before, notably in autonomous drone racing by TU Delft~\etal~\cite{Moon}.
+Using this approach, coupled with a PID controller to generate velocity
+commands to the lower-level controller, it makes it easy and time effective to
+test the gate center detection models under different conditions. The lidar
+seen on Fig.~\ref{fig:block-system} has the purpose of detecting when the
+UAV has successfully crossed a gate, by detecting a peak in the altitude
+measurements.\\
+
+The controller is implemented in C++ as a ROS node. As such, it can easily be
+interfaced with the perception, which is a Python ROS node, and with the safety
+system which acts as a proxy between this controller and the lower-level
+controller.
+
+As stated previously, the control of the drone is reduced to aligning the image
+center of the camera -- technically the drone itself -- with the center of the
+predicted region window. The PID controller is therefore calculating the error
+as the difference, in pixels , between the image center at $(\frac{W}{2},
+\frac{H}{2})$ (for the width and height of the image) and the center of the
+predicted window.
+
+To make things simpler and more efficient, the UAV's alignment is achieved by
+giving it a constant forward velocity, while the controller sets its upward and
+yaw velocities in real time. By choosing the yaw rotation over a horizontal
+movement, the drone becomes more agile and faster to approach a gate.
