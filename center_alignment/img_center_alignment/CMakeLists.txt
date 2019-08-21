@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   dynamic_reconfigure
+  perception
 )
 
 #find_package(Eigen3 REQUIRED NO_MODULE)
@@ -55,7 +56,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-   GatePredictionMessage.msg
+   Bbox.msg
+   GatePrediction.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -109,7 +111,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES img_center_alignment
-  CATKIN_DEPENDS roscpp rospy message_runtime
+  CATKIN_DEPENDS roscpp rospy message_runtime perception
   #DEPENDS eigen
 )
 

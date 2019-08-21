@@ -11,6 +11,7 @@ Dataset class
 """
 
 import random
+import json
 import os
 
 from PIL import Image, ImageDraw
@@ -38,28 +39,18 @@ class BaseImage:
         return self.file
 
 
-class TestAnnotations:
-    def __init__(self, center, orientation: Quaternion, distance: float, on_screen: bool):
-        self.center = [int(x) for x in center]
-        self.orientation = orientation
-        self.distance = distance
-        self.on_screen = 1 if on_screen else 0
-
-
 '''
 Holds a test image along with its annotations
 '''
 class AnnotatedImage:
-    def __init__(self, image_path: str, id, annotations: [TestAnnotations],
-                 scale: tuple):
+    def __init__(self, image_path: str, id, bboxes):
         self.image_path = image_path
         self.id = id
-        self.candidates = annotations
-        self.scale = scale
+        self.bboxes = bboxes
 
 
 class Dataset:
-    def __init__(self, path: str, seed=None, max=0):
+    def __init__(self, path: str, seed=None, max=0, verbose=False):
         if not os.path.isdir(path):
             raise Exception("Dataset directory {} not found".format(path))
         if seed:
@@ -72,6 +63,8 @@ class Dataset:
         self.data = Queue(maxsize=max)
         self.saving = False
         self.count = 0
+        self.annotations = dict()
+        self.verbose = verbose
 
     def parse_annotations(self, path: str):
         if not os.path.isfile(path):
@@ -131,13 +124,38 @@ class Dataset:
     def put(self, image: AnnotatedImage):
         self.data.put(image)
 
+    def draw_annotations(self, img, bboxes):
+        gate_draw = ImageDraw.Draw(img)
+        for i, bbox in enumerate(bboxes):
+            color = 'green'
+            xmin, ymin = bbox['min'][0], bbox['min'][1]
+            xmax, ymax = bbox['max'][0], bbox['max'][1]
+            gate_draw.rectangle([(xmin, ymin), (xmax, ymax)],
+                                outline=color, width=2)
+            label = "Candidate"
+            textSize = gate_draw.textsize(label)
+            gate_draw.rectangle((
+                (xmin-2, ymin-2),
+                (xmin+textSize[0]+2, ymin+textSize[1])),
+                fill=color)
+            gate_draw.text((xmin, ymin), label, fill='white')
+
     # Runs in a thread
-    def save(self):
+    def save_json_live(self):
         if not self.saving:
-            self.output_csv = open(os.path.join(self.path,
-                                                'annotations.csv'), 'w')
-            self.output_csv.write(
-                "frame,gate_center_x,gate_center_y,gate_rotation_x,gate_rotation_y,gate_rotation_z,gate_rotation_w,gate_distance,gate_visible\n")
+            with open(os.path.join(self.path, 'annotations.json'),
+                      'w', encoding='UTF-8') as f:
+                annotations = {}
+                annotations['classes'] = [
+                    {'id': 0, 'label': 'Background'},
+                    {'id': 1, 'label': 'Target 1'},
+                    {'id': 2, 'label': 'Target 2'},
+                    {'id': 3, 'label': 'Forward gate'},
+                    {'id': 4, 'label': 'Backward gate'}
+                ]
+                annotations['annotations'] = []
+                json.dump(annotations, f, ensure_ascii=False, indent=4)
+
             self.saving = True
             if not os.path.isdir(os.path.join(self.path, 'images')):
                 os.mkdir(os.path.join(self.path, 'images'))
@@ -145,23 +163,35 @@ class Dataset:
         for annotatedImage in iter(self.data.get, None):
             name = "%06d.png" % annotatedImage.id
             img = Image.open(annotatedImage.image_path)
-            img.thumbnail(annotatedImage.scale, Image.ANTIALIAS)
+            if self.verbose:
+                self.draw_annotations(img, annotatedImage.bboxes)
             img.save(os.path.join(self.path, 'images', name))
-            for candidate in annotatedImage.candidates:
-                self.output_csv.write("{},{},{},{},{},{},{},{},{}\n".format(
-                    name,
-                    candidate.center[0],
-                    candidate.center[1],
-                    candidate.orientation.x,
-                    candidate.orientation.y,
-                    candidate.orientation.z,
-                    candidate.orientation.w,
-                    candidate.distance,
-                    candidate.on_screen
-                ))
-                self.output_csv.flush()
+            bboxes = []
+            for bbox in annotatedImage.bboxes:
+                bboxes.append({
+                    'class_id': bbox['class_id'],
+                    'xmin': bbox['min'][0],
+                    'ymin': bbox['min'][1],
+                    'xmax': bbox['max'][0],
+                    'ymax': bbox['max'][1],
+                    'distance': bbox['distance'],
+                    'rotation': bbox['rotation']
+                })
 
-        self.output_csv.close()
+            annotation = {
+                'image': name,
+                'annotations': bboxes
+            }
+
+            with open(os.path.join(self.path, 'annotations.json'),
+                      'r', encoding='UTF-8') as f:
+                data = json.load(f)
+
+            data['annotations'].append(annotation)
+
+            with open(os.path.join(self.path, 'annotations.json'),
+                      'w', encoding='UTF-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
 
     def get_image_size(self):
         print("[*] Using {}x{} base resolution".format(self.width, self.height))

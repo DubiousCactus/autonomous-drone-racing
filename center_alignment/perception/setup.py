@@ -5,7 +5,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 
 d = generate_distutils_setup(
-    packages=['Dronet'],
+    packages=['Detector'],
     package_dir={'': 'src'}
 )
 

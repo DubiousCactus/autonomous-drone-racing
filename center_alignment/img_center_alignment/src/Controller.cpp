@@ -13,17 +13,17 @@
 Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 {
 	this->ready = false;
-	this->rate = 100;
+	this->rate = CONTROLLER_RATE;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
 	this->state = LANDED;
-	this->gate_region = 0;
+	this->gate_center.locked = false;
 	this->altitude = .0;
 	this->subVelocity = this->handle.subscribe("/mavros/local_position/velocity", 1000,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
 		this->handle.advertise<geometry_msgs::Quaternion>(
 				"/IntelDrone/command_velocity_body", 100);
-	this->subPredictor = this->handle.subscribe("/predictor/filtered", 1000,
+	this->subPredictor = this->handle.subscribe("/predictor/raw", 1000,
 			&Controller::GatePredictionCallback, this);
 
 	this->dynRcfgServer.setCallback(
@@ -50,14 +50,23 @@ void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 	this->PIDBoy->SetGainParameters(gain_z, gain_yaw, cfg.x_vel);
 }
 
-void Controller::GatePredictionCallback(const GatePredictionMessage &msg)
+void Controller::GatePredictionCallback(const perception::GatePrediction::ConstPtr &msg)
 {
-	this->ready = true;
-	this->gate_region = msg.window;
+	this->gate_center.locked = msg->locked;
+	if (!msg->locked) {
+		this->gate_center.x = 0;
+		this->gate_center.y = 0;
+	} else {
+		this->gate_center.x = (msg->bbox.maxX + msg->bbox.minX)/2;
+		this->gate_center.x = (this->gate_center.x * CAM_WIDTH)/IMG_WIDTH;
+		this->gate_center.y = (msg->bbox.maxY + msg->bbox.minY)/2;
+		this->gate_center.y = (this->gate_center.y * CAM_HEIGHT)/IMG_HEIGHT;
+	}
 	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT) {
 		this->previous_predictions.pop_back();
 	}
-	this->previous_predictions.push_front(msg.window);
+	this->previous_predictions.push_front(msg->bbox);
+	this->ready = true;
 }
 
 void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg)
@@ -79,11 +88,6 @@ void Controller::PublishVelocity(Vector3d velocity)
 	quat.x = velocity.x;
 	quat.y = velocity.y;
 	quat.z = velocity.z;
-	/*geometry_msgs::TwistStamped twistStamped;
-	twistStamped.twist.linear.x = velocity.x;
-	twistStamped.twist.linear.y = velocity.y;
-	twistStamped.twist.linear.z = velocity.z;
-	twistStamped.header.stamp = ros::Time::now();*/
 	this->pubVelocity.publish(quat);
 }
 
@@ -94,11 +98,6 @@ void Controller::PublishVelocity(Velocity velocity)
 	quat.y = velocity.linear.y;
 	quat.z = velocity.linear.z;
 	quat.w = velocity.yaw;
-	/*geometry_msgs::TwistStamped twistStamped;
-	twistStamped.twist.linear.x = velocity.x;
-	twistStamped.twist.linear.y = velocity.y;
-	twistStamped.twist.linear.z = velocity.z;
-	twistStamped.header.stamp = ros::Time::now();*/
 	this->pubVelocity.publish(quat);
 }
 
@@ -106,46 +105,32 @@ void Controller::PublishVelocity(float yawVelocity)
 {
 	geometry_msgs::Quaternion quat;
 	quat.w = yawVelocity;
-	/*geometry_msgs::TwistStamped twistStamped;
-	twistStamped.twist.angular.z = yawVelocity;
-	twistStamped.header.stamp = ros::Time::now();*/
 	this->pubVelocity.publish(quat);
-}
-
-Vector3d Controller::ComputeGateCenter()
-{
-	int window_size = sqrt(NB_WINDOWS);
-	int window_width = IMG_WIDTH/window_size;
-	int window_height = IMG_HEIGHT/window_size;
-	int window_xindex = this->gate_region % window_size;
-	if (window_xindex == 0)
-		window_xindex = window_size;
-	int window_x = (window_xindex - 1) * window_width;
-	int window_y = window_height * (this->gate_region/window_size);
-	return Vector3d(
-			window_x + (window_width/2),
-			window_y + (window_height/2),
-			0);
 }
 
 
 bool Controller::CrossingCondition()
 {
+	int prevXmin, prevXmax, prevYmin, prevYmax;
 	bool crossing = false;
-	std::list<int> acceptable_regions = {8, 12, 13, 14};
 
-	if (this->previous_predictions.size() >=
-			PREVIOUS_PREDICTIONS_CNT && (std::find(acceptable_regions.begin(),
-					acceptable_regions.end(), this->gate_region) ==
-				acceptable_regions.end())) {
+	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT
+			&& !this->gate_center.locked) {
 		crossing = true;
+		/* The first one is the current prediction, which we don't need */
 		this->previous_predictions.pop_front();
-		for (auto windowIt = this->previous_predictions.begin(); windowIt
-				!= this->previous_predictions.end(); windowIt++ ) {
-			if (std::find(acceptable_regions.begin(), acceptable_regions.end(),
-						*windowIt) == acceptable_regions.end()) {
+		for (auto bboxIt = this->previous_predictions.begin(); bboxIt
+				!= this->previous_predictions.end(); bboxIt++ ) {
+			if (!(bboxIt->minX <= prevXmin && bboxIt->maxX >= prevXmax
+					&& bboxIt->maxY >= prevYmax && bboxIt->minY <= prevYmin)
+					&& bboxIt != this->previous_predictions.begin()) {
 				crossing = false;
 				break;
+			} else {
+				prevXmin = bboxIt->minX;
+				prevXmax = bboxIt->maxX;
+				prevYmin = bboxIt->minY;
+				prevYmax = bboxIt->maxY;
 			}
 		}
 		this->previous_predictions.clear();
@@ -158,9 +143,7 @@ void Controller::Run()
 {
 	int tick = 0;
 	ros::Rate rate(this->rate);
-	Vector3d gate_center;
-	Vector3d origin(IMG_WIDTH/2, IMG_HEIGHT/2);
-	origin.x += 10;
+	Vector3d origin(CAM_WIDTH/2, CAM_HEIGHT/2);
 	ros::Time startLeavingTime, startTakeOffTime, startCrossingTime;
 
 	while (ros::ok()) {
@@ -195,14 +178,12 @@ void Controller::Run()
 				}
 			case AIMING:
 				{
-					if (this->gate_region == 0) {
+					if (!this->gate_center.locked) {
 						// Yaw velocity
 						this->PublishVelocity(0.05);
 					} else {
-						this->PublishVelocity(0);
-						gate_center = this->ComputeGateCenter();
 						/*std::cout << "[*] Flying towards gate center: " <<
-							gate_center.x << "," << gate_center.y << "]" <<
+							this->gate_center.x << "," << this->gate_center.y << "]" <<
 							std::endl;*/
 						this->state = FLYING;
 					}
@@ -210,10 +191,10 @@ void Controller::Run()
 				}
 			case REFINING:
 				{
-					if (!this->ready) {
+					/*if (!this->ready) {
 						this->state = WAITING;
 						break;
-					}
+					}*/
 
 					this->ready = false;
 					bool crossing = this->CrossingCondition();
@@ -221,10 +202,10 @@ void Controller::Run()
 						std::cout << "[*] Crossing the gate, watch out !" << std::endl;
 						startCrossingTime = ros::Time::now();
 						this->state = CROSSING;
-					} else if (this->gate_region != 0) {
-						gate_center = this->ComputeGateCenter();
-						std::cout << "[*] Flying towards window " <<
-							this->gate_region << std::endl;
+					} else if (this->gate_center.locked) {
+						std::cout << "[*] Flying towards coords [" <<
+							this->gate_center.x << "," << this->gate_center.y <<
+							"]" << std::endl;
 						this->state = FLYING;
 					} else {
 						std::cout << "[*] Gate lost! Re-targetting..." << std::endl;
@@ -235,12 +216,16 @@ void Controller::Run()
 			case FLYING:
 				{
 					/* Compute the gate error */
-					Vector3d gate_err = origin - gate_center;
+					Vector3d center(this->gate_center.x, this->gate_center.y, 0);
+					Vector3d gate_err = origin - center;
 
 					/* Compute the velocity from the PID controller */
 					auto velocity = this->PIDBoy->Compute(gate_err,
 							this->current_velocity);
 
+					/* TODO: Maybe it's better to compute the velocity until
+ 					 * the error is 0, and then switch to the WAITING state ?
+					 * */
 					/* Apply the velocity or send it to the drone */
 					this->PublishVelocity(velocity);
 					std::cout << "[*] Aligning" << std::endl;

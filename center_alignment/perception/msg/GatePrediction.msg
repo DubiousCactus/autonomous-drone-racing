@@ -1,2 +1,3 @@
 Header header
-int8 window
+Bbox bbox
+bool locked
