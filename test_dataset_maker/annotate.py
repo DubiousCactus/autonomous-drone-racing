@@ -117,6 +117,7 @@ class Annotator():
         )
 
     def __euler_yaw(self, q):
+        # My quaternion uses ZXY Euler angle notation!
         siny_cosp = 2.0 * ((q.w * q.z) + (q.x * q.y))
         cosy_cosp = 1.0 - (2.0 * ((q.y * q.y) + (q.z * q.z)))
 
@@ -156,6 +157,7 @@ class Annotator():
         outside.  Otherwise, the gate is not visible.
     '''
     def __compute_bbox_coords(self, mesh, view):
+        upright = Quaternion.from_y_rotation(np.pi/2)
         rotation = Quaternion(mesh['rotation'])
         center = mesh['translation']
         world_corners = {
@@ -163,26 +165,22 @@ class Annotator():
                 center[0],
                 center[1],
                 center[2]
-            ]) + (rotation * Vector3([-mesh['width']/2, -mesh['width']/2,
-                                      mesh['height']/2])),
+            ]) + (rotation * upright * Vector3([0, mesh['width']/2, mesh['height']/2])),
             'top_right': Vector3([
                 center[0],
                 center[1],
                 center[2]
-            ]) + (rotation * Vector3([mesh['width']/2, mesh['width']/2,
-                                      mesh['height']/2])),
+            ]) + (rotation * upright * Vector3([0, -mesh['width']/2, mesh['height']/2])),
             'bottom_right': Vector3([
                 center[0],
                 center[1],
                 center[2]
-            ]) + (rotation * Vector3([mesh['width']/2, mesh['width']/2,
-                                      -mesh['height']/2])),
+            ]) + (rotation * upright * Vector3([0, -mesh['width']/2, -mesh['height']/2])),
             'bottom_left': Vector3([
                 center[0],
                 center[1],
                 center[2]
-            ]) + (rotation * Vector3([-mesh['width']/2, -mesh['width']/2,
-                                      -mesh['height']/2]))
+            ]) + (rotation * upright * Vector3([0, mesh['width']/2, -mesh['height']/2]))
         }
 
         hidden_corners = 0
