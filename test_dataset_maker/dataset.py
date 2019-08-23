@@ -14,10 +14,11 @@ import random
 import json
 import os
 
-from PIL import Image, ImageDraw
 from tqdm import tqdm
 from queue import Queue
+from shutil import copyfile
 from threading import Thread
+from PIL import Image, ImageDraw
 from pyrr import Vector3, Quaternion
 
 
@@ -81,13 +82,16 @@ class Dataset:
 
         return annotations
 
-    def load(self, count=None, annotations_path=None, randomize=True):
+    def load(self, count=None, annotations_path=None, randomize=True, skip=None):
         print("[*] Loading and randomizing base dataset...")
         if randomize:
             files = os.listdir(self.path)
             random.shuffle(files)
         else:
             files = sorted(os.listdir(self.path))
+
+        if skip:
+            files = files[skip::]
 
         annotations = self.parse_annotations(annotations_path)
         # Remove files without annotations
@@ -162,10 +166,13 @@ class Dataset:
 
         for annotatedImage in iter(self.data.get, None):
             name = "%06d.png" % annotatedImage.id
-            img = Image.open(annotatedImage.image_path)
             if self.verbose:
+                img = Image.open(annotatedImage.image_path)
                 self.draw_annotations(img, annotatedImage.bboxes)
-            img.save(os.path.join(self.path, 'images', name))
+                img.save(os.path.join(self.path, 'images', name))
+            else:
+                copyfile(annotatedImage.image_path,
+                         os.path.join(self.path, 'images', name))
             bboxes = []
             for bbox in annotatedImage.bboxes:
                 bboxes.append({

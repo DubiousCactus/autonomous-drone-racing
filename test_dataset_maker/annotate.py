@@ -11,8 +11,8 @@ Annotate a base dataset of images with camera poses, by projecting the
 given gate position (in the world frame) on the image frame.
 """
 
-from dataset import Dataset, AnnotatedImage
 from pyrr import Matrix44, Vector3, Vector4, Quaternion
+from dataset import Dataset, AnnotatedImage
 from math import atan2
 from tqdm import *
 
@@ -25,7 +25,7 @@ import os
 
 class Annotator():
     def __init__(self, base_dataset: str, dest: str, config: str,
-                 camera_parameters: str, resolution: str):
+                 camera_parameters: str, resolution: str, skip: int):
         with open(config, 'r') as conf:
             try:
                 self.gates_config = yaml.safe_load(conf)
@@ -39,14 +39,14 @@ class Annotator():
         self.base_dataset = Dataset(os.path.join(base_dataset, "images"))
         self.base_dataset.load(annotations_path=os.path.join(base_dataset,
                                                              "annotations.csv"),
-                               randomize=False)
+                               randomize=False, skip=skip)
         if not resolution:
             self.width = self.base_dataset.width
             self.height = self.base_dataset.height
         else:
             self.width, self.height = int(resolution.split('x')[0]), int(resolution.split('x')[1])
         print("[*] Using {}x{} target resolution".format(self.width, self.height))
-        self.annotated_dataset = Dataset(dest, max=300, verbose=True)
+        self.annotated_dataset = Dataset(dest, max=300, verbose=False)
         self.__compute_camera_matrix()
 
     def __compute_camera_matrix(self):
@@ -236,8 +236,9 @@ if __name__ == "__main__":
                         (output of OpenCV\'s calibration)',
                         required=True)
     parser.add_argument('--res', dest='resolution', type=str, help='destination resolution')
+    parser.add_argument('--skip', dest='skip', type=int, help='number of samples to skip')
 
     args = parser.parse_args()
     annotator = Annotator(args.base_dataset, args.destination, args.config,
-                          args.camera_parameters, args.resolution)
+                          args.camera_parameters, args.resolution, args.skip)
     annotator.run()

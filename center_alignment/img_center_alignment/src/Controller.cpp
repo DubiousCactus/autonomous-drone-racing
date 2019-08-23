@@ -5,10 +5,11 @@
  * Distributed under terms of the MIT license.
  */
 
-#include "Controller.h"
 #include <iostream>
+#include <assert.h>
 #include <algorithm>
 
+#include "Controller.h"
 
 Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 {
@@ -53,6 +54,7 @@ void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 void Controller::GatePredictionCallback(const perception::GatePrediction::ConstPtr &msg)
 {
 	this->gate_center.locked = msg->locked;
+	this->gate_center.bbox = *msg;
 	if (!msg->locked) {
 		this->gate_center.x = 0;
 		this->gate_center.y = 0;
@@ -109,9 +111,19 @@ void Controller::PublishVelocity(float yawVelocity)
 }
 
 
+void Controller::ClearCalibration()
+{
+	std::queue<float> empty;
+	std::swap(this->previous_ratios, empty);
+	this->ref_gate.ratio = 0;
+	this->ref_gate.width = 0;
+	this->ref_gate.height = 0;
+}
+
+
 bool Controller::CrossingCondition()
 {
-	int prevXmin, prevXmax, prevYmin, prevYmax;
+	int prevArea;
 	bool crossing = false;
 
 	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT
@@ -120,24 +132,20 @@ bool Controller::CrossingCondition()
 		/* The first one is the current prediction, which we don't need */
 		this->previous_predictions.pop_front();
 		for (auto bboxIt = this->previous_predictions.begin(); bboxIt
-				!= this->previous_predictions.end(); bboxIt++ ) {
-			if (!(bboxIt->minX <= prevXmin && bboxIt->maxX >= prevXmax
-					&& bboxIt->maxY >= prevYmax && bboxIt->minY <= prevYmin)
-					&& bboxIt != this->previous_predictions.begin()) {
+				!= this->previous_predictions.end(); ++bboxIt) {
+			int area = (bboxIt->maxX - bboxIt->minX)*(bboxIt->maxY - bboxIt->minY);
+			if (area < prevArea && bboxIt != this->previous_predictions.begin()) {
 				crossing = false;
 				break;
-			} else {
-				prevXmin = bboxIt->minX;
-				prevXmax = bboxIt->maxX;
-				prevYmin = bboxIt->minY;
-				prevYmax = bboxIt->maxY;
 			}
+			prevArea = area;
 		}
 		this->previous_predictions.clear();
 	}
 
 	return crossing;
 }
+
 
 void Controller::Run()
 {
@@ -185,6 +193,53 @@ void Controller::Run()
 						/*std::cout << "[*] Flying towards gate center: " <<
 							this->gate_center.x << "," << this->gate_center.y << "]" <<
 							std::endl;*/
+						this->ClearCalibration();
+						this->state = CALIBRATING;
+					}
+					break;
+				}
+			case CALIBRATING:
+				{
+					/* Init the list */
+					int width = this->gate_center.bbox.maxX -
+						this->gate_center.bbox.minX;
+					int height = this->gate_center.bbox.maxY -
+						this->gate_center.bbox.minY;
+					float ratio = width / height;
+					int meanRatio, meanWidth, meanHeight;
+					bool valid = true;
+					meanRatio = meanWidth = meanHeight = 0;
+
+					if (this->ref_gate_buffer.empty()) {
+						this->ref_gate_buffer.push(Gate(ratio, height, width));
+						break;
+					}
+
+					for (auto prevA = this->ref_gate_buffer.begin();
+							prevA != this->ref_gate_buffer.end(); ++prevA) {
+						if (abs(prevA->ratio/ratio) > CALIBRATION_ERROR_THRESHOLD) {
+							this->ref_gate_buffer.pop();
+							valid = false;
+							break;
+						}
+						meanRatio += prevA->ratio;
+						meanWidth += prevA->width;
+						meanHeight += prevA->height;
+					}
+
+					meanRatio /= CALIBRATION_QUEUE_SIZE;
+					meanWidth /= CALIBRATION_QUEUE_SIZE;
+					meanHeight /= CALIBRATION_QUEUE_SIZE;
+
+					if (valid) {
+						this->ref_gate_buffer.push(Gate(ratio, height, width));
+					}
+
+					if (this->ref_gate_buffer.size() == CALIBRATION_QUEUE_SIZE) {
+						std::cout << "[*] Target gate calibrated !" << std::endl;
+						this->ref_gate.ratio = meanRatio;
+						this->ref_gate.width = meanWidth;
+						this->ref_gate.height = meanHeight;
 						this->state = FLYING;
 					}
 					break;
@@ -215,8 +270,18 @@ void Controller::Run()
 				}
 			case FLYING:
 				{
+					assert(this->ref_gate.ratio != 0);
+					assert(this->ref_gate.width != 0);
+					assert(this->ref_gate.height != 0);
 					/* Compute the gate error */
+					float ratio = GET_RATIO();
+
 					Vector3d center(this->gate_center.x, this->gate_center.y, 0);
+					if (abs(ratio / this->ref_gate.ratio) > CALIBRATION_ERROR_THRESHOLD) {
+						/* Compensate for the shift */
+						center.x -= GET_X_SHIFT();
+						center.y -= GET_Y_SHIFT();
+					}
 					Vector3d gate_err = origin - center;
 
 					/* Compute the velocity from the PID controller */
