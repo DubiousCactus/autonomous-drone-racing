@@ -151,6 +151,76 @@ std::list<Gate> Controller::GetRefGateBuffer()
 }
 
 
+void Controller::Calibrate()
+{
+	/* Init the list */
+	int width = this->gate_center.bbox.maxX -
+		this->gate_center.bbox.minX;
+	int height = this->gate_center.bbox.maxY -
+		this->gate_center.bbox.minY;
+	float ratio = (float)width / (float)height;
+	assert(ratio != 0 && "target ratio is 0!");
+	float meanRatio;
+	int meanWidth, meanHeight;
+	bool valid = true;
+	meanRatio = meanWidth = meanHeight = 0;
+
+	if (!this->gate_center.locked) {
+		return;
+	}
+
+	if (this->ref_gate_buffer.empty()) {
+		Gate gate = { ratio, width, height };
+		this->ref_gate_buffer.push_front(gate);
+		return;
+	}
+
+	for (auto prevA = this->ref_gate_buffer.begin();
+			prevA != this->ref_gate_buffer.end(); ++prevA) {
+		if (abs(1-(prevA->ratio/ratio)) >
+				CALIBRATION_ERROR_THRESHOLD) {
+			if (this->ref_gate_buffer.size() > 1) {
+				this->ref_gate_buffer.pop_back();
+			}
+			valid = false;
+			break;
+		}
+		assert(prevA->ratio != 0 && "prevA ratio is 0!");
+		meanWidth += prevA->width;
+		meanHeight += prevA->height;
+	}
+
+	if (valid) {
+		Gate gate = { ratio, width, height };
+		this->ref_gate_buffer.push_front(gate);
+		meanWidth += width;
+		meanHeight += height;
+	} else {
+		this->ClearCalibration();
+		return;
+	}
+
+	if (valid && this->ref_gate_buffer.size() ==
+			CALIBRATION_QUEUE_SIZE) {
+		meanWidth /= CALIBRATION_QUEUE_SIZE;
+		meanHeight /= CALIBRATION_QUEUE_SIZE;
+		meanRatio = (float)meanWidth/(float)meanHeight;
+
+		std::cout << "[*] Target gate calibrated ! Mean ratio: "
+			<< meanRatio << " - Mean width: " << meanWidth
+			<< " - Mean height: " << meanHeight << std::endl;
+		std::cout << "[*] Flying towards gate center: " <<
+			this->gate_center.x << "," << this->gate_center.y
+			<< "]" << std::endl;
+
+		this->ref_gate.ratio = meanRatio;
+		this->ref_gate.width = meanWidth;
+		this->ref_gate.height = meanHeight;
+		this->state = FLYING;
+	}
+}
+
+
 void Controller::Step(int tick)
 {
 	Vector3d origin(CAM_WIDTH/2, CAM_HEIGHT/2);
@@ -184,12 +254,8 @@ void Controller::Step(int tick)
 		case AIMING:
 			{
 				if (!this->gate_center.locked) {
-					// Yaw velocity
-					this->PublishVelocity(0.05);
+					this->PublishVelocity(0.05); // Yaw velocity
 				} else {
-					/*std::cout << "[*] Flying towards gate center: " <<
-					  this->gate_center.x << "," << this->gate_center.y << "]" <<
-					  std::endl;*/
 					this->ClearCalibration();
 					this->state = CALIBRATING;
 				}
@@ -197,64 +263,7 @@ void Controller::Step(int tick)
 			}
 		case CALIBRATING:
 			{
-				/* Init the list */
-				int width = this->gate_center.bbox.maxX -
-					this->gate_center.bbox.minX;
-				int height = this->gate_center.bbox.maxY -
-					this->gate_center.bbox.minY;
-				float ratio = (float)width / (float)height;
-				assert(ratio != 0 && "target ratio is 0!");
-				float meanRatio;
-				int meanWidth, meanHeight;
-				bool valid = true;
-				meanRatio = meanWidth = meanHeight = 0;
-
-				if (this->ref_gate_buffer.empty()) {
-					Gate gate = { ratio, width, height };
-					this->ref_gate_buffer.push_front(gate);
-					break;
-				}
-
-				for (auto prevA = this->ref_gate_buffer.begin();
-						prevA != this->ref_gate_buffer.end(); ++prevA) {
-					if (abs(1-(prevA->ratio/ratio)) >
-							CALIBRATION_ERROR_THRESHOLD) {
-						if (this->ref_gate_buffer.size() > 1) {
-							this->ref_gate_buffer.pop_back();
-						}
-						valid = false;
-						break;
-					}
-					assert(prevA->ratio != 0 && "prevA ratio is 0!");
-					meanRatio += prevA->ratio;
-					meanWidth += prevA->width;
-					meanHeight += prevA->height;
-				}
-
-				if (valid) {
-					Gate gate = { ratio, width, height };
-					this->ref_gate_buffer.push_front(gate);
-					meanRatio += ratio;
-					meanWidth += width;
-					meanHeight += height;
-				}
-
-				if (valid && this->ref_gate_buffer.size() ==
-						CALIBRATION_QUEUE_SIZE) {
-					std::cout << "[*] Target gate calibrated ! Mean ratio: "
-						<< meanRatio << " - Mean width: " << meanWidth
-						<< " - Mean height: " << meanHeight << std::endl;
-					std::cout << "[*] Flying towards gate center: " <<
-						this->gate_center.x << "," << this->gate_center.y
-						<< "]" << std::endl;
-					meanRatio /= CALIBRATION_QUEUE_SIZE;
-					meanWidth /= CALIBRATION_QUEUE_SIZE;
-					meanHeight /= CALIBRATION_QUEUE_SIZE;
-					this->ref_gate.ratio = meanRatio;
-					this->ref_gate.width = meanWidth;
-					this->ref_gate.height = meanHeight;
-					this->state = FLYING;
-				}
+				this->Calibrate();
 				break;
 			}
 		case REFINING:
