@@ -314,19 +314,15 @@ void Controller::Step(int tick)
 						int correctedHeight = (this->gate_center.bbox.maxX -
 								this->gate_center.bbox.minX) / this->ref_gate.ratio;
 						center.y = (center.y > CAM_HEIGHT/2) ? 
-							(this->gate_center.bbox.minY + correctedHeight +
-							 this->gate_center.bbox.maxY)/2 :
-							(this->gate_center.bbox.maxY - correctedHeight +
-							 this->gate_center.bbox.minY)/2;
+							 GET_Y_COORD(correctedHeight) :
+							 GET_Y_COORD(-correctedHeight);
 					} else if (ratio < this->ref_gate.ratio) {
 						/* Correct the width of the bbox */
 						int correctedWidth = (this->gate_center.bbox.maxY -
 								this->gate_center.bbox.minY) * this->ref_gate.ratio;
 						center.x = (center.x > CAM_WIDTH/2) ? 
-							(this->gate_center.bbox.minX + correctedWidth +
-							 this->gate_center.bbox.maxX)/2 :
-							(this->gate_center.bbox.maxX - correctedWidth +
-							 this->gate_center.bbox.minX)/2;
+							GET_X_COORD(correctedWidth) :
+							GET_X_COORD(-correctedWidth);
 					}
 				}
 				Vector3d gate_err = origin - center;
@@ -389,14 +385,21 @@ void Controller::Step(int tick)
 }
 
 
+void Controller::SetPreviousPredictions(std::list<perception::Bbox> previous_predictions)
+{
+	this->previous_predictions = previous_predictions;
+}
+
+
 bool Controller::CrossingCondition()
 {
-	int prevArea;
+	int prevArea, sameSize;
 	bool crossing = false;
 
 	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT
 			&& !this->gate_center.locked) {
 		crossing = true;
+		sameSize = 0;
 		/* The first one is the current prediction, which we don't need */
 		this->previous_predictions.pop_front();
 		for (auto bboxIt = this->previous_predictions.begin(); bboxIt
@@ -405,10 +408,17 @@ bool Controller::CrossingCondition()
 			if (area < prevArea && bboxIt != this->previous_predictions.begin()) {
 				crossing = false;
 				break;
+			} else if (area == prevArea && bboxIt != this->previous_predictions.begin()) {
+				sameSize++;
 			}
 			prevArea = area;
 		}
-		this->previous_predictions.clear();
+
+		if (!crossing) {
+			this->previous_predictions.clear();
+		} else if (sameSize >= PREVIOUS_PREDICTIONS_CNT/2) {
+			crossing = false;
+		}
 	}
 
 	return crossing;

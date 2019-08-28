@@ -15,6 +15,32 @@
 #define rand_a_b(a, b) ((float)rand()/(float)RAND_MAX)*(b-a)+a
 
 
+void make_prediction(Prediction *p, int xMax, int xMin, int yMax, int yMin,
+      bool locked)
+{
+   p->bbox = perception::Bbox();
+   p->bbox.minX = xMin;
+   p->bbox.minY = yMin;
+   p->bbox.maxX = xMax;
+   p->bbox.maxY = yMax;
+   p->locked = locked;
+   p->x = (xMax + xMin) / 2;
+   p->y = (yMax + yMin) / 2;
+}
+
+
+perception::Bbox make_bbox(int xMax, int xMin, int yMax, int yMin)
+{
+   perception::Bbox bbox;
+   bbox.minX = xMin;
+   bbox.minY = yMin;
+   bbox.maxX = xMax;
+   bbox.maxY = yMax;
+
+   return bbox;
+}
+
+
 Controller* make_controller(State state)
 {
    gain_param k_x, k_y;
@@ -27,23 +53,29 @@ Controller* make_controller(State state)
    k_y.insert(std::pair<std::string, float>("d", 0.0));
 
    Controller *controller = new Controller(k_x, k_y, 0.25);
+
+   if (state == FLYING) {
+      controller->SetState(CALIBRATING);
+      Prediction centers[CALIBRATION_QUEUE_SIZE];
+      make_prediction(&centers[0], 140, 85, 187, 112, true);
+      make_prediction(&centers[1], 137, 94, 177, 119, true);
+      make_prediction(&centers[2], 131, 78, 192, 106, true);
+      make_prediction(&centers[3], 144, 81, 183, 118, true);
+      make_prediction(&centers[4], 146, 89, 180, 110, true);
+      make_prediction(&centers[5], 143, 82, 185, 109, true);
+      make_prediction(&centers[6], 135, 97, 179, 120, true);
+      make_prediction(&centers[7], 137, 82, 186, 111, true);
+      make_prediction(&centers[8], 141, 79, 185, 117, true);
+      make_prediction(&centers[9], 145, 90, 182, 113, true);
+
+      for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
+         controller->SetGateCenter(centers[i]);
+         controller->Step(0);
+      }
+   }
    controller->SetState(state);
 
    return controller;
-}
-
-
-void make_prediction(Prediction *p, int xMax, int xMin, int yMax, int yMin,
-      bool locked)
-{
-   p->bbox = perception::Bbox();
-   p->bbox.minX = xMin;
-   p->bbox.minY = yMin;
-   p->bbox.maxX = xMax;
-   p->bbox.maxY = yMax;
-   p->locked = locked;
-   p->x = (xMax + xMin) / 2;
-   p->y = (yMax + yMin) / 2;
 }
 
 
@@ -402,6 +434,135 @@ TEST(Controller, CalibrationAndFlightWithCompensation) {
    alignmentError = controller->GetAlignmentError();
    EXPECT_EQ(corrected_err.x, alignmentError.x);
    EXPECT_EQ(corrected_err.y, alignmentError.y);
+}
+
+
+TEST(Controller, CrossingCondition) {
+   Controller *controller = make_controller(FLYING);
+   // PREVIOUD_PREDICTIONS_CNT = 10
+   std::list<perception::Bbox> prevPreds;
+   bool crossing;
+   Prediction vanishedCenter;
+   
+   prevPreds = {
+      make_bbox(140, 101, 167, 88),
+      make_bbox(163, 98, 172, 73),
+      make_bbox(169, 92, 179, 68),
+      make_bbox(174, 86, 187, 61),
+      make_bbox(188, 75, 198, 50),
+      make_bbox(199, 61, 210, 43),
+      make_bbox(209, 56, 218, 34),
+      make_bbox(233, 50, 224, 29),
+      make_bbox(259, 25, 218, 16),
+      make_bbox(302, 12, 223, 8)
+   }; 
+   controller->SetPreviousPredictions(prevPreds);
+   make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
+   controller->SetGateCenter(vanishedCenter);
+   controller->Step(0);
+
+   crossing = controller->CrossingCondition();
+   EXPECT_TRUE(crossing);
+   
+   prevPreds = {
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88),
+      make_bbox(140, 101, 167, 88)
+   }; 
+   controller->SetPreviousPredictions(prevPreds);
+   make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
+   controller->SetGateCenter(vanishedCenter);
+   controller->Step(0);
+
+   crossing = controller->CrossingCondition();
+   EXPECT_FALSE(crossing);
+
+   prevPreds = {
+      make_bbox(140, 101, 167, 88),
+      make_bbox(163, 98, 172, 73),
+      make_bbox(163, 98, 172, 73),
+      make_bbox(174, 86, 187, 61),
+      make_bbox(188, 75, 198, 50),
+      make_bbox(188, 75, 198, 50),
+      make_bbox(209, 56, 218, 34),
+      make_bbox(233, 50, 224, 29),
+      make_bbox(233, 50, 224, 29),
+      make_bbox(302, 12, 223, 8)
+   }; 
+   controller->SetPreviousPredictions(prevPreds);
+   make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
+   controller->SetGateCenter(vanishedCenter);
+   controller->Step(0);
+
+   crossing = controller->CrossingCondition();
+   EXPECT_TRUE(crossing);
+
+   prevPreds = {
+      make_bbox(140, 101, 167, 88),
+      make_bbox(163, 98, 172, 73),
+      make_bbox(169, 92, 179, 68),
+      make_bbox(174, 86, 187, 61),
+      make_bbox(188, 75, 198, 50),
+      make_bbox(199, 61, 210, 43),
+      make_bbox(209, 56, 218, 34),
+      make_bbox(233, 50, 224, 29),
+      make_bbox(259, 25, 218, 16),
+      make_bbox(302, 12, 223, 8)
+   }; 
+   controller->SetPreviousPredictions(prevPreds);
+   make_prediction(&vanishedCenter, 0, 0, 0, 0, true);
+   controller->SetGateCenter(vanishedCenter);
+   controller->Step(0);
+
+   crossing = controller->CrossingCondition();
+   EXPECT_FALSE(crossing);
+   
+   prevPreds = {
+      make_bbox(140, 101, 167, 88),
+      make_bbox(163, 98, 172, 73),
+      make_bbox(169, 92, 179, 68),
+      make_bbox(174, 86, 187, 61),
+      make_bbox(172, 110, 168, 80),
+      make_bbox(199, 61, 210, 43),
+      make_bbox(209, 56, 218, 34),
+      make_bbox(233, 50, 224, 29),
+      make_bbox(259, 25, 218, 16),
+      make_bbox(302, 12, 223, 8)
+   }; 
+   controller->SetPreviousPredictions(prevPreds);
+   make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
+   controller->SetGateCenter(vanishedCenter);
+   controller->Step(0);
+
+   crossing = controller->CrossingCondition();
+   EXPECT_FALSE(crossing);
+ 
+   prevPreds = {
+      make_bbox(140, 101, 167, 88),
+      make_bbox(163, 98, 172, 73),
+      make_bbox(169, 92, 179, 68),
+      make_bbox(174, 86, 187, 61),
+      make_bbox(172, 110, 168, 80),
+      make_bbox(199, 61, 210, 43),
+      make_bbox(209, 56, 218, 34),
+      make_bbox(233, 50, 224, 29),
+      make_bbox(259, 25, 218, 16),
+      make_bbox(302, 12, 223, 8)
+   }; 
+   controller->SetPreviousPredictions(prevPreds);
+   make_prediction(&vanishedCenter, 0, 0, 0, 0, true);
+   controller->SetGateCenter(vanishedCenter);
+   controller->Step(0);
+
+   crossing = controller->CrossingCondition();
+   EXPECT_FALSE(crossing);
 }
 
 
