@@ -133,6 +133,12 @@ void Controller::SetGateCenter(Prediction center)
 }
 
 
+Vector3d Controller::GetAlignmentError()
+{
+	return this->alignment_error;
+}
+
+
 State Controller::GetState()
 {
 	return this->state;
@@ -300,14 +306,31 @@ void Controller::Step(int tick)
 				float ratio = GET_RATIO();
 
 				Vector3d center(this->gate_center.x, this->gate_center.y, 0);
-				if (abs(1 - (ratio / this->ref_gate.ratio)) >
+				if (std::abs(1.0 - (ratio / this->ref_gate.ratio)) >
 						CALIBRATION_ERROR_THRESHOLD) {
-					/* Compensate for the shift */
 					std::cout << "[!] Compensating!" << std::endl;
-					center.x -= GET_X_SHIFT();
-					center.y -= GET_Y_SHIFT();
+					if (ratio > this->ref_gate.ratio) {
+						/* Correct the height of the bbox */
+						int correctedHeight = (this->gate_center.bbox.maxX -
+								this->gate_center.bbox.minX) / this->ref_gate.ratio;
+						center.y = (center.y > CAM_HEIGHT/2) ? 
+							(this->gate_center.bbox.minY + correctedHeight +
+							 this->gate_center.bbox.maxY)/2 :
+							(this->gate_center.bbox.maxY - correctedHeight +
+							 this->gate_center.bbox.minY)/2;
+					} else if (ratio < this->ref_gate.ratio) {
+						/* Correct the width of the bbox */
+						int correctedWidth = (this->gate_center.bbox.maxY -
+								this->gate_center.bbox.minY) * this->ref_gate.ratio;
+						center.x = (center.x > CAM_WIDTH/2) ? 
+							(this->gate_center.bbox.minX + correctedWidth +
+							 this->gate_center.bbox.maxX)/2 :
+							(this->gate_center.bbox.maxX - correctedWidth +
+							 this->gate_center.bbox.minX)/2;
+					}
 				}
 				Vector3d gate_err = origin - center;
+				this->alignment_error = gate_err;
 
 				/* Compute the velocity from the PID controller */
 				auto velocity = this->PIDBoy->Compute(gate_err,

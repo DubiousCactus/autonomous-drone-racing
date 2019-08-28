@@ -152,8 +152,6 @@ TEST(Controller, CompleteCalibrationIdeal) {
       meanHeight += height;
    }
 
-   // TODO: Use the median instead!
-
    meanWidth /= CALIBRATION_QUEUE_SIZE;
    meanHeight /= CALIBRATION_QUEUE_SIZE;
    meanRatio = (float)meanWidth/(float)meanHeight;
@@ -184,12 +182,10 @@ TEST(Controller, CompleteCalibrationWithControlledVariance) {
    meanWidth = meanHeight = meanRatio = 0;
 
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
-      width = centers[i].bbox.maxX - centers[i].bbox.minX;
-      height = centers[i].bbox.maxY - centers[i].bbox.minY;
       controller->SetGateCenter(centers[i]);
       controller->Step(0);
-      meanWidth += width;
-      meanHeight += height;
+      meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
+      meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
 
    meanWidth /= CALIBRATION_QUEUE_SIZE;
@@ -222,12 +218,10 @@ TEST(Controller, CompleteCalibrationWithControlledVarianceInvalid) {
    meanWidth = meanHeight = meanRatio = 0;
 
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
-      width = centers[i].bbox.maxX - centers[i].bbox.minX;
-      height = centers[i].bbox.maxY - centers[i].bbox.minY;
       controller->SetGateCenter(centers[i]);
       controller->Step(0);
-      meanWidth += width;
-      meanHeight += height;
+      meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
+      meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
 
    meanWidth /= CALIBRATION_QUEUE_SIZE;
@@ -298,23 +292,30 @@ TEST(Controller, CompleteCalibrationWithControlledVarianceInvalidThenValid) {
    EXPECT_EQ(refGate.width, meanWidth);
    EXPECT_EQ(refGate.height, meanHeight);
 }
-/*
-TEST(Controller, CompleteCalibrationWithVariance) {
+
+
+TEST(Controller, CalibrationAndFlight) {
    Controller *controller = make_controller(CALIBRATING);
-   Prediction center;
+   Prediction centers[CALIBRATION_QUEUE_SIZE];
+   make_prediction(&centers[0], 140, 85, 187, 112, true);
+   make_prediction(&centers[1], 137, 94, 177, 119, true);
+   make_prediction(&centers[2], 131, 78, 192, 106, true);
+   make_prediction(&centers[3], 144, 81, 183, 118, true);
+   make_prediction(&centers[4], 146, 89, 180, 110, true);
+   make_prediction(&centers[5], 143, 82, 185, 109, true);
+   make_prediction(&centers[6], 135, 97, 179, 120, true);
+   make_prediction(&centers[7], 137, 82, 186, 111, true);
+   make_prediction(&centers[8], 141, 79, 185, 117, true);
+   make_prediction(&centers[9], 145, 90, 182, 113, true);
    int width, height, meanWidth, meanHeight;
    float meanRatio;
    meanWidth = meanHeight = meanRatio = 0;
 
-   while (controller->GetRefGateBuffer().size() < CALIBRATION_QUEUE_SIZE) {
-      make_random_prediction(&center);
-      width = center.bbox.maxX - center.bbox.minX;
-      height = center.bbox.maxY - center.bbox.minY;
-      std::cout << width << " x " << height << std::endl;
-      controller->SetGateCenter(center);
+   for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
+      controller->SetGateCenter(centers[i]);
       controller->Step(0);
-      meanWidth += width;
-      meanHeight += height;
+      meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
+      meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
 
    meanWidth /= CALIBRATION_QUEUE_SIZE;
@@ -326,8 +327,84 @@ TEST(Controller, CompleteCalibrationWithVariance) {
    EXPECT_EQ(refGate.ratio, meanRatio);
    EXPECT_EQ(refGate.width, meanWidth);
    EXPECT_EQ(refGate.height, meanHeight);
+
+   Prediction validCenter;
+   make_prediction(&validCenter, 138, 84, 177, 113, true);
+   controller->SetGateCenter(validCenter);
+   controller->Step(0);
+
+   Vector3d true_err = Vector3d(CAM_WIDTH/2, CAM_HEIGHT/2) -
+      Vector3d(validCenter.x, validCenter.y);
+   auto alignmentError = controller->GetAlignmentError();
+   EXPECT_EQ(true_err.x, alignmentError.x);
+   EXPECT_EQ(true_err.y, alignmentError.y);
 }
-*/
+
+TEST(Controller, CalibrationAndFlightWithCompensation) {
+   Controller *controller = make_controller(CALIBRATING);
+   Prediction centers[CALIBRATION_QUEUE_SIZE];
+   make_prediction(&centers[0], 140, 85, 187, 112, true);
+   make_prediction(&centers[1], 137, 94, 177, 119, true);
+   make_prediction(&centers[2], 131, 78, 192, 106, true);
+   make_prediction(&centers[3], 144, 81, 183, 118, true);
+   make_prediction(&centers[4], 146, 89, 180, 110, true);
+   make_prediction(&centers[5], 143, 82, 185, 109, true);
+   make_prediction(&centers[6], 135, 97, 179, 120, true);
+   make_prediction(&centers[7], 137, 82, 186, 111, true);
+   make_prediction(&centers[8], 141, 79, 185, 117, true);
+   make_prediction(&centers[9], 145, 90, 182, 113, true);
+   int width, height, meanWidth, meanHeight;
+   float meanRatio;
+   meanWidth = meanHeight = meanRatio = 0;
+
+   for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
+      controller->SetGateCenter(centers[i]);
+      controller->Step(0);
+      meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
+      meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
+   }
+
+   meanWidth /= CALIBRATION_QUEUE_SIZE;
+   meanHeight /= CALIBRATION_QUEUE_SIZE;
+   meanRatio = (float)meanWidth/(float)meanHeight;
+
+   auto refGate = controller->GetRefGate();
+   EXPECT_EQ(controller->GetState(), FLYING);
+   EXPECT_EQ(refGate.ratio, meanRatio);
+   EXPECT_EQ(refGate.width, meanWidth);
+   EXPECT_EQ(refGate.height, meanHeight);
+
+   Prediction invalidCenter;
+   make_prediction(&invalidCenter, 132, 83, 200, 174, true); // Bad ratio
+   controller->SetGateCenter(invalidCenter);
+   controller->Step(0);
+
+   int correctedHeight = (invalidCenter.bbox.maxX-invalidCenter.bbox.minX)/meanRatio;
+   Vector3d correctedCenter = Vector3d(invalidCenter.x, invalidCenter.y);
+   correctedCenter.y = (invalidCenter.y > CAM_HEIGHT/2) ?
+      (invalidCenter.bbox.minY + correctedHeight + invalidCenter.bbox.maxY)/2 :
+      (invalidCenter.bbox.maxY - correctedHeight + invalidCenter.bbox.minY)/2;
+   Vector3d corrected_err = Vector3d(CAM_WIDTH/2, CAM_HEIGHT/2) - correctedCenter;
+   auto alignmentError = controller->GetAlignmentError();
+   EXPECT_EQ(corrected_err.x, alignmentError.x);
+   EXPECT_EQ(corrected_err.y, alignmentError.y);
+
+   make_prediction(&invalidCenter, 132, 105, 200, 136, true); // Bad ratio
+   controller->SetGateCenter(invalidCenter);
+   controller->Step(0);
+
+   int correctedWidth = (invalidCenter.bbox.maxY-invalidCenter.bbox.minY)*meanRatio;
+   correctedCenter = Vector3d(invalidCenter.x, invalidCenter.y);
+   correctedCenter.x = (invalidCenter.x > CAM_WIDTH/2) ?
+      (invalidCenter.bbox.minX + correctedWidth + invalidCenter.bbox.maxX)/2 :
+      (invalidCenter.bbox.maxX - correctedWidth + invalidCenter.bbox.minX)/2;
+   corrected_err = Vector3d(CAM_WIDTH/2, CAM_HEIGHT/2) - correctedCenter;
+   alignmentError = controller->GetAlignmentError();
+   EXPECT_EQ(corrected_err.x, alignmentError.x);
+   EXPECT_EQ(corrected_err.y, alignmentError.y);
+}
+
+
 int main(int argc, char **argv) {
    srand((unsigned) time(NULL));
    testing::InitGoogleTest(&argc, argv);
