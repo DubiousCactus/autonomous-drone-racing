@@ -13,7 +13,9 @@
 
 Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 {
+	this->gate_losses = 0;
 	this->ready = false;
+	this->detectionReady = false;
 	this->rate = CONTROLLER_RATE;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
 	this->state = LANDED;
@@ -64,6 +66,7 @@ void Controller::GatePredictionCallback(const perception::GatePrediction::ConstP
 		this->gate_center.x = (this->gate_center.x * CAM_WIDTH)/IMG_WIDTH;
 		this->gate_center.y = (msg->bbox.maxY + msg->bbox.minY)/2;
 		this->gate_center.y = (this->gate_center.y * CAM_HEIGHT)/IMG_HEIGHT;
+		this->gate_center.distance = msg->distance;
 	}
 	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT) {
 		this->previous_predictions.pop_back();
@@ -227,10 +230,31 @@ void Controller::Calibrate()
 }
 
 
-void Controller::Step(int tick)
+void Controller::DetectionRate()
+{
+	ros::Rate rate(DETECTION_RATE);
+	while(ros::ok()) {
+		rate.sleep();
+		this->mutex.lock();
+		this->detectionReady = true;
+		this->mutex.unlock();
+	}
+}
+
+
+void Controller::VelocityPublisher()
+{
+	ros::Rate rate(VELOCITY_RATE);
+	while(ros::ok()) {
+		rate.sleep();
+		this->PublishVelocity(this->desiredVelocity);
+	}
+}
+
+
+void Controller::Step()
 {
 	Vector3d origin(CAM_WIDTH/2, CAM_HEIGHT/2);
-	ros::Time startLeavingTime, startTakeOffTime, startCrossingTime;
 	switch (this->state) {
 		case LANDED:
 			{
@@ -238,7 +262,7 @@ void Controller::Step(int tick)
 				std::cout << "[*] Press <ENTER> to start flying" << std::endl;
 				if (std::cin.get()) {
 					std::cout << "[*] Taking off!" << std::endl;
-					startTakeOffTime = ros::Time::now();
+					this->startTakeOffTime = ros::Time::now();
 					this->state = TAKEOFF;
 				}
 			}
@@ -246,13 +270,17 @@ void Controller::Step(int tick)
 			{
 				/* Take off */
 				//if (this->altitude < 200) {
-				ros::Duration d = ros::Time::now() - startTakeOffTime;
-				if (d.toSec() < 5) {
-					Vector3d velocity(0, 0, 0.5);
-					this->PublishVelocity(velocity);
+				ros::Duration d = ros::Time::now() - this->startTakeOffTime;
+				if (d.toSec() < 4) {
+					Velocity v;
+					v.linear = Vector3d(0, 0, 0.5);
+					this->desiredVelocity = v;
 				} else {
 					std::cout << "[*] Aiming" << std::endl;
-					this->PublishVelocity(Vector3d(0, 0, 0));
+					Velocity v;
+					v.linear = Vector3d(0, 0, 0);
+					v.yaw = 0.1;
+					this->desiredVelocity = v;
 					this->state = AIMING;
 				}
 				break;
@@ -260,7 +288,10 @@ void Controller::Step(int tick)
 		case AIMING:
 			{
 				if (!this->gate_center.locked) {
-					this->PublishVelocity(0.05); // Yaw velocity
+					Velocity v;
+					v.linear = Vector3d(0, 0, 0);
+					v.yaw = 0.15;
+					this->desiredVelocity = v;
 				} else {
 					this->ClearCalibration();
 					this->state = CALIBRATING;
@@ -280,18 +311,22 @@ void Controller::Step(int tick)
 				}
 
 				this->ready = false;
-				bool crossing = this->CrossingCondition();
+				//bool crossing = this->CrossingCondition();
+				bool crossing = this->gate_center.distance <= CROSSING_DISTANCE;
 				if (crossing) {
 					std::cout << "[*] Crossing the gate, watch out !" <<
 						std::endl;
-					startCrossingTime = ros::Time::now();
+					this->startCrossingTime = ros::Time::now();
 					this->state = CROSSING;
 				} else if (this->gate_center.locked) {
 					/*std::cout << "[*] Flying towards coords [" <<
 					  this->gate_center.x << "," << this->gate_center.y <<
 					  "]" << std::endl;*/
 					this->state = FLYING;
+				} else if (this->gate_losses < LOSSES_BEFORE_REAIM) {
+					this->gate_losses++;
 				} else {
+					this->gate_losses = 0;
 					std::cout << "[*] Gate lost! Re-targetting..." << std::endl;
 					this->state = AIMING;
 				}
@@ -308,7 +343,7 @@ void Controller::Step(int tick)
 				Vector3d center(this->gate_center.x, this->gate_center.y, 0);
 				if (std::abs(1.0 - (ratio / this->ref_gate.ratio)) >
 						CALIBRATION_ERROR_THRESHOLD) {
-					std::cout << "[!] Compensating!" << std::endl;
+					//std::cout << "[!] Compensating!" << std::endl;
 					if (ratio > this->ref_gate.ratio) {
 						/* Correct the height of the bbox */
 						int correctedHeight = (this->gate_center.bbox.maxX -
@@ -336,34 +371,45 @@ void Controller::Step(int tick)
 				 * the error is 0, and then switch to the WAITING state ?
 				 * */
 				/* Apply the velocity or send it to the drone */
-				this->PublishVelocity(velocity);
+				this->desiredVelocity = velocity;
 				//std::cout << "[*] Aligning" << std::endl;
-
-				if (++tick >= DETECTION_RATE) {
-					tick = 0;
+				if(this->detectionReady) {
+					this->mutex.lock();
+					this->detectionReady = false;
+					this->mutex.unlock();
 					//std::cout << "[*] Correcting course..." << std::endl;
 					this->state = REFINING;
 				}
+/*
+				if (++(this->tick) >= DETECTION_RATE) {
+					this->tick = 0;
+					std::cout << "[*] Correcting course..." << std::endl;
+					this->state = REFINING;
+				}*/
 				break;
 			}
 		case CROSSING:
 			{
 				//if (this->altitude > MAX_GATE_HEIGHT) {
-				ros::Duration timeElapsed = ros::Time::now() - startCrossingTime;
+				ros::Duration timeElapsed = ros::Time::now() - this->startCrossingTime;
 				if (timeElapsed.toSec() < CROSSING_TIME) {
-					this->PublishVelocity(Vector3d(0.5, 0, 0));
+					Velocity v;
+					v.linear = Vector3d(0.5, 0, 0);
+					this->desiredVelocity = v;
 				} else {
 					std::cout << "[*] Leaving the gate" << std::endl;
-					startLeavingTime = ros::Time::now();
+					this->startLeavingTime = ros::Time::now();
 					this->state = LEAVING;
 				}
 				break;
 			}
 		case LEAVING:
 			{
-				ros::Duration timeElapsed = ros::Time::now() - startLeavingTime;
+				ros::Duration timeElapsed = ros::Time::now() - this->startLeavingTime;
 				if (timeElapsed.toSec() < LEAVING_TIME) {
-					this->PublishVelocity(Vector3d(0.5, 0, 0));
+					Velocity v;
+					v.linear = Vector3d(0.5, 0, 0);
+					this->desiredVelocity = v;
 				} else {
 					std::cout << "[*] Targetting new gate" << std::endl;
 					this->state = AIMING;
@@ -377,7 +423,9 @@ void Controller::Step(int tick)
 			}
 		case WAITING:
 			{
-				this->PublishVelocity(Vector3d(0, 0, 0.1));
+				Velocity v;
+				v.linear = Vector3d(0.15, 0, 0);
+				this->desiredVelocity = v;
 				if (this->ready)
 					this->state = REFINING;
 			}
@@ -393,33 +441,42 @@ void Controller::SetPreviousPredictions(std::list<perception::Bbox> previous_pre
 
 bool Controller::CrossingCondition()
 {
-	int prevArea, sameSize;
+	int prevArea, sameSize, smaller;
 	bool crossing = false;
 
-	if (this->previous_predictions.size() >= PREVIOUS_PREDICTIONS_CNT
+	if (this->previous_predictions.size() >= (PREVIOUS_PREDICTIONS_CNT)
 			&& !this->gate_center.locked) {
 		crossing = true;
-		sameSize = 0;
+		sameSize = smaller = 0;
 		/* The first one is the current prediction, which we don't need */
 		this->previous_predictions.pop_front();
+		std::cout << "Area (has " << this->previous_predictions.size() << "): ";
 		for (auto bboxIt = this->previous_predictions.begin(); bboxIt
 				!= this->previous_predictions.end(); ++bboxIt) {
 			int area = (bboxIt->maxX - bboxIt->minX)*(bboxIt->maxY - bboxIt->minY);
-			if (area < prevArea && bboxIt != this->previous_predictions.begin()) {
-				crossing = false;
-				break;
-			} else if (area == prevArea && bboxIt != this->previous_predictions.begin()) {
+			std::cout  << area << ", ";
+			if (area > prevArea && bboxIt != this->previous_predictions.begin()) {
+				std::cout << " *bip* ";
+				smaller++;
+				//crossing = false;
+				//break;
+			} else if (area == prevArea && bboxIt !=
+					this->previous_predictions.begin()) {
 				sameSize++;
 			}
 			prevArea = area;
 		}
-
-		if (!crossing) {
-			this->previous_predictions.clear();
-		} else if (sameSize >= PREVIOUS_PREDICTIONS_CNT/2) {
+		std::cout << std::endl;
+		if (smaller > 2) {
 			crossing = false;
 		}
-	}
+/*
+		if (!crossing) {
+			//this->previous_predictions.clear();
+		} else if (sameSize >= PREVIOUS_PREDICTIONS_CNT/2) {
+			crossing = false;
+		}*/
+	} else if (this->previous_predictions.size() < (PREVIOUS_PREDICTIONS_CNT)) {std::cout << " not enough predictions" << std::endl;}
 
 	return crossing;
 }
@@ -427,14 +484,19 @@ bool Controller::CrossingCondition()
 
 void Controller::Run()
 {
-	int tick = 0;
+	this->tick = 0;
 	ros::Rate rate(this->rate);
+	std::thread tDetection(&Controller::DetectionRate, this);
+	std::thread tVelocity(&Controller::VelocityPublisher, this);
 
 	while (ros::ok()) {
 		rate.sleep();
 		ros::spinOnce();
-		this->Step(tick);
+		this->Step();
 	}
+
+	tDetection.join();
+	tVelocity.join();
 }
 
 int main(int argc, char **argv)
@@ -444,11 +506,11 @@ int main(int argc, char **argv)
 
 	// TODO: Read from config
 	gain_param k_x, k_y;
-	k_x.insert(std::pair<std::string, float>("p", 0.5));
-	k_x.insert(std::pair<std::string, float>("i", 0.1));
-	k_x.insert(std::pair<std::string, float>("d", 0.2));
+	k_x.insert(std::pair<std::string, float>("p", 0.0));
+	k_x.insert(std::pair<std::string, float>("i", 0.0));
+	k_x.insert(std::pair<std::string, float>("d", 0.0));
 
-	k_y.insert(std::pair<std::string, float>("p", 0.2));
+	k_y.insert(std::pair<std::string, float>("p", 0.0));
 	k_y.insert(std::pair<std::string, float>("i", 0.0));
 	k_y.insert(std::pair<std::string, float>("d", 0.0));
 

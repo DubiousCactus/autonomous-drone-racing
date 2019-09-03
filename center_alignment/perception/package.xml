@@ -2,9 +2,9 @@
 <package format="2">
   <name>perception</name>
   <version>0.0.1</version>
-  <description>The dronet package, for deep learning navigation</description>
+  <description>Perception package for gate detection and distance/rotation prediction.</description>
 
-  <maintainer email="loquercio@ifi.uzh.ch">tony</maintainer>
+  <maintainer email="theo.morales.fr@gmail.com">Theo</maintainer>
 
   <license>MIT</license>
 

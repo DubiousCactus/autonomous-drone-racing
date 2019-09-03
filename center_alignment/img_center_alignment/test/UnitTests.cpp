@@ -70,7 +70,7 @@ Controller* make_controller(State state)
 
       for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
          controller->SetGateCenter(centers[i]);
-         controller->Step(0);
+         controller->Step();
       }
    }
    controller->SetState(state);
@@ -112,7 +112,7 @@ TEST(Controller, Init) {
    EXPECT_EQ(refGate.height, 0);
 
    controller->SetGateCenter(center);
-   controller->Step(0);
+   controller->Step();
 
    refGate = controller->GetRefGate();
    EXPECT_EQ(refGate.ratio, 0);
@@ -144,7 +144,7 @@ TEST(Controller, InitMultiple) {
       EXPECT_EQ(refGate.height, 0);
 
       controller->SetGateCenter(center);
-      controller->Step(0);
+      controller->Step();
 
       refGate = controller->GetRefGate();
       EXPECT_EQ(refGate.ratio, 0);
@@ -158,8 +158,8 @@ TEST(Controller, InitMultiple) {
 
       controller->SetState(AIMING);
       controller->SetGateCenter(center);
-      controller->Step(0);
-      controller->Step(0);
+      controller->Step();
+      controller->Step();
    }
 
    delete controller;
@@ -179,7 +179,7 @@ TEST(Controller, CompleteCalibrationIdeal) {
    /* Publish 5 valid predictions and observe the ref_gate to be set */
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
       controller->SetGateCenter(center);
-      controller->Step(0);
+      controller->Step();
       meanWidth += width;
       meanHeight += height;
    }
@@ -215,7 +215,7 @@ TEST(Controller, CompleteCalibrationWithControlledVariance) {
 
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
       controller->SetGateCenter(centers[i]);
-      controller->Step(0);
+      controller->Step();
       meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
       meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
@@ -251,7 +251,7 @@ TEST(Controller, CompleteCalibrationWithControlledVarianceInvalid) {
 
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
       controller->SetGateCenter(centers[i]);
-      controller->Step(0);
+      controller->Step();
       meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
       meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
@@ -287,7 +287,7 @@ TEST(Controller, CompleteCalibrationWithControlledVarianceInvalidThenValid) {
 
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
       controller->SetGateCenter(centers[i]);
-      controller->Step(0);
+      controller->Step();
       meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
       meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
@@ -310,7 +310,7 @@ TEST(Controller, CompleteCalibrationWithControlledVarianceInvalidThenValid) {
    meanWidth = meanHeight = meanRatio = 0;
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
       controller->SetGateCenter(centers[i]);
-      controller->Step(0);
+      controller->Step();
       meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
       meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
@@ -345,7 +345,7 @@ TEST(Controller, CalibrationAndFlight) {
 
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
       controller->SetGateCenter(centers[i]);
-      controller->Step(0);
+      controller->Step();
       meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
       meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
@@ -363,7 +363,7 @@ TEST(Controller, CalibrationAndFlight) {
    Prediction validCenter;
    make_prediction(&validCenter, 138, 84, 177, 113, true);
    controller->SetGateCenter(validCenter);
-   controller->Step(0);
+   controller->Step();
 
    Vector3d true_err = Vector3d(CAM_WIDTH/2, CAM_HEIGHT/2) -
       Vector3d(validCenter.x, validCenter.y);
@@ -391,7 +391,7 @@ TEST(Controller, CalibrationAndFlightWithCompensation) {
 
    for (int i = 0; i < CALIBRATION_QUEUE_SIZE; ++i) {
       controller->SetGateCenter(centers[i]);
-      controller->Step(0);
+      controller->Step();
       meanWidth += centers[i].bbox.maxX - centers[i].bbox.minX;
       meanHeight += centers[i].bbox.maxY - centers[i].bbox.minY;
    }
@@ -409,7 +409,7 @@ TEST(Controller, CalibrationAndFlightWithCompensation) {
    Prediction invalidCenter;
    make_prediction(&invalidCenter, 132, 83, 200, 174, true); // Bad ratio
    controller->SetGateCenter(invalidCenter);
-   controller->Step(0);
+   controller->Step();
 
    int correctedHeight = (invalidCenter.bbox.maxX-invalidCenter.bbox.minX)/meanRatio;
    Vector3d correctedCenter = Vector3d(invalidCenter.x, invalidCenter.y);
@@ -423,7 +423,7 @@ TEST(Controller, CalibrationAndFlightWithCompensation) {
 
    make_prediction(&invalidCenter, 132, 105, 200, 136, true); // Bad ratio
    controller->SetGateCenter(invalidCenter);
-   controller->Step(0);
+   controller->Step();
 
    int correctedWidth = (invalidCenter.bbox.maxY-invalidCenter.bbox.minY)*meanRatio;
    correctedCenter = Vector3d(invalidCenter.x, invalidCenter.y);
@@ -459,7 +459,7 @@ TEST(Controller, CrossingCondition) {
    controller->SetPreviousPredictions(prevPreds);
    make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
    controller->SetGateCenter(vanishedCenter);
-   controller->Step(0);
+   controller->Step();
 
    crossing = controller->CrossingCondition();
    EXPECT_TRUE(crossing);
@@ -479,7 +479,7 @@ TEST(Controller, CrossingCondition) {
    controller->SetPreviousPredictions(prevPreds);
    make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
    controller->SetGateCenter(vanishedCenter);
-   controller->Step(0);
+   controller->Step();
 
    crossing = controller->CrossingCondition();
    EXPECT_FALSE(crossing);
@@ -499,7 +499,7 @@ TEST(Controller, CrossingCondition) {
    controller->SetPreviousPredictions(prevPreds);
    make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
    controller->SetGateCenter(vanishedCenter);
-   controller->Step(0);
+   controller->Step();
 
    crossing = controller->CrossingCondition();
    EXPECT_TRUE(crossing);
@@ -519,7 +519,7 @@ TEST(Controller, CrossingCondition) {
    controller->SetPreviousPredictions(prevPreds);
    make_prediction(&vanishedCenter, 0, 0, 0, 0, true);
    controller->SetGateCenter(vanishedCenter);
-   controller->Step(0);
+   controller->Step();
 
    crossing = controller->CrossingCondition();
    EXPECT_FALSE(crossing);
@@ -539,7 +539,7 @@ TEST(Controller, CrossingCondition) {
    controller->SetPreviousPredictions(prevPreds);
    make_prediction(&vanishedCenter, 0, 0, 0, 0, false);
    controller->SetGateCenter(vanishedCenter);
-   controller->Step(0);
+   controller->Step();
 
    crossing = controller->CrossingCondition();
    EXPECT_FALSE(crossing);
@@ -559,7 +559,7 @@ TEST(Controller, CrossingCondition) {
    controller->SetPreviousPredictions(prevPreds);
    make_prediction(&vanishedCenter, 0, 0, 0, 0, true);
    controller->SetGateCenter(vanishedCenter);
-   controller->Step(0);
+   controller->Step();
 
    crossing = controller->CrossingCondition();
    EXPECT_FALSE(crossing);
