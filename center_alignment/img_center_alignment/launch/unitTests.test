@@ -1,0 +1,3 @@
+<launch>
+	<test test-name="Unit tests" pkg="img_center_alignment" name="UnitTests"/>
+</launch>
