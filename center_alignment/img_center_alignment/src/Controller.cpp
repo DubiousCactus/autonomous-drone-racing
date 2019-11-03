@@ -15,20 +15,30 @@ Controller::Controller(gain_param k_x, gain_param k_y, float z_velocity)
 {
 	this->gate_losses = 0;
 	this->ready = false;
+	this->altitude_spike = false;
 	this->detectionReady = false;
 	this->rate = CONTROLLER_RATE;
 	this->PIDBoy = new PID(k_x, k_y, z_velocity, rate);
+	this->spikeThreshold = SPIKE_THRESHOLD;
+#if PID_TUNNING == 0
 	this->state = LANDED;
+#else
+	this->state = AIMING;
+#endif
 	this->gate_center.locked = false;
 	this->altitude = .0;
 	this->ClearCalibration();
-	this->subVelocity = this->handle.subscribe("/mavros/local_position/velocity", 1000,
+	this->subVelocity =
+		this->handle.subscribe("/mavros/local_position/velocity", 10,
 			&Controller::CurrentVelocityCallback, this);
 	this->pubVelocity =
 		this->handle.advertise<geometry_msgs::Quaternion>(
 				"/IntelDrone/command_velocity_body", 100);
-	this->subPredictor = this->handle.subscribe("/predictor/raw", 1000,
+	this->subPredictor = this->handle.subscribe("/predictor/raw", 10,
 			&Controller::GatePredictionCallback, this);
+	this->subHeightSensor =
+		this->handle.subscribe("/mavros/distance_sensor/leddar1_pub", 10,
+				&Controller::HeightSensorCallback, this);
 
 	this->dynRcfgServer.setCallback(
 			boost::bind(&Controller::DynamicReconfigureCallback, this, _1, _2));
@@ -50,11 +60,16 @@ void Controller::DynamicReconfigureCallback(PIDConfig &cfg, uint32_t level)
 	gain_yaw.insert(std::pair<std::string, float>("p", cfg.k_p_yaw));
 	gain_yaw.insert(std::pair<std::string, float>("i", cfg.k_i_yaw));
 	gain_yaw.insert(std::pair<std::string, float>("d", cfg.k_d_yaw));
+	this->spikeThreshold = cfg.spike_threshold;
 
+#if PID_TUNNING == 0
 	this->PIDBoy->SetGainParameters(gain_z, gain_yaw, cfg.x_vel);
+#else
+	this->PIDBoy->SetGainParameters(gain_z, gain_yaw, 0);
+#endif
 }
 
-void Controller::GatePredictionCallback(const perception::GatePrediction::ConstPtr &msg)
+void Controller::GatePredictionCallback(const perception::GatePrediction::ConstPtr msg)
 {
 	this->gate_center.locked = msg->locked;
 	this->gate_center.bbox = msg->bbox;
@@ -83,9 +98,12 @@ void Controller::CurrentVelocityCallback(geometry_msgs::TwistStampedConstPtr msg
 }
 
 
-void Controller::HeightSensorCallback(const Vector3Ptr &msg)
+void Controller::HeightSensorCallback(const sensor_msgs::RangeConstPtr msg)
 {
-	//this->altitude = msg;
+	if ((this->altitude - msg->range) > this->spikeThreshold) {
+		this->altitude_spike = true;
+	}
+	this->altitude = msg->range;
 }
 
 void Controller::PublishVelocity(Vector3d velocity)
@@ -262,25 +280,18 @@ void Controller::Step()
 				std::cout << "[*] Press <ENTER> to start flying" << std::endl;
 				if (std::cin.get()) {
 					std::cout << "[*] Taking off!" << std::endl;
-					this->startTakeOffTime = ros::Time::now();
 					this->state = TAKEOFF;
 				}
 			}
 		case TAKEOFF:
 			{
 				/* Take off */
-				//if (this->altitude < 200) {
-				ros::Duration d = ros::Time::now() - this->startTakeOffTime;
-				if (d.toSec() < 4) {
+				if (this->altitude < 2.0) {
 					Velocity v;
 					v.linear = Vector3d(0, 0, 0.5);
 					this->desiredVelocity = v;
 				} else {
 					std::cout << "[*] Aiming" << std::endl;
-					Velocity v;
-					v.linear = Vector3d(0, 0, 0);
-					v.yaw = 0.1;
-					this->desiredVelocity = v;
 					this->state = AIMING;
 				}
 				break;
@@ -290,11 +301,12 @@ void Controller::Step()
 				if (!this->gate_center.locked) {
 					Velocity v;
 					v.linear = Vector3d(0, 0, 0);
-					v.yaw = 0.15;
+					v.yaw = 0.35;
 					this->desiredVelocity = v;
 				} else {
-					this->ClearCalibration();
-					this->state = CALIBRATING;
+					/*this->ClearCalibration();
+					this->state = CALIBRATING;*/
+					this->state = FLYING;
 				}
 				break;
 			}
@@ -311,12 +323,15 @@ void Controller::Step()
 				}
 
 				this->ready = false;
-				//bool crossing = this->CrossingCondition();
+#if PID_TUNNING == 0
 				bool crossing = this->gate_center.distance <= CROSSING_DISTANCE;
+#else
+				bool crossing = false;
+#endif
 				if (crossing) {
 					std::cout << "[*] Crossing the gate, watch out !" <<
 						std::endl;
-					this->startCrossingTime = ros::Time::now();
+					this->altitude_spike = false;
 					this->state = CROSSING;
 				} else if (this->gate_center.locked) {
 					/*std::cout << "[*] Flying towards coords [" <<
@@ -334,32 +349,32 @@ void Controller::Step()
 			}
 		case FLYING:
 			{
-				assert(this->ref_gate.ratio != 0 && "0 ratio!");
+				/*assert(this->ref_gate.ratio != 0 && "0 ratio!");
 				assert(this->ref_gate.width != 0 && "0 width!");
-				assert(this->ref_gate.height != 0 && "0 height!");
+				assert(this->ref_gate.height != 0 && "0 height!");*/
 				/* Compute the gate error */
-				float ratio = GET_RATIO();
+				//float ratio = GET_RATIO();
 
 				Vector3d center(this->gate_center.x, this->gate_center.y, 0);
-				if (std::abs(1.0 - (ratio / this->ref_gate.ratio)) >
-						CALIBRATION_ERROR_THRESHOLD) {
+				//if (std::abs(1.0 - (ratio / this->ref_gate.ratio)) >
+						//CALIBRATION_ERROR_THRESHOLD) {
 					//std::cout << "[!] Compensating!" << std::endl;
-					if (ratio > this->ref_gate.ratio) {
-						/* Correct the height of the bbox */
-						int correctedHeight = (this->gate_center.bbox.maxX -
-								this->gate_center.bbox.minX) / this->ref_gate.ratio;
-						center.y = (center.y > CAM_HEIGHT/2) ? 
-							 GET_Y_COORD(correctedHeight) :
-							 GET_Y_COORD(-correctedHeight);
-					} else if (ratio < this->ref_gate.ratio) {
-						/* Correct the width of the bbox */
-						int correctedWidth = (this->gate_center.bbox.maxY -
-								this->gate_center.bbox.minY) * this->ref_gate.ratio;
-						center.x = (center.x > CAM_WIDTH/2) ? 
-							GET_X_COORD(correctedWidth) :
-							GET_X_COORD(-correctedWidth);
-					}
-				}
+					//if (ratio > this->ref_gate.ratio) {
+						//[> Correct the height of the bbox <]
+						//int correctedHeight = (this->gate_center.bbox.maxX -
+								//this->gate_center.bbox.minX) / this->ref_gate.ratio;
+						//center.y = (center.y > CAM_HEIGHT/2) ? 
+							 //GET_Y_COORD(correctedHeight) :
+							 //GET_Y_COORD(-correctedHeight);
+					//} else if (ratio < this->ref_gate.ratio) {
+						//[> Correct the width of the bbox <]
+						//int correctedWidth = (this->gate_center.bbox.maxY -
+								//this->gate_center.bbox.minY) * this->ref_gate.ratio;
+						//center.x = (center.x > CAM_WIDTH/2) ? 
+							//GET_X_COORD(correctedWidth) :
+							//GET_X_COORD(-correctedWidth);
+					//}
+				/*}*/
 				Vector3d gate_err = origin - center;
 				this->alignment_error = gate_err;
 
@@ -367,9 +382,6 @@ void Controller::Step()
 				auto velocity = this->PIDBoy->Compute(gate_err,
 						this->current_velocity);
 
-				/* TODO: Maybe it's better to compute the velocity until
-				 * the error is 0, and then switch to the WAITING state ?
-				 * */
 				/* Apply the velocity or send it to the drone */
 				this->desiredVelocity = velocity;
 				//std::cout << "[*] Aligning" << std::endl;
@@ -380,26 +392,19 @@ void Controller::Step()
 					//std::cout << "[*] Correcting course..." << std::endl;
 					this->state = REFINING;
 				}
-/*
-				if (++(this->tick) >= DETECTION_RATE) {
-					this->tick = 0;
-					std::cout << "[*] Correcting course..." << std::endl;
-					this->state = REFINING;
-				}*/
 				break;
 			}
 		case CROSSING:
 			{
-				//if (this->altitude > MAX_GATE_HEIGHT) {
-				ros::Duration timeElapsed = ros::Time::now() - this->startCrossingTime;
-				if (timeElapsed.toSec() < CROSSING_TIME) {
-					Velocity v;
-					v.linear = Vector3d(0.5, 0, 0);
-					this->desiredVelocity = v;
-				} else {
+				if (this->altitude_spike) {
 					std::cout << "[*] Leaving the gate" << std::endl;
+					this->altitude_spike = false;
 					this->startLeavingTime = ros::Time::now();
 					this->state = LEAVING;
+				} else {
+					Velocity v;
+					v.linear = Vector3d(2.0, 0, 0);
+					this->desiredVelocity = v;
 				}
 				break;
 			}
@@ -411,21 +416,30 @@ void Controller::Step()
 					v.linear = Vector3d(0.5, 0, 0);
 					this->desiredVelocity = v;
 				} else {
-					std::cout << "[*] Targetting new gate" << std::endl;
-					this->state = AIMING;
+					//std::cout << "[*] Targetting new gate" << std::endl;
+					//this->state = AIMING;
+					this->state = LANDING;
 				}
 				break;
 			}
 		case LANDING:
 			{
-				// TODO: Land
+				if (this->altitude > 0.25) {
+					Velocity v;
+					v.linear = Vector3d(0, 0, -0.5);
+					this->desiredVelocity = v;
+				} else {
+					this->state = LANDED;
+				}
 				break;
 			}
 		case WAITING:
 			{
 				Velocity v;
-				v.linear = Vector3d(0.15, 0, 0);
-				this->desiredVelocity = v;
+				v.linear = Vector3d(0.25, 0, 0);
+#if PID_TUNNING == 0
+				//this->desiredVelocity = v;
+#endif
 				if (this->ready)
 					this->state = REFINING;
 			}
@@ -456,10 +470,10 @@ bool Controller::CrossingCondition()
 			int area = (bboxIt->maxX - bboxIt->minX)*(bboxIt->maxY - bboxIt->minY);
 			std::cout  << area << ", ";
 			if (area > prevArea && bboxIt != this->previous_predictions.begin()) {
-				std::cout << " *bip* ";
-				smaller++;
-				//crossing = false;
-				//break;
+				//std::cout << " *bip* ";
+				//smaller++;
+				crossing = false;
+				break;
 			} else if (area == prevArea && bboxIt !=
 					this->previous_predictions.begin()) {
 				sameSize++;
@@ -467,16 +481,16 @@ bool Controller::CrossingCondition()
 			prevArea = area;
 		}
 		std::cout << std::endl;
-		if (smaller > 2) {
-			crossing = false;
-		}
+		/*if (smaller > 2) {*/
+			//crossing = false;
+		/*}*/
 /*
 		if (!crossing) {
 			//this->previous_predictions.clear();
 		} else if (sameSize >= PREVIOUS_PREDICTIONS_CNT/2) {
 			crossing = false;
 		}*/
-	} else if (this->previous_predictions.size() < (PREVIOUS_PREDICTIONS_CNT)) {std::cout << " not enough predictions" << std::endl;}
+	}
 
 	return crossing;
 }
@@ -514,7 +528,11 @@ int main(int argc, char **argv)
 	k_y.insert(std::pair<std::string, float>("i", 0.0));
 	k_y.insert(std::pair<std::string, float>("d", 0.0));
 
-	Controller controller(k_x, k_y, 0.25);
+#if PID_TUNNING == 0
+	Controller controller(k_x, k_y, 2.0);
+#else
+	Controller controller(k_x, k_y, 0.0);
+#endif
 	controller.Run();
 
 	ros::shutdown();
