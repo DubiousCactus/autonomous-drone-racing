@@ -1,0 +1,14 @@
+1.5x1.5_frame.obj:
+  center: [0,0,2]
+  width: 2.1
+  height: 2.1
+  contour_front: '1.5x1.5_contour_front.obj'
+  contour_back: '1.5x1.5_contour_back.obj'
+  texture: '1.5x1.5.png'
+1x1_frame.obj:
+  center: [0,0,2]
+  width: 1.6
+  height: 1.6
+  contour_front: '1x1_contour_front.obj'
+  contour_back: '1x1_contour_back.obj'
+  texture: '1x1.png'

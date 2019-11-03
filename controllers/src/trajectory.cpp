@@ -103,6 +103,13 @@ void Trajectory::run(){
         case 0: // no command
             trajectory << 0, 0, -10, 0;
             velocity << 0, 0, 0, 0;
+
+            pose_msg.header.stamp = ros::Time::now(); // for rotors_simulator
+            pose_msg.pose.position.x = 0; // for rotors_simulator
+            pose_msg.pose.position.y = 0; // for rotors_simulator
+            pose_msg.pose.position.z = 1; // for rotors_simulator
+            pose_publisher.publish(pose_msg); // for rotors_simulator
+
             break;
         case 1: // hower
             trajectory << 0, 0, 1, 0;
@@ -165,19 +172,19 @@ void Trajectory::run(){
         case 7: // aggressive 8
             t = fmod(t, 4 + 2 * M_PI * R);
             if(t < 2){
-                trajectory << (R - R * t), (R - R * t), 0, 0;
+                trajectory << (R - R * t), (R - R * t), 0, -3.0/4 * M_PI + 2 * M_PI;
                 velocity << -R, -R, 0, 0;
             }else
                 if(t < 2 + M_PI * R){
-                    trajectory << (-R - sin((t - 2) / R) * R), (-cos((t - 2) / R) * R), 0, 0;
+                    trajectory << (-R - sin((t - 2) / R) * R), (-cos((t - 2) / R) * R), 0, M_PI/2;
                     velocity << -cos((t - 2) / R) * R, sin((t - 2) / R), 0, 0;
                 }else
                     if(t < 4 + M_PI * R){
-                        trajectory << (-R + R * (t - (2 + M_PI * R))), (R - R * (t - (2 + M_PI * R))), 0, 0;
+                        trajectory << (-R + R * (t - (2 + M_PI * R))), (R - R * (t - (2 + M_PI * R))), 0, -M_PI/4 + 2 * M_PI;
                         velocity << R, -R, 0, 0;
                     }else
                         if(t < 4 + 2 * M_PI * R){
-                            trajectory << (R + sin((t - (4 + M_PI * R)) / R) * R), (-cos((t - (4 + M_PI * R)) / R) * R), 0, 0;
+                            trajectory << (R + sin((t - (4 + M_PI * R)) / R) * R), (-cos((t - (4 + M_PI * R)) / R) * R), 0, M_PI/2;
                             velocity << cos((M_PI * R - t + 4) / R), -sin((M_PI * R - t + 4) / R), 0, 0;
                         }
             trajectory = scale * trajectory;
@@ -189,7 +196,7 @@ void Trajectory::run(){
             trajectory(0) += pose_d(0);
             trajectory(1) += pose_d(1);
             trajectory(2) += pose_d(2);
-            trajectory(3) = pose_d(3);
+            trajectory(3) = trajectory(3)/scale - M_PI/4;//pose_d(3);
             break;
         case 8: // square
             t = fmod(t, 8);
@@ -327,19 +334,6 @@ void Trajectory::run(){
         velocity_msg.quaternion.z = velocity(2);
         velocity_msg.quaternion.w = var_speed;
         velocity_publisher.publish(velocity_msg);
-
-        pose_msg.header.stamp = ros::Time::now(); // for rotors_simulator
-        pose_msg.pose.position.x = trajectory(0); // for rotors_simulator
-        pose_msg.pose.position.y = trajectory(1); // for rotors_simulator
-        pose_msg.pose.position.z = trajectory(2); // for rotors_simulator
-
-        tf::Quaternion quat;
-        geometry_msgs::Quaternion msg;
-        quat.setRPY(0, 0, trajectory(3));
-        tf::quaternionTFToMsg(quat, msg);
-        pose_msg.pose.orientation = msg; // for rotors_simulator
-        pose_publisher.publish(pose_msg); // for rotors_simulator
-
 
         //cout << "[Trajectory]: trajectory = " << trajectory.transpose() << endl;
 

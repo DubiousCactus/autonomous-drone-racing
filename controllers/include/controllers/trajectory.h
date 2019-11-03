@@ -7,7 +7,6 @@
 #include <dynamic_reconfigure/server.h>
 #include <controllers/setTrajectoryConfig.h>
 #include <Eigen/Dense>
-#include <tf/transform_datatypes.h>
 
 using namespace geometry_msgs;
 using namespace std;

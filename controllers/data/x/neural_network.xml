@@ -1,0 +1,120 @@
+<NeuralNetwork>
+    <Inputs>
+        <InputsNumber>8</InputsNumber>
+        <Item Index="1">
+            <Name>error_x</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="2">
+            <Name>error_x_old</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="3">
+            <Name>error_x_old_old</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="4">
+            <Name>d_error_x</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="5">
+            <Name>d_error_xold</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="6">
+            <Name>d_error_x_old_old</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="7">
+            <Name>pitch</Name>
+            <Units>radiants</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="8">
+            <Name>pitch_rate</Name>
+            <Units>radiants per second</Units>
+            <Description></Description>
+        </Item>
+    </Inputs>
+    <ScalingLayer>
+        <ScalingNeuronsNumber>8</ScalingNeuronsNumber>
+        <Statistics Index="1">
+            <Minimum>-2.21709</Minimum>
+            <Maximum>3.23881</Maximum>
+            <Mean>0.00208954</Mean>
+            <StandardDeviation>0.8117</StandardDeviation>
+        </Statistics>
+        <Statistics Index="2">
+            <Minimum>-2.21709</Minimum>
+            <Maximum>3.23881</Maximum>
+            <Mean>0.00209449</Mean>
+            <StandardDeviation>0.8117</StandardDeviation>
+        </Statistics>
+        <Statistics Index="3">
+            <Minimum>-2.21709</Minimum>
+            <Maximum>3.23881</Maximum>
+            <Mean>0.00209944</Mean>
+            <StandardDeviation>0.8117</StandardDeviation>
+        </Statistics>
+        <Statistics Index="4">
+            <Minimum>-3.2397</Minimum>
+            <Maximum>2.81135</Maximum>
+            <Mean>0.000869444</Mean>
+            <StandardDeviation>1.1399</StandardDeviation>
+        </Statistics>
+        <Statistics Index="5">
+            <Minimum>-3.2397</Minimum>
+            <Maximum>2.81135</Maximum>
+            <Mean>0.000877806</Mean>
+            <StandardDeviation>1.1399</StandardDeviation>
+        </Statistics>
+        <Statistics Index="6">
+            <Minimum>-3.2397</Minimum>
+            <Maximum>2.81135</Maximum>
+            <Mean>0.000886168</Mean>
+            <StandardDeviation>1.13989</StandardDeviation>
+        </Statistics>
+        <Statistics Index="7">
+            <Minimum>-0.54745</Minimum>
+            <Maximum>0.587878</Maximum>
+            <Mean>0.00040922</Mean>
+            <StandardDeviation>0.239208</StandardDeviation>
+        </Statistics>
+        <Statistics Index="8">
+            <Minimum>-1.42784</Minimum>
+            <Maximum>1.75256</Maximum>
+            <Mean>-1.57582e-05</Mean>
+            <StandardDeviation>0.464854</StandardDeviation>
+        </Statistics>
+        <ScalingMethod>MinimumMaximum</ScalingMethod>
+    </ScalingLayer>
+    <MultilayerPerceptron>
+        <Architecture>8 8 1 1</Architecture>
+        <LayersActivationFunction>HyperbolicTangent HyperbolicTangent Linear</LayersActivationFunction>
+        <Parameters>1.81635 0.155501 0.610441 0.42424 -0.00980658 -0.268764 -0.33743 0.0262237 -0.0257707 -1.43446 -0.636336 -0.511576 -0.655769 -0.185512 0.332368 0.695657 -0.134463 0.704211 -1.89264 -0.186347 0.889369 0.936279 0.1048 0.450272 0.414214 -0.16931 0.464117 1.23315 0.260289 0.11895 -0.489451 0.0392865 0.280163 -0.1156 0.667647 0.812815 -0.303561 -0.340393 0.717257 -0.342891 0.171051 0.583593 0.0656432 -0.968369 0.696719 -0.150602 -0.0515192 0.248337 0.732171 0.463422 0.712373 0.425806 -0.955711 0.0306905 1.2695 -0.431575 -1.01259 -1.01002 0.110851 0.0352115 0.442346 1.92228 1.18705 -0.403215 -1.13756 -1.70844 -0.209733 -0.42432 -0.744804 -0.525367 0.000914158 0.771158 0.0505514 0.455295 0.246568 -0.753132 -0.961539 -0.594752 0.573843 0.357865 0.225709 0.888619 -2.17989</Parameters>
+    </MultilayerPerceptron>
+    <UnscalingLayer>
+        <UnscalingNeuronsNumber>1</UnscalingNeuronsNumber>
+        <Statistics Index="1">
+            <Minimum>-2.05422</Minimum>
+            <Maximum>3.76821</Maximum>
+            <Mean>0.0696127</Mean>
+            <StandardDeviation>0.910423</StandardDeviation>
+        </Statistics>
+        <UnscalingMethod>MinimumMaximum</UnscalingMethod>
+    </UnscalingLayer>
+    <Outputs>
+        <OutputsNumber>1</OutputsNumber>
+        <Item Index="1">
+            <Name>command_pitch</Name>
+            <Units>radiants</Units>
+            <Description></Description>
+        </Item>
+    </Outputs>
+</NeuralNetwork>

@@ -6,12 +6,13 @@
 #include <geometry_msgs/QuaternionStamped.h>
 #include <geometry_msgs/Quaternion.h>
 #include <tf/transform_datatypes.h>
-#include <mav_msgs/Actuators.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
 #include <rosgraph_msgs/Clock.h>
 #include <nav_msgs/Odometry.h>
 #include <Eigen/Dense>
-#include <bebop_msgs/Ardrone3PilotingStateAltitudeChanged.h>
-#include <ptam_com/ptam_info.h>
 
 using namespace geometry_msgs;
 using namespace std;

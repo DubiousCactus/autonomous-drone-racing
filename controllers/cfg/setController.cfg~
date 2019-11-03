@@ -1,0 +1,35 @@
+#! /usr/bin/env python
+
+PACKAGE='fuzzy_logic_controller'
+
+import roslib;
+roslib.load_manifest(PACKAGE)
+
+from dynamic_reconfigure.parameter_generator_catkin import *
+
+gen = ParameterGenerator()
+
+controller_enum = gen.enum([	gen.const("SFLC", 	int_t, 	0, 	"Singleton Fuzzy Logic Controller"),
+				gen.const("SNSFLC", 	int_t, 	1, 	"Standard Nonsingleton Fuzzy Logic Controller"),
+				gen.const("CNSFLC", 	int_t, 	2, 	"Centroid Nonsingleton Fuzzy Logic Controller")],
+				"Controller type")
+
+#       	Name				Type      	Level	Description					Default 	Min	Max 	Values
+gen.add(	"x_d",   			double_t,	0,    	"Desired x position",				0,		-10,	10)
+gen.add(	"y_d",   			double_t,    	0,    	"Desired y position",				0,		-10,	10)
+gen.add(	"z_d", 				double_t,    	0,    	"Desired z position",				1,		0,	10)
+
+gen.add(	"controller",			int_t,		0,	"Controller type",				2,		0,	2,	edit_method=controller_enum)
+
+gen.add( 	"k_p",				double_t, 	0, 	"Proportional gain", 				2, 		0, 	10) 
+gen.add( 	"k_d",				double_t, 	0, 	"Derivative gain", 				0.1, 		0, 	10)
+gen.add( 	"k_i",				double_t, 	0, 	"Integral gain", 				0.3, 		0, 	10)
+gen.add( 	"k_v",				double_t, 	0, 	"Velocity gain", 				6, 		0, 	10)
+gen.add( 	"i_internal",			bool_t, 	0, 	"Integral part internal to the controller",	True)
+
+gen.add( 	"noise_position",		double_t, 	1, 	"Position noise level", 			0.01, 		0, 	10) 
+gen.add(	"noise_velocity",		double_t, 	1, 	"Velocity noise level", 			0.1, 		0, 	1)
+gen.add(	"noise_attitude", 		double_t, 	1, 	"Attitude noise level",  			0.1, 		0, 	2)
+gen.add(	"noise_angular_velocity", 	double_t, 	1, 	"Angular velocity noise level", 		0.1, 		0, 	20) 
+
+exit(gen.generate(PACKAGE, "fuzzy_logic_controller", "setController"))

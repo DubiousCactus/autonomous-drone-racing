@@ -1,5 +1,7 @@
 #include "controllers/DI-IT2-FLC-FM.h"
 
+Vector4d error_i;
+
 void odometryCallback(const nav_msgs::OdometryConstPtr& odometry_msg){
     tf::Quaternion q(odometry_msg->pose.pose.orientation.x, odometry_msg->pose.pose.orientation.y, odometry_msg->pose.pose.orientation.z, odometry_msg->pose.pose.orientation.w);
     tf::Matrix3x3 m(q);
@@ -35,7 +37,7 @@ void dynamicReconfigureCallback(controllers::setDIT2FLCConfig &config, uint32_t 
 
 // Constructor
 DI_IT2_FLC_FM::DI_IT2_FLC_FM(int argc, char** argv){
-    ros::init(argc, argv, "DI_T1_FLC_FM");
+    ros::init(argc, argv, "DI_IT2_FLC_FM");
     ros::NodeHandle node_handle;
 
     odometry_subscriber = node_handle.subscribe("/uav/odometry", 1, odometryCallback);
@@ -48,6 +50,7 @@ DI_IT2_FLC_FM::DI_IT2_FLC_FM(int argc, char** argv){
     pose_d << 0, 0, 0, 0;
     velocity << 0, 0, 0, 0;
     velocity_d << 0, 0, 0, 0;
+    error_i << 0, 0, 0, 0;
 
     phi_i << 0, 0, 0, 0;
 
@@ -121,12 +124,7 @@ double DI_IT2_FLC_FM::omega23(double sigma1){
 }
 
 double DI_IT2_FLC_FM::phi(double sigma1, double sigma2){
-    if(sigma2 <= omega12(sigma1)){//cout << "[DI_IT2_FLC_FM]: Omega1" << endl;
-        return phi1(sigma1, sigma2);}
-    else if(sigma2 <= omega23(sigma1)){//cout << "[DI_IT2_FLC_FM]: Omega2" << endl;
-        return phi2(sigma1, sigma2);}
-    else{//cout << "[DI_IT2_FLC_FM]: Omega3" << endl;
-        return phi3(sigma1, sigma2);}
+    return sigma1 + sigma2 - (abs(sigma1) * sigma2 + sigma1 * abs(sigma2)) / 2;
 }
 
 double DI_IT2_FLC_FM::bound(double n){
@@ -156,6 +154,7 @@ void DI_IT2_FLC_FM::run(){
 
             error = pose_d - pose;
             error_d = velocity_d - velocity;
+            error_i += error * dt;
 
             sigma1 << bound(k_p * error(0)), bound(k_p * error(1)), bound(k_p * error(2)), bound(k_p * error(3));
             sigma2 << bound(k_d * error_d(0)), bound(k_d * error_d(1)), bound(k_d * error_d(2)), bound(k_d * error_d(3));
@@ -163,9 +162,9 @@ void DI_IT2_FLC_FM::run(){
             phi_p << phi(sigma1(0), sigma2(0)), phi(sigma1(1), sigma2(1)), phi(sigma1(2), sigma2(2)), phi(sigma1(3), sigma2(3));
             phi_i += phi_p * dt;
 
-            velocity_msg.x = k_a * phi_p(0) + k_b * phi_i(0);
-            velocity_msg.y = k_a * phi_p(1) + k_b * phi_i(1);
-            velocity_msg.z = k_a * phi_p(2) + k_b * phi_i(2);
+            velocity_msg.x = k_a * phi_p(0) + k_b * phi_i(0) + (1 - alpha1 * alpha2) * error_i(0);
+            velocity_msg.y = k_a * phi_p(1) + k_b * phi_i(1) + (1 - alpha1 * alpha2) * error_i(1);
+            velocity_msg.z = k_a * phi_p(2) + k_b * phi_i(2) + (1 - alpha1 * alpha2) * error_i(2);
             velocity_msg.w = phi_p(3);
 
             time += (ros::Time::now() - begin).toSec() * 1000;
@@ -185,9 +184,9 @@ int main(int argc, char** argv){
 
     DI_IT2_FLC_FM* controller = new DI_IT2_FLC_FM(argc, argv);
 
-    /*for(double sigma1 = -1; sigma1 <= 1; sigma1+=0.5)
-        for(double sigma2 = -1; sigma2 <= 1; sigma2+=0.5)
-            cout << "[DI_IT2_FLC_FM] phi(" << sigma1 << ", " << sigma2 << ") = " << controller->phi(sigma1, sigma2) << endl << endl;*/
+    /*for(double sigma1 = -2; sigma1 <= 2; sigma1+=1)
+        for(double sigma2 = -2; sigma2 <= 2; sigma2+=1)
+            cout << "[DI_IT2_FLC_FM] phi(" << sigma1 << ", " << sigma2 << ") = " << controller->phi(sigma1, sigma2) << endl;*/
 
     controller->run();
 }

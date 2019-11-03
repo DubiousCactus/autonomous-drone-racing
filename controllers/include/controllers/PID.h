@@ -9,7 +9,6 @@
 #include <nav_msgs/Odometry.h>
 #include <Eigen/Dense>
 #include <tf/transform_datatypes.h>
-//#include <tensorflow/c/c_api.h>
 
 using namespace geometry_msgs;
 using namespace std;

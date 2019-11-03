@@ -139,13 +139,9 @@ int main(int argc, char** argv){
 
     DI_T1_FLC_FM* controller = new DI_T1_FLC_FM(argc, argv);
 
-    /*VectorXd sigma1(1);
-    VectorXd sigma2(1);
-    VectorXd phi(0);
-    for(sigma1(0) = -1; sigma1(0) <= 1; sigma1(0)+=0.5)
-        for(sigma2(0) = -1; sigma2(0) <= 1; sigma2(0)+=0.5){
-            phi = sigma1 + sigma2 - (sigma1.cwiseAbs().cwiseProduct(sigma2) + sigma1.cwiseProduct(sigma2.cwiseAbs()))/2;
-            cout << "[DI_T1_FLC_FM] phi(" << sigma1(0) << ", " << sigma2(0) << ") = " << phi << endl;}*/
+    for(double sigma1 = -2; sigma1 <= 2; sigma1+=1)
+        for(double sigma2 = -2; sigma2 <= 2; sigma2+=1)
+            cout << "[DI_T1_FLC_FM] phi(" << sigma1 << ", " << sigma2 << ") = " << controller->phi(sigma1, sigma2) << endl;
 
     controller->run();
 }

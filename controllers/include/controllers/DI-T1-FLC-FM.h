@@ -54,8 +54,8 @@ class DI_T1_FLC_FM{
           DI_T1_FLC_FM(int, char**);
           ~DI_T1_FLC_FM();
           void run();
+          double phi(double sigma1, double sigma2);
         private:
           double denormalizeAngle(double a1, double a2);
-          double phi(double sigma1, double sigma2);
           double bound(double n);
 };

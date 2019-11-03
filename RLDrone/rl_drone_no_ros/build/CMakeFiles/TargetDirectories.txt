@@ -1,3 +1,0 @@
-/home/theo/racing-drone-vision/RLDrone/rl_drone_no_ros/build/CMakeFiles/edit_cache.dir
-/home/theo/racing-drone-vision/RLDrone/rl_drone_no_ros/build/CMakeFiles/rebuild_cache.dir
-/home/theo/racing-drone-vision/RLDrone/rl_drone_no_ros/build/CMakeFiles/rl_control.dir

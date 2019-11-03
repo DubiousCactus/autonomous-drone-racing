@@ -1,0 +1,22 @@
+*****21-21-3:
+Iteration 393: Minimum loss increase reached.
+Performance increase: 4.3868e-07
+Parameters norm: 5.13655
+Training loss: 0.00852933
+Gradient norm: 0.0107383
+Regularization norm: 0.00513655
+Training rate: 0.0392755
+Elapsed time: 887
+Selection loss: 0.00356834
+
+*****21-3-3-3:
+Iteration 227: Minimum loss increase reached.
+Performance increase: 7.11516e-07
+Parameters norm: 4.69236
+Training loss: 0.024372
+Gradient norm: 0.0199426
+Regularization norm: 0.00469236
+Training rate: 0.014713
+Elapsed time: 186
+Selection loss: 0.0232147
+

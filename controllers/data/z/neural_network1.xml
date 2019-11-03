@@ -1,0 +1,98 @@
+<NeuralNetwork>
+    <Inputs>
+        <InputsNumber>6</InputsNumber>
+        <Item Index="1">
+            <Name>error_z</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="2">
+            <Name>error_z_old</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="3">
+            <Name>error_z_old_old</Name>
+            <Units>meters</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="4">
+            <Name>d_error_z</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="5">
+            <Name>d_error_zold</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+        <Item Index="6">
+            <Name>d_error_z_old_old</Name>
+            <Units>meters per second</Units>
+            <Description></Description>
+        </Item>
+    </Inputs>
+    <ScalingLayer>
+        <ScalingNeuronsNumber>6</ScalingNeuronsNumber>
+        <Statistics Index="1">
+            <Minimum>-1.08503</Minimum>
+            <Maximum>1.12753</Maximum>
+            <Mean>-0.000791842</Mean>
+            <StandardDeviation>0.278931</StandardDeviation>
+        </Statistics>
+        <Statistics Index="2">
+            <Minimum>-1.08503</Minimum>
+            <Maximum>1.12753</Maximum>
+            <Mean>-0.000795502</Mean>
+            <StandardDeviation>0.278931</StandardDeviation>
+        </Statistics>
+        <Statistics Index="3">
+            <Minimum>-1.08503</Minimum>
+            <Maximum>1.12753</Maximum>
+            <Mean>-0.000799162</Mean>
+            <StandardDeviation>0.27893</StandardDeviation>
+        </Statistics>
+        <Statistics Index="4">
+            <Minimum>-1.77707</Minimum>
+            <Maximum>1.33408</Maximum>
+            <Mean>0.000427678</Mean>
+            <StandardDeviation>0.417493</StandardDeviation>
+        </Statistics>
+        <Statistics Index="5">
+            <Minimum>-1.77707</Minimum>
+            <Maximum>1.33408</Maximum>
+            <Mean>0.000429974</Mean>
+            <StandardDeviation>0.417493</StandardDeviation>
+        </Statistics>
+        <Statistics Index="6">
+            <Minimum>-1.77707</Minimum>
+            <Maximum>1.33408</Maximum>
+            <Mean>0.000432271</Mean>
+            <StandardDeviation>0.417493</StandardDeviation>
+        </Statistics>
+        <ScalingMethod>MinimumMaximum</ScalingMethod>
+    </ScalingLayer>
+    <MultilayerPerceptron>
+        <Architecture>6 6 5 1</Architecture>
+        <LayersActivationFunction>HyperbolicTangent HyperbolicTangent Linear</LayersActivationFunction>
+        <Parameters>-1.32589 -0.496469 0.229622 -0.350131 1.14675 -0.542677 -0.00597152 -0.0613874 1.01538 1.08383 -0.647907 -0.575188 1.17115 0.411694 0.875522 -0.957745 -0.540814 -0.380728 0.0869737 -1.09657 -0.784044 -2.09476 0.269964 -1.37566 0.75722 0.0575889 1.79132 -0.0525645 -1.18798 -0.476032 -0.0994944 -0.445787 -1.32224 0.759878 -1.62022 -1.01163 -1.11372 0.280421 -0.932654 -0.242614 -2.07059 1.95195 -1.13622 -0.133244 1.35316 0.723241 0.645846 -0.316919 -1.13328 0.75401 0.724238 -0.0937753 -0.82634 0.836699 -1.21632 -0.281265 1.61289 0.124213 -0.782059 -1.31512 -0.135226 -0.601795 1.32209 0.502487 -0.387125 -0.241657 0.0186264 0.109238 -1.53059 0.141346 -0.0301241 -1.88287 -0.269741 1.14154 0.146618 -1.15911 0.975613 0.917056 0.114152 0.485593 -0.236638 0.448161 -1.19967</Parameters>
+    </MultilayerPerceptron>
+    <UnscalingLayer>
+        <UnscalingNeuronsNumber>1</UnscalingNeuronsNumber>
+        <Statistics Index="1">
+            <Minimum>-0.808287</Minimum>
+            <Maximum>0.453434</Maximum>
+            <Mean>-0.0700538</Mean>
+            <StandardDeviation>0.172549</StandardDeviation>
+        </Statistics>
+        <UnscalingMethod>MinimumMaximum</UnscalingMethod>
+    </UnscalingLayer>
+    <Outputs>
+        <OutputsNumber>1</OutputsNumber>
+        <Item Index="1">
+            <Name>command_thrust</Name>
+            <Units>percents</Units>
+            <Description></Description>
+        </Item>
+    </Outputs>
+</NeuralNetwork>

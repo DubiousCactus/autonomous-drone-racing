@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<launch>
+	<arg name="robotName" value="IntelDrone"/>
+
+	<remap from="/uav/command_velocity" to="/$(arg robotName)/command_velocity"/>
+	<remap from="/uav/command" to="/$(arg robotName)/command"/>
+	<remap from="/uav/position" to="/$(arg robotName)/position"/>
+	<remap from="/uav/velocity" to="/$(arg robotName)/linear_velocity"/>
+	<remap from="/uav/noise/position" to="/$(arg robotName)/noise/position"/>
+	<remap from="/uav/odometry" to="/$(arg robotName)/odometry"/>
+	<remap from="/uav/true_odometry" to="/$(arg robotName)/ground_truth/odometry"/>
+	<remap from="/uav/trajectory" to="/$(arg robotName)/trajectory"/>
+	<remap from="/uav/trajectory_velocity" to="/$(arg robotName)/trajectory_velocity"/>
+	<!-- remap from="/optitrack/odometry" to="/mavros/mocap/pose"/ -->
+	<remap from="/uav/trajectory" to="/$(arg robotName)/command_position"/>
+	<remap from="/y6/command_attitude" to="/$(arg robotName)/command_velocity"/>
+	<remap from="/Robot_1/pose" to="/mavros/mocap/pose"/>
+
+	<node name="safe_intel_drone" pkg="controllers" type="safe_intel_drone" output="screen" args=""/>
+
+	<node name="mavros" pkg="mavros" type="mavros_node" clear_params="true" output="screen">
+		<param name="fcu_url" value="tcp://127.0.0.1:5760"/>
+		<param name="system_id" value="2" />
+	</node>
+
+  <include file="$(find realsense_camera)/launch/r200_nodelet_default.launch"/>
+
+	<node name="trajectory" pkg="controllers" type="trajectory" output="screen" args=""/>
+
+	<include file="$(find vicon_bridge)/launch/vicon.launch"/>
+
+	<!-- node name="dynamic_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" output="screen" args=""/ -->
+</launch>

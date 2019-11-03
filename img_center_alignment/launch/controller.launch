@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="namespace" default="intel_aero" />
+    <node name="controller" pkg="img_center_alignment" type="img_center_controller" output="screen">
+    </node>
+</launch>

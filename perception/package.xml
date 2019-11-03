@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>perception</name>
+  <version>0.0.1</version>
+  <description>Perception package for gate detection and distance/rotation prediction.</description>
+
+  <maintainer email="theo.morales.fr@gmail.com">Theo</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin_simple</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+
+   <build_depend>message_generation</build_depend>
+   <exec_depend>message_runtime</exec_depend>
+  <export>
+  </export>
+</package>
