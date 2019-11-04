@@ -3,6 +3,9 @@
 This repository contains the source code for the paper "Exploiting Fast and
 Accurate Semi-Synthetic Image Generation for Efficient CNN Training". 
 
+![Illustration](main_illustration.png)
+
+
 Watch the video:
 [![Watch the video](https://img.youtube.com/vi/U4LolcYm44w/maxresdefault.jpg)](https://youtu.be/U4LolcYm44w)
 
