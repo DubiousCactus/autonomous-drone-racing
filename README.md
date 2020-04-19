@@ -1,7 +1,6 @@
-# Exploiting Fast and Accurate Semi-Synthetic Image Generation for Efficient CNN Training
+# Image Generation for Efficient Neural Network Training in Autonomous Drone Racing
 
-This repository contains the source code for the paper "Exploiting Fast and
-Accurate Semi-Synthetic Image Generation for Efficient CNN Training". 
+This repository contains the source code for the paper "Image Generation for Efficient Neural Network Training in Autonomous Drone Racing" accepted at the WCCI 2020 congress. 
 
 ![Illustration](main_illustration.png)
 
