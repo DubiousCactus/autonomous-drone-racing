@@ -7,7 +7,7 @@ Accurate Semi-Synthetic Image Generation for Efficient CNN Training".
 
 
 Watch the video:
-[![Watch the video](https://img.youtube.com/vi/U4LolcYm44w/maxresdefault.jpg)](https://youtu.be/T4gJgPNdiH8)
+[![Watch the video](https://img.youtube.com/vi/T4gJgPNdiH8/maxresdefault.jpg)](https://youtu.be/T4gJgPNdiH8)
 
 ## ROS nodes
 
