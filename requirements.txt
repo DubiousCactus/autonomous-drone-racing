@@ -37,7 +37,7 @@ Markdown==3.1.1
 message-filters==1.12.14
 numpy==1.17.3
 opencv-python==4.1.1.26
-Pillow==6.2.1
+Pillow==9.0.1
 pluginlib==1.11.3
 protobuf==3.10.0
 pyaml==19.4.1
