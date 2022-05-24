@@ -111,7 +111,7 @@ smach==2.0.1
 smach-ros==2.0.1
 smclib==1.8.3
 tensorboard==1.14.0
-tensorflow==1.15.4
+tensorflow==2.6.4
 tensorflow-estimator==1.14.0
 termcolor==1.1.0
 tf==1.11.9
